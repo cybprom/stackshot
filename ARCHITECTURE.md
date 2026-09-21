@@ -80,7 +80,7 @@ one, no runtime theme detection, and no per-view telemetry.
           ▼
    ┌──────────────────────────────────┐
    │ satori(cardElement, {            │
-   │   width: 1200, height: 750,      │
+   │   width: 1200, height: 800,      │
    │   fonts: [Archivo, CommitMono]   │   fonts read at module scope
    │ })                  -> SVG       │
    ├──────────────────────────────────┤

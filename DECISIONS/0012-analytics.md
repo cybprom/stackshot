@@ -79,11 +79,19 @@ Exposed via `GET /api/stats` returning JSON behind a shared secret. No dashboard
   dashboard. `CLAUDE.md` names the boundary explicitly.
 - Budget: ~1 hour, in Milestone 4.
 
-**One unverified idea, to test in Milestone 0:** Camo refetches an image when its own cache
-expires, and those requests do hit our server with a recognizable user agent. That is not a
-view count, but it may be a _liveness_ count — evidence that a card is still embedded
-somewhere. Log user agents during the spike and see whether the pattern is legible enough
-to be worth anything. If it isn't, drop the idea and note it in GOTCHAS.
+**One unverified idea, deferred to roughly two weeks post-launch:** Camo refetches an image
+when its own cache expires, and those requests do hit our server with a recognizable user
+agent. That is not a view count, but it may be a _liveness_ count — evidence that a card is
+still embedded somewhere.
+
+This was originally scoped as a Milestone 0 step. It cannot be tested there. Camo refetches
+under traffic, and the spike's embed sits in a throwaway repo nobody visits, so there is
+nothing to trigger a refetch and no pattern to recognize; borrowing a busy repo would
+measure that repo rather than the mechanism. The test needs our own cards embedded in real
+READMEs first, which is why it waits until a couple of weeks after launch. See GOTCHAS 013.
+
+It remains an input to this ADR, not a new decision — if the pattern turns out to be
+illegible, the idea is dropped and noted in GOTCHAS, exactly as before.
 
 ## What would make us revisit
 

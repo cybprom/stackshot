@@ -102,6 +102,11 @@ Tracking tightens monotonically as size increases: 0.18 → 0.04 → 0.02 → 0.
 -0.02. That relationship is the rule; individual values are negotiable, the relationship
 is not.
 
+**Long repo names step down.** `card/display` is 64 up to ~22 characters, **48 past ~22**,
+**40 past ~30**. Never truncate. A clipped repo name is worse than a small one — the name
+is the string a reader has to be able to trust. The boundaries are character counts against
+a proportional face, so check them against rendered width rather than the number.
+
 ### Site scale
 
 | Step | Use | Size | Weight | Line height | Tracking |
@@ -137,8 +142,9 @@ deliberate exception to "one accent", not two accents.
 **Warning that must survive into code:** `rule` does not meet 3:1 against `surface`. It is
 therefore **decorative only** — item separators within a layer band. Every line that
 *encodes information* (layer separators, the card border, the gutter divider) uses `ink`,
-at varying weight. If you find yourself using `rule` to separate two layers, you have
-broken the accessibility floor.
+at varying weight and **never below 3 units**. Below 3 the line is subpixel at display size
+and the weight distinction it exists to carry disappears. If you find yourself using `rule`
+to separate two layers, you have broken the accessibility floor.
 
 ### Semantic colors
 
@@ -176,7 +182,7 @@ one-line comment).
 
 - **Radius: 2.** One value, everywhere, card and site. A datasheet does not have rounded
   corners. `rounded-xl` is banned by name.
-- **Border: 1 unit, `ink`.** The card has exactly one border, at its outer edge. Internal
+- **Border: 3 units, `ink`.** The card has exactly one border, at its outer edge. Internal
   structure is rules, not boxes. There are no nested cards, no panels, no containers.
 - **Shadows: none.** Two reasons, both sufficient. A card embedded in a README should sit
   flat in the page rather than float above it, and Satori's shadow support is partial
@@ -237,39 +243,40 @@ alongside it.
 
 ## CARD ANATOMY
 
-1200 × 750 units. **Not 1200 × 630** — see the self-critique below.
+1200 × 800 units. **Not 1200 × 630** — see the self-critique below.
 
 ```
 ┌════════════════════════════════════════════════════════════════┐  4u accent bar
 │                                                                │
 │  ┌──────┬──────────────────────────────────────────────────┐   │
 │  │      │  vercel/                              TypeScript │   │  header band
-│  │      │  next.js                                 128k ★  │   │  140u
-│  │      ├══════════════════════════════════════════════════┤   │  3u ink rule
+│  │      │  next.js                             128k stars  │   │  140u
+│  │      ├══════════════════════════════════════════════════┤   │  8u ink rule
 │  │ F    │                                                  │   │
 │  │ R  ↑ │  Next.js 15    React 19    Tailwind 4            │   │  layer band
 │  │ O    │  TanStack Query 5    Zod 3                       │   │  flex, min 120u
 │  │ N    │                                                  │   │
-│  │ T    ├──────────────────────────────────────────────────┤   │  2u ink rule
+│  │ T    ├──────────────────────────────────────────────────┤   │  5u ink rule
 │  │      │                                                  │   │
 │  │ B  ↑ │  Node 22    PostgreSQL 16    Prisma 6            │   │
 │  │ A    │                                                  │   │
-│  │ C    ├──────────────────────────────────────────────────┤   │  1u ink rule
+│  │ C    ├──────────────────────────────────────────────────┤   │  3u ink rule
 │  │ K    │                                                  │   │
 │  │      │  Docker    GitHub Actions    Vercel              │   │
 │  │ I  ↑ │                                                  │   │
-│  │ N    ├──────────────────────────────────────────────────┤   │  1u ink rule
+│  │ N    ├──────────────────────────────────────────────────┤   │  3u ink rule
 │  │ F    │                                                  │   │
 │  │ R  ↑ │  pnpm    Vitest    ESLint    +4 more             │   │
 │  │      │                                                  │   │
 │  └──────┴──────────────────────────────────────────────────┘   │
 │  stackshot.<your-domain>            stack as of 2026-03-14     │  footer 56u
-└────────────────────────────────────────────────────────────────┘  1u ink border, r2
+└────────────────────────────────────────────────────────────────┘  3u ink border, r2
 ```
 
 Rules:
-- **Layer separator weight decreases downward: 3 · 2 · 1 · 1.** This is the nutrition-panel
-  borrowing. Hierarchy comes from line weight, not color.
+- **Layer separator weight decreases downward: 8 · 5 · 3 · 3.** This is the nutrition-panel
+  borrowing. Hierarchy comes from line weight, not color. 3 is the floor for any line that
+  carries meaning — see COLOR.
 - **Empty layers are omitted entirely**, and the remaining bands expand to fill. A frontend
   library with no backend shows two bands, not two bands and two blanks.
 - **Maximum 4 layers, maximum 6 items per layer.** Overflow renders as `+N more` in
@@ -331,11 +338,17 @@ Build to this without announcing it.
 For each decision: would I have produced this for a completely different brief? Where the
 answer was yes, it was a default and has been changed. Five revisions.
 
-**1. Canvas was 1200 × 630. Changed to 1200 × 750.**
+**1. Canvas was 1200 × 630. Changed to 1200 × 750, then to 1200 × 800.**
 1.91:1 is the OpenGraph ratio, which is what every image-generation tool reaches for. It
 is correct for a link preview and has nothing to do with a four-band layered diagram. 630
 units forced the bands to 110 each, which broke at mobile width. The new ratio is derived
 from the content.
+
+750 then failed the same way for a different reason. Raising every information-bearing line
+to the 3-unit floor added 12 units of overhead to a budget with under 5 to spare, leaving
+four bands at 115 against a 120 floor. Same derivation, more overhead above the bands:
+630 → 750 → **800**, which gives 511 across four bands and about 8 units of headroom.
+See GOTCHAS 012.
 
 **2. Layers were color-coded, one hue each. Changed to rule-weight encoding.**
 Four colors for four categories is what every diagram tool does, and it would have

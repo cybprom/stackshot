@@ -144,6 +144,63 @@ app's own theme setting, is unverified. This is a Milestone 0 acceptance item.
 There is also a known mismatch even on desktop: `<picture>` evaluates the **OS** colour
 preference, not the user's **GitHub** theme setting. A user with a light OS and a dark
 GitHub theme sees the light card. Nothing can be done about it; state it in the README.
+## 012 — The rule-weight hierarchy was subpixel at display size
+**Date:** 2026-09-21 · **Cost:** ~0h, caught in review · **Status:** confirmed
+**Writeup material:** yes — the best "the numbers looked fine" example we have
+
+DESIGN.md encodes layer hierarchy in rule weight rather than color, on purpose: four hues
+for four categories was rejected as the thing every diagram tool does (self-critique #2).
+The ladder was `3 · 2 · 1 · 1` units.
+
+The card is 1200 units wide and displays at roughly 600px in a README. That is **0.5px per
+unit**, and 0.33 at GitHub's mobile width of ~390px. So the ladder rendered at 1.5 / 1 /
+0.5 / 0.5px on desktop, and the bottom two rungs — the ones distinguishing INFRA from
+TOOLING — were the same line. The entire hierarchy system collapsed into "some lines".
+
+The trap is that every number looked reasonable in the 1200-unit coordinate space. Nothing
+is wrong until you multiply by the display ratio, and that ratio lives in a different
+section of the doc from the values.
+
+Fix: a floor of **3 units for any line that carries information**, ladder to `8 · 5 · 3 ·
+3`, card border 1 → 3. Decorative `rule` hairlines stay thin — they encode nothing, so
+subpixel costs nothing.
+
+**The knock-on, which is the more interesting half.** Thickening the rules added 12 units
+of overhead to a vertical budget that already had under 5 units of slack:
+
+```
+padding 64 + header 140 + footer 56 + separators 19 + border 6 + accent 4 = 289
+750 − 289 = 461 across four bands = 115 each, against a minHeight of 120
+```
+
+Four bands is the common case, so the card overflowed by default. Band `minHeight` is
+content-derived (two wrapped lines of `card/item` plus padding = 114) so it could not
+absorb it, and the footer could only give back 8. Canvas went 750 → **800**.
+
+One fix exposing a second latent defect, neither of which would have appeared until a
+four-band card actually rendered — and by then it would have looked like a rendering bug
+rather than an arithmetic one. Both were found with a calculator before any code existed.
+
+## 013 — Camo liveness can't be measured before you have real embeds
+**Date:** 2026-09-21 · **Cost:** — · **Status:** deferred
+**Writeup material:** yes — a measurement plan that dissolved on contact
+
+ADR-0012 proposed logging user agents on the image route during the spike, on the theory
+that Camo's refetches on cache expiry might serve as a *liveness* signal — not a view
+count, but evidence a card is still embedded somewhere.
+
+It cannot be tested in Milestone 0. Camo refetches when its cache expires under traffic,
+and a spike embed lives in a throwaway repo nobody visits, so there is no traffic to
+trigger a refetch and nothing to recognize a pattern in. Borrowing a busy repo would
+measure that repo's traffic, not the mechanism.
+
+Deferred to roughly two weeks post-launch, once our own cards are embedded in real READMEs.
+It stays an ADR-0012 input; it is not a Milestone 0 go/no-go item, and Milestone 0 drops
+from eight steps to seven because of it.
+
+The general shape, worth keeping: **some measurements need a population before they mean
+anything, and no amount of care in the instrument substitutes for one.**
+
 
 ---
 

@@ -35,24 +35,60 @@ Rendering failing means there is no product.
 
 ### Steps
 
+Ordered by execution, which is not the order they were first written in. The rule: answer
+the questions that can invalidate an ADR before the expensive build, start anything with a
+wall-clock tail early, and leave the work that needs the real card until the environment is
+known good.
+
 1. Hardcode one `StackDoc` for a real repo. No network calls at all.
 2. Render it twice (light, dark) with `satori` → `@resvg/resvg-js` → PNG, inside a Next
-   route handler on the Node runtime, with a real embedded TTF.
-3. Build the full card layout, including **the rotated gutter labels**. That is the piece
-   most likely to be unsupported.
-4. Deploy to Vercel. Put the `<picture>` block into a real public repo's README.
-5. View it on: desktop GitHub light, desktop GitHub dark, GitHub mobile web, GitHub iOS
-   app, GitHub Android app. Screenshot every one and commit them to `docs/spike/`.
-6. Change the image bytes, redeploy, and time how long until GitHub shows the new version.
-   Try a `PURGE` request against the camo URL.
-7. Measure cold render time end to end, and the PNG byte size.
-8. Log user agents on the image route for a week after embedding. Check whether Camo's
-   refetches are recognizable enough to serve as a liveness signal (ADR-0012). If they
-   aren't, say so in GOTCHAS and drop the idea.
+   route handler on the Node runtime, with a real embedded TTF. A **crude card** — border,
+   accent bar, four bands, one text run per face, and the word `LIGHT` or `DARK` at display
+   size so step 5's screenshots are unambiguous. Not the layout. Audit the font licences
+   and the shipped weights here.
+3. Prove **the rotated gutter labels** in a standalone script, with the one-letter-per-line
+   fallback rendered alongside for comparison. Commit the result to `docs/spike/`. This is
+   the piece most likely to be unsupported and it is cheap to test in isolation.
+4. Deploy to Vercel and embed the `<picture>` block in a **throwaway public repo**. Two
+   jobs. First, confirm resvg's native binary and satori's harfbuzz wasm resolve on
+   Vercel — they are `serverExternalPackages` rather than bundled (GOTCHAS 016), and that
+   is a deploy-time question. Second, **take the first honest cold-render measurement**:
+   local numbers are warm-filesystem numbers and do not go into ADR-0011. Time a genuine
+   cold start, several times, and record the spread against the 8s threshold. If the crude
+   card is already near the line, say so here — the real card only costs more.
+5. View on: desktop GitHub light, desktop GitHub dark, GitHub mobile web, GitHub iOS app,
+   GitHub Android app. Screenshot every one and commit to `docs/spike/`. The question here
+   is only whether each surface picks the right half of the pair.
+6. On the dedicated TTL path: change the image bytes once, redeploy, and time how long
+   until GitHub shows the new version. Try a `PURGE` request against the camo URL.
+7. Build the full card layout. Publish to a fresh path, measure **cold render time on
+   deployed cold starts** (same method as step 4, so the delta is attributable to the
+   layout rather than the environment) and PNG byte size, and **re-shoot all five surfaces
+   with the real card** for the legibility verdict at ~390px.
+
+Then write ADR-0011.
+
+### Spike URLs — three paths, pinned per path
+
+Camo caches per URL, and separate URLs do not separate bytes: all three paths are served by
+one handler from one hardcoded `StackDoc`, so step 7 would otherwise change what steps 5
+and 6 are measuring. The handler pins its output per path.
+
+| Path | Used by | Pinned to |
+|---|---|---|
+| `/spike/theme/…` | steps 4–5 | crude v1, always — unchanged by step 7 |
+| `/spike/ttl/…` | step 6 | crude v1, then crude v2 at step 6's single change |
+| `/spike/real/…` | step 7 | the real card |
+| anything else | — | the real card |
+
+The step-6 path is a measuring instrument. After its one byte change, any deploy that moves
+its bytes voids the measurement and the step re-runs against a fourth path with a fresh
+cache. **The crude renderer therefore stays in the codebase until ADR-0011 is written**, not
+until step 7.
 
 ### Definition of done
 
-All eight steps run, screenshots committed, measurements written into `GOTCHAS.md`, and a
+All seven steps run, screenshots committed, measurements written into `GOTCHAS.md`, and a
 go/no-go recorded as ADR-0011.
 
 ### Abandon-or-redesign criteria
@@ -84,6 +120,12 @@ The real work. Still no UI.
 4. `lib/normalize.ts` — deny, drop-unmapped, suppress, version-coerce, rank, slice.
 5. Record fixtures from 8 real repos into `tests/fixtures/`, including at least one pnpm
    monorepo, one Go repo, one Python repo, one Rust repo, and one repo with no manifest.
+   Include **`Grandbusta/spyde`** — recorded API responses only, nothing is ever embedded
+   in that repo. It earns a slot by differing from the rest of the set on four axes at
+   once: a published npm package on `package-lock.json` rather than pnpm, exactly one
+   runtime dependency, a docs-site build sitting alongside the library, and both workflows
+   and examples in the tree. A one-dependency repo is also the sparsest card the layout has
+   to hold without looking broken.
 
 ### Definition of done
 
