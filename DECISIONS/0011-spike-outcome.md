@@ -84,10 +84,25 @@ both stand as written.
 
 ## Teardown, owed by this decision
 
-Delete `github.com/cybprom/stackshot-spike` and its Vercel project. Then remove
-`lib/render/crude-card.tsx`, `lib/spike-doc.ts`, `lib/spike-doc-worst.ts` and the
-`scripts/spike-*` and `scripts/assert-fits.tsx` helpers, and drop the `spike/*` pins from
-the card route. Add `spike` to the reserved-word deny list in Milestone 2 regardless, so
-`/spike/ttl/card-dark.png` can never resolve as owner `spike` against the live API.
+Delete `github.com/cybprom/stackshot-spike` and its Vercel project. Add `spike` to the
+reserved-word deny list in Milestone 2 regardless, so `/spike/ttl/card-dark.png` can never
+resolve as owner `spike` against the live API.
+
+In the codebase, remove `lib/render/crude-card.tsx`, `scripts/spike-render.ts`,
+`scripts/spike-gutter.tsx` and the `spike/*` pins from the card route. Those existed only
+to keep two measurements from disturbing each other, and the measurements are done.
+
+**Corrected while carrying this out:** an earlier draft of this section also listed
+`lib/spike-doc.ts`, `lib/spike-doc-worst.ts` and `scripts/assert-fits.tsx`. They stay until
+Milestone 2, for reasons that were not obvious when the list was written:
+
+- The card route renders `SPIKE_DOC`. Nothing else supplies a `StackDoc` until the resolver
+  lands, and there is no error card yet either, so deleting it leaves the route broken
+  through the whole of Milestone 1 in exchange for tidiness.
+- `WORST_CASE_DOC` is the densest layout the card has to survive and is the natural fixture
+  for Milestone 2's gutter-fit test. Deleting it means rebuilding it.
+- `assert-fits.tsx` is currently the only automated guard on the layout at all.
+
+They go when Milestone 2 replaces them, which is where the gutter-fit test lands anyway.
 
 `docs/spike/` is the durable record and stays.

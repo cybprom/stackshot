@@ -6,24 +6,30 @@
 it is the only thing that survives one.*
 
 ```
-Milestone:  0 — the Camo spike (7 steps, reordered — see below)
-Last done:  MILESTONE 0 COMPLETE. All seven steps run, ADR-0011 written, call is GO.
+Milestone:  1 — resolver and stack map (Milestone 0 complete, tagged m0-spike)
+Last done:  MILESTONE 0 COMPLETE and torn down. Seven steps, ADR-0011 records GO.
             Rotated gutter works; <picture> switches on all five surfaces both
             themes; Camo honours our max-age (v1->v2 at t+246s) and PURGE works;
             cold render 2.39s vs 8s; card legible at 8.75px item size on a phone.
-            Evidence in docs/spike/ (step5-*, step7-*, gutter-comparison, cards).
-            GOTCHAS 004, 008, 011-022. ADRs 0011 and 0013 added.
-Next:       TEARDOWN first — see ADR-0011's final section. Delete the spike repo and
-            Vercel project, strip crude-card/spike-doc/spike scripts and the spike/*
-            pins from the route. THEN Milestone 1 (resolver + stack map).
-Open:       Detection is entirely unproven — the spike rendered hardcoded data. M1's
-            judgement call (do 8 real repos produce cards worth looking at?) is the
-            largest remaining risk in the project.
+            Evidence in docs/spike/. GOTCHAS 004, 008, 011-022. ADRs 0011, 0013.
+            Teardown done in-repo: crude renderer, spike scripts and the spike/*
+            route pins are gone. lib/spike-doc*.ts and scripts/assert-fits.tsx
+            deliberately REMAIN until M2 — the route has no other StackDoc source
+            and no error card yet. See ADR-0011's teardown section.
+Next:       Milestone 1 step 1 — lib/github/ client with the budget counter,
+            recursive tree call, raw fetch at pinned SHA. Commit at the end of
+            EVERY step from here, not the end of the milestone.
+Open:       OUTSIDE THE REPO, still to do by hand: delete github.com/cybprom/
+            stackshot-spike and its Vercel project (cybproms-projects/
+            stackshot-spike). Until then the spike README carries live card URLs.
+            Detection is entirely unproven — the spike rendered hardcoded data.
+            M1's judgement call (do 8 real repos produce cards worth looking at?)
+            is the largest remaining risk in the project.
             Rule ladder still compresses on phones: 5u and 3u land at 1.46/0.88px.
             Accepted, not solved. No ladder on 1200 units fixes it. (022)
             Accent bar / header / footer / padding are coupled to the gutter label:
-            ~71u of chrome headroom before FRONTEND overlaps, and the failure is
-            silent. Nothing asserts it. (021, 004)
+            ~71u of chrome headroom before FRONTEND overlaps, silently. M2 step 7
+            is the test that enforces it. (021, 004)
             M2 sets the whole cache chain, not max-age alone — our edge s-maxage
             dominates staleness, not Camo. (0013)
             Commit Mono release OTFs crash satori; use the TTFs (015).
