@@ -24,8 +24,9 @@ Use `0000-template.md` as the starting point.
 | 0008 | Display major versions only | Accepted |
 | 0009 | Per-technology descriptions live on the site, not on the card | Accepted |
 | 0010 | A classic PAT for v1, manifests from raw.githubusercontent.com | Accepted |
-| 0011 | Milestone 0 spike outcome — go/no-go | **Not yet written** |
+| 0011 | Milestone 0 spike outcome — **go** | Accepted |
 | 0012 | Measure embeds and intent, not views | Accepted |
+| 0013 | Downstream `max-age` is the staleness lever for embedded cards | Accepted |
 
-ADR-0011 is written at the end of Milestone 0 and records the spike's measured results and
-the go/no-go call. Milestone 1 does not start until it exists.
+ADR-0011 records the spike's measured results and the go/no-go call. It exists, the call
+was **go**, and it owes a teardown — see its final section.

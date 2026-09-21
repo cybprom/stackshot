@@ -153,12 +153,21 @@ lib/
 tests/
   fixtures/                      recorded GitHub responses, committed
   *.test.ts
+docs/
+  spike/                         Milestone 0 output — screenshots, measurements
+  writeup/                       post assets with no other home
 DECISIONS/
 ```
 
 `lib/render/` must not import from `lib/github/`. The renderer takes a `StackDoc` and
 nothing else. If you find yourself needing a network call inside the renderer, the
 boundary is wrong — stop and re-read `ARCHITECTURE.md`.
+
+**`docs/spike/` and `docs/writeup/` never hold copies of each other.** Things live where
+they were produced: spike output stays in `docs/spike/`, and the writeup references it
+across directories. `docs/writeup/` holds only assets made for the post itself. Do not
+tidy this up by copying a screenshot into the directory that seems to want it — two copies
+drift, and at publishing time there is no way to tell which is current.
 
 ---
 

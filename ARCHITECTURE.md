@@ -228,13 +228,21 @@ one that says "Next.js". See ADR-0006.
 
 Three layers, each with a different job.
 
-| Layer | Key | TTL | Purpose |
-|---|---|---|---|
-| KV repo pointer | `repo:{owner}/{repo}` | 1h | Skip the two API calls |
-| KV stack doc | `stack:{stackHash}` | 30d | Skip detection, hold `asOf` |
-| KV rendered png | `png:{stackHash}:{theme}` | 30d | Skip the render |
-| CDN | the URL | `s-maxage=86400`, `swr=7d` | Skip the function entirely |
-| Camo | its own | opaque, unmeasured | Out of our control |
+| Layer | Key | TTL | Purpose | Adds staleness? |
+|---|---|---|---|---|
+| KV repo pointer | `repo:{owner}/{repo}` | 1h | Skip the two API calls | **yes, 1h** |
+| KV stack doc | `stack:{stackHash}` | 30d | Skip detection, hold `asOf` | no — content-keyed |
+| KV rendered png | `png:{stackHash}:{theme}` | 30d | Skip the render | no — content-keyed |
+| CDN (Vercel edge) | the URL | `s-maxage=86400`, `swr=7d` | Skip the function entirely | **yes, and it dominates** |
+| Fastly + Camo | the URL | **our `max-age`** | Honours the header we send · ADR-0013 | yes, our value |
+| Browser | the URL | our `max-age` | — | yes, our value |
+
+**End-to-end staleness is the maximum over this chain, and the dominant term is ours, not
+Camo's.** The content-hash keys (ADR-0005) mean the KV render caches never serve stale
+content — a changed stack produces a different key. The edge does: it is keyed by URL, and
+a repo's stack changing involves no deploy of ours to invalidate it. Tuning Camo's
+`max-age` while leaving `s-maxage=86400` in place buys refetch traffic and nothing else.
+Milestone 2 sets the chain as a whole.
 
 The render key is the **content hash, not the commit SHA**. A README typo produces a new
 SHA but an identical `stackHash`, so it costs one cheap API call and zero renders. See
@@ -244,9 +252,15 @@ ADR-0005.
 the same scheme. Without this, a badge pointing at a deleted repo re-runs full detection on
 every cold CDN request.
 
-**Camo's TTL is unknown and must be measured in Milestone 0.** If it is long, cards are
-effectively immutable once embedded and that becomes a documented limitation in the README
-rather than a bug to fight.
+**Camo's TTL was measured in Milestone 0 and there isn't one.** Camo honours the origin's
+`cache-control` and passes it through to the reader, so propagation delay is the remaining
+TTL of whatever it already holds — a number we set. `PURGE` against a Camo URL also works.
+Embedded cards are **not** immutable, and the planned README limitation is not needed. The
+downstream value is a product parameter, deferred to Milestone 2. See ADR-0013 and
+GOTCHAS 008.
+
+There is also a **Fastly layer in front of Camo**, so the real chain is origin → Vercel edge
+→ Fastly → Camo → browser. Four caches, not two.
 
 ---
 

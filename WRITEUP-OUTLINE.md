@@ -131,11 +131,18 @@ the constraint is interesting, and saying so plainly is stronger than inflating 
 ## Assets to prepare
 
 - The opening failure screenshot pair (section 1)
-- Five-surface theme screenshot grid (section 3)
+- **Five-surface theme grid — Milestone 0 step 7's real-card re-shoot** (section 3). Not
+  step 5's crude `LIGHT`/`DARK` grid: that one exists to settle the `<picture>` verdict
+  internally, and it only becomes writeup material if the answer was surprising enough to
+  be worth showing.
 - Width comparison: 1200 / 600 / 390 (section 5)
 - 1× vs 2× crop (section 5)
 - Suppression before/after (section 6)
 - Eight-fixture card grid (section 6)
 
-Commit all of these to `docs/writeup/` as they are produced. Recreating a Milestone 0
-screenshot in Milestone 4 is either impossible or a lie.
+**Anything produced during the spike lives in `docs/spike/` and is referenced there, never
+copied.** That includes the step-7 grid. `docs/writeup/` holds only assets made for the
+post that have no other home, committed as they are produced. Two copies of a screenshot
+drift, and at publishing time there is no way to tell which one is current. See CLAUDE.md.
+
+Recreating a Milestone 0 screenshot in Milestone 4 is either impossible or a lie.

@@ -6,10 +6,28 @@
 it is the only thing that survives one.*
 
 ```
-Milestone:  0 — the Camo spike
-Last done:  nothing yet; repo scaffolded, docs committed
-Next:       hardcode a StackDoc and render it twice with satori + resvg
-Open:       none
+Milestone:  0 — the Camo spike (7 steps, reordered — see below)
+Last done:  MILESTONE 0 COMPLETE. All seven steps run, ADR-0011 written, call is GO.
+            Rotated gutter works; <picture> switches on all five surfaces both
+            themes; Camo honours our max-age (v1->v2 at t+246s) and PURGE works;
+            cold render 2.39s vs 8s; card legible at 8.75px item size on a phone.
+            Evidence in docs/spike/ (step5-*, step7-*, gutter-comparison, cards).
+            GOTCHAS 004, 008, 011-022. ADRs 0011 and 0013 added.
+Next:       TEARDOWN first — see ADR-0011's final section. Delete the spike repo and
+            Vercel project, strip crude-card/spike-doc/spike scripts and the spike/*
+            pins from the route. THEN Milestone 1 (resolver + stack map).
+Open:       Detection is entirely unproven — the spike rendered hardcoded data. M1's
+            judgement call (do 8 real repos produce cards worth looking at?) is the
+            largest remaining risk in the project.
+            Rule ladder still compresses on phones: 5u and 3u land at 1.46/0.88px.
+            Accepted, not solved. No ladder on 1200 units fixes it. (022)
+            Accent bar / header / footer / padding are coupled to the gutter label:
+            ~71u of chrome headroom before FRONTEND overlaps, and the failure is
+            silent. Nothing asserts it. (021, 004)
+            M2 sets the whole cache chain, not max-age alone — our edge s-maxage
+            dominates staleness, not Camo. (0013)
+            Commit Mono release OTFs crash satori; use the TTFs (015).
+            serverExternalPackages needed for satori AND resvg (016).
 ```
 
 ---
@@ -91,6 +109,32 @@ until step 7.
 All seven steps run, screenshots committed, measurements written into `GOTCHAS.md`, and a
 go/no-go recorded as ADR-0011.
 
+### Actual cost, against the 0.5-weekend estimate
+
+**~4h30m elapsed**, from the first code artifact (`lib/stack-map/types.ts`, 02:10) to the
+last evidence committed (step 7's screenshots, 06:41). Planning and the Part 1 document
+corrections came before that and are not timestamped, so the true figure is somewhat higher
+— call it under five hours.
+
+The estimate was 0.5 weekends, and a weekend here is 10–12 *focused* hours, so 5–6. That
+lands on target, but **two caveats matter more than the number** before it is used to
+estimate Milestone 1:
+
+- **Elapsed is not focused.** It includes a 25-minute idle-cold wait and two rounds of
+  waiting on device screenshots that no amount of preparation would have removed.
+- **This was an assisted session**, so the wall-clock figure is not a measure of human
+  effort and does not transfer cleanly to a milestone whose hard part is human judgement —
+  and Milestone 1's hard part is exactly that: deciding whether eight real repos produce
+  cards worth looking at. The curated map is the work the estimate should be built around,
+  not the code.
+
+**Then tear down.** Delete the throwaway repo, so dead card URLs don't sit in a public
+README and — the one that actually bites — so `/spike/ttl/card-dark.png` doesn't resolve as
+owner `spike`, repo `ttl` against the live GitHub API once Milestone 2 ships the real route.
+Add `spike` to the reserved-word deny list in Milestone 2 as well; one word, and it holds
+whether or not the deletion happened. The screenshots in `docs/spike/` are the durable
+record.
+
 ### Abandon-or-redesign criteria
 
 | Result | Verdict |
@@ -149,12 +193,19 @@ The real work. Still no UI.
 4. `app/api/resolve/route.ts`.
 5. `lib/cache.ts` — three key spaces, negative caching, `asOf` assignment on first write.
 6. Determinism test: render twice, assert byte equality, snapshot the hash.
+7. **Gutter-fit test.** For every layer in a rendered card, assert the band's rendered
+   height is at least the measured length of its rotated gutter label. ADR-0011 names the
+   accent bar, header, footer and padding as coupled to this, but a record does not stop
+   anyone — the failure is silent, because the label is absolutely positioned and overlaps
+   its neighbour while every overflow check still passes. Measure the label, do not hardcode
+   ~103: the number moves with the font, the size and the tracking.
 
 ### Definition of done
 
 - Both themed PNGs served from the real URL shape and cached.
 - Every failure path from the ARCHITECTURE.md table returns 200 with an error card.
 - Determinism test green.
+- Gutter-fit test green, including against the densest fixture.
 - Your own repo's badge works in your own README.
 
 ---
@@ -186,7 +237,7 @@ instructions. The page passes the quality floor in `DESIGN.md`. There is exactly
    unmapped-package frequency, the weekly embed-count script, Vercel Web Analytics, and
    `GET /api/stats` behind a secret. Budget: 1 hour. No dashboard.
 3. `README.md` finalised with real screenshots and real numbers.
-4. Deploy to `stackshot.<your-domain>`, badge in own README.
+4. Deploy to `stackshot.ilerioluwa.com`, badge in own README.
 5. `GOTCHAS.md` reviewed for writeup material.
 
 ### Definition of done

@@ -91,9 +91,19 @@ No third face. A mono is already present, so the data case is covered.
 
 ### Card scale
 
-All sizes are in the card's 1200-unit coordinate space. The card renders at 2× and is
-displayed around 600px wide, so **effective display size is roughly one quarter of the
-number below**. That is why everything is larger than it looks.
+All sizes are in the card's 1200-unit coordinate space. The card renders at 2×. **Measured
+display ratios, not estimated** — an earlier mnemonic here ("roughly one quarter of the
+number") was wrong by 2× and this project has been bitten by display-ratio arithmetic three
+times:
+
+| Surface | Card width | px per unit |
+|---|---|---|
+| Desktop README | ~1100px | 0.92 |
+| GitHub mobile web | ~380px | 0.32 |
+| GitHub iOS / Android app | ~350px | 0.29 |
+
+So a 30-unit item name is 27.5px on desktop and 8.75px in the apps. **The app column is the
+one that governs** — anything that must be read has to survive 0.29. See GOTCHAS 022.
 
 | Step | Use | Size | Weight | Line height | Tracking |
 |---|---|---|---|---|---|
@@ -113,6 +123,12 @@ is not.
 **40 past ~30**. Never truncate. A clipped repo name is worse than a small one — the name
 is the string a reader has to be able to trust. The boundaries are character counts against
 a proportional face, so check them against rendered width rather than the number.
+
+**`card/item` and `card/version` are the same weight**, so name-versus-version rests
+entirely on `ink` against `ink-muted`. That is contrast rather than stroke, and contrast is
+what survives downscaling. **Verified at step 7 on all five surfaces** — versions read as
+subordinate at 6.4px without reading as damaged. The `card/item` → 700 fallback is not
+needed and should not be reached for casually.
 
 ### Site scale
 
@@ -240,11 +256,20 @@ is physically beside the thing it labels.
 Everything else stays quiet: no icons, no logos, no decorative marks, no background
 texture, no second color.
 
-Satori supports `transform: rotate()`, but rotation inside a flex container is a known
-rough edge. **Milestone 0 must verify this renders correctly before anything else is
-built.** If it doesn't, the fallback is horizontal labels in the gutter set at 14 units,
-one letter per line — which is arguably more distinctive and should be prototyped
-alongside it.
+**Verified at Milestone 0 step 3: the rotated labels render correctly.** The signature
+stands as designed and the stacked-letter fallback is not needed. Evidence:
+`docs/spike/gutter-comparison.png`, both variants side by side.
+
+The implementation is not obvious and the shape matters, so it is pinned here: an
+absolutely positioned wrapper fills the band and centres its child; the label rotates about
+its **own centre**, which is what keeps the band height out of the problem. The label needs
+`whiteSpace: nowrap` and `flexShrink: 0` or it wraps inside the 72-unit gutter before it is
+ever rotated. See GOTCHAS 004.
+
+**Band height is constrained by the longest label, not only by content.** FRONTEND is 102.4
+units rotated, against a band floor of 120. Any redesign that shrinks bands below ~110 —
+including this doc's own "3 layers × 4 items" fallback — breaks the gutter, and it will
+look like a rotation bug rather than a spacing one.
 
 ---
 
@@ -276,7 +301,7 @@ alongside it.
 │  │ R  ↑ │  pnpm    Vitest    ESLint    +4 more             │   │
 │  │      │                                                  │   │
 │  └──────┴──────────────────────────────────────────────────┘   │
-│  stackshot.<your-domain>            stack as of 2026-03-14     │  footer 56u
+│  stackshot.ilerioluwa.com            stack as of 2026-03-14     │  footer 56u
 └────────────────────────────────────────────────────────────────┘  3u ink border, r2
 ```
 
@@ -286,6 +311,12 @@ Rules:
   carries meaning — see COLOR.
 - **Empty layers are omitted entirely**, and the remaining bands expand to fill. A frontend
   library with no backend shows two bands, not two bands and two blanks.
+- **Band `minHeight` is 120, and it is load-bearing for two independent reasons.** It holds
+  two wrapped lines of `card/item` plus 24/24 padding (114, rounded up), *and* it clears the
+  longest rotated gutter label — FRONTEND needs ~103 units, measured, leaving 17 to spare.
+  Shrinking bands below ~110 breaks the gutter, and the failure presents as a rotation bug
+  rather than a spacing one. Anything that reduces this number has to satisfy both
+  constraints, not the one that prompted the change. See GOTCHAS 004.
 - **Maximum 4 layers, maximum 6 items per layer.** Overflow renders as `+N more` in
   `ink-muted`. There is no scroll, no second page, no shrink-to-fit.
 - **Items are name plus version inline**, version in `ink-muted`. Major version only:
