@@ -6,7 +6,7 @@ cannot be re-derived once the README is gone, which is why they are written down
 
 Raw logs from those measurements are in `logs/`.
 
-Production domain: https://stackshot-spike.vercel.app
+Production domain: https://stackshot-spike.vercel.app   (deleted)
 Spike repo:        https://github.com/cybprom/stackshot-spike
 Vercel project:    cybproms-projects/stackshot-spike (no Git integration until M2)
 

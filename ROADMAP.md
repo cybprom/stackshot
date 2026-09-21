@@ -19,10 +19,7 @@ Last done:  MILESTONE 0 COMPLETE and torn down. Seven steps, ADR-0011 records GO
 Next:       Milestone 1 step 1 — lib/github/ client with the budget counter,
             recursive tree call, raw fetch at pinned SHA. Commit at the end of
             EVERY step from here, not the end of the milestone.
-Open:       OUTSIDE THE REPO, still to do by hand: delete github.com/cybprom/
-            stackshot-spike and its Vercel project (cybproms-projects/
-            stackshot-spike). Until then the spike README carries live card URLs.
-            Detection is entirely unproven — the spike rendered hardcoded data.
+Open:       Detection is entirely unproven — the spike rendered hardcoded data.
             M1's judgement call (do 8 real repos produce cards worth looking at?)
             is the largest remaining risk in the project.
             Rule ladder still compresses on phones: 5u and 3u land at 1.46/0.88px.
@@ -170,8 +167,8 @@ The real work. Still no UI.
 4. `lib/normalize.ts` — deny, drop-unmapped, suppress, version-coerce, rank, slice.
 5. Record fixtures from 8 real repos into `tests/fixtures/`, including at least one pnpm
    monorepo, one Go repo, one Python repo, one Rust repo, and one repo with no manifest.
-   Include **`Grandbusta/spyde`** — recorded API responses only, nothing is ever embedded
-   in that repo. It earns a slot by differing from the rest of the set on four axes at
+   Include **`Grandbusta/spyde`** — **someone else's repo**, not the author's. Recorded
+   API responses only; nothing is ever embedded in it and it is never a deploy target. It earns a slot by differing from the rest of the set on four axes at
    once: a published npm package on `package-lock.json` rather than pnpm, exactly one
    runtime dependency, a docs-site build sitting alongside the library, and both workflows
    and examples in the tree. A one-dependency repo is also the sparsest card the layout has

@@ -84,9 +84,10 @@ both stand as written.
 
 ## Teardown, owed by this decision
 
-Delete `github.com/cybprom/stackshot-spike` and its Vercel project. Add `spike` to the
-reserved-word deny list in Milestone 2 regardless, so `/spike/ttl/card-dark.png` can never
-resolve as owner `spike` against the live API.
+`github.com/cybprom/stackshot-spike` and its Vercel project are **deleted**. Add `spike` to
+the reserved-word deny list in Milestone 2 regardless, so `/spike/ttl/card-dark.png` can
+never resolve as owner `spike` against the live API — the deny list is what holds once the
+repo is gone and nobody remembers why the path mattered.
 
 In the codebase, remove `lib/render/crude-card.tsx`, `scripts/spike-render.ts`,
 `scripts/spike-gutter.tsx` and the `spike/*` pins from the card route. Those existed only
