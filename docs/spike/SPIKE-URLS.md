@@ -1,8 +1,10 @@
 # Spike URLs — Milestone 0
 
-Deleted at teardown with the throwaway repo. Recorded here because a context
-clear loses them and Camo URLs cannot be re-derived without re-reading the
-rendered README HTML.
+**The repo, the Vercel project and every URL below are deleted.** This file is a
+record of what the measurements ran against, not a set of live links. Camo URLs
+cannot be re-derived once the README is gone, which is why they are written down.
+
+Raw logs from those measurements are in `logs/`.
 
 Production domain: https://stackshot-spike.vercel.app
 Spike repo:        https://github.com/cybprom/stackshot-spike
