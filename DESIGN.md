@@ -57,6 +57,13 @@ on the site.
 - Designer: Eigil Nikolajsen. Distributed at commitmono.com and on GitHub.
 - Licence: SIL Open Font License 1.1. **Verify the `LICENSE` file in the downloaded
   release before shipping and commit a copy to `public/fonts/`.** Do not rely on this doc.
+- **Ships 400 and 700 only, and the scale is built on that.** The release carries no 500 or
+  600; those weights exist only as source files in the upstream repo. An earlier draft of
+  the table asked for 400/500/600 and that was wrong for a second reason anyway — adjacent
+  mono weights are invisible at the display ratio, the same failure as the rule ladder.
+  Do not "restore" them. See GOTCHAS 014.
+- **Take the TTFs, not the OTFs.** The release OTFs carry an `ltag` table that Satori
+  cannot parse. See GOTCHAS 015.
 - Why: a monospace at small sizes reads as *machine-generated on purpose*, which is the
   genre. It also solves a real problem — version strings and package names align into
   columns for free, which is what makes the card scannable at 600px.
@@ -92,10 +99,10 @@ number below**. That is why everything is larger than it looks.
 |---|---|---|---|---|---|
 | `card/display` | Repo name | 64 | Archivo 600 | 1.00 | -0.02em |
 | `card/owner` | Owner, above repo name | 24 | Mono 400 | 1.20 | 0.00em |
-| `card/item` | Package name | 30 | Mono 500 | 1.10 | -0.01em |
+| `card/item` | Package name | 30 | Mono 400 | 1.10 | -0.01em |
 | `card/version` | Version, after name | 22 | Mono 400 | 1.10 | 0.00em |
 | `card/overflow` | "+7 more" | 22 | Mono 400 | 1.10 | 0.02em |
-| `card/gutter` | Rotated layer label | 18 | Mono 600 | 1.00 | 0.18em |
+| `card/gutter` | Rotated layer label | 18 | Mono 700 | 1.00 | 0.18em |
 | `card/meta` | Footer | 16 | Mono 400 | 1.20 | 0.04em |
 
 Tracking tightens monotonically as size increases: 0.18 → 0.04 → 0.02 → 0.00 → -0.01 →

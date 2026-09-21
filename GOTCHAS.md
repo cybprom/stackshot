@@ -201,6 +201,140 @@ from eight steps to seven because of it.
 The general shape, worth keeping: **some measurements need a population before they mean
 anything, and no amount of care in the instrument substitutes for one.**
 
+## 014 — The type scale had the same subpixel defect as the rule ladder
+**Date:** 2026-09-21 · **Cost:** ~0h, caught during the font audit · **Status:** confirmed
+**Writeup material:** yes — 012's sibling, and the pair is the better story
+
+DESIGN.md's card scale specified Commit Mono at 400, 500 and 600: `card/item` at 500,
+`card/gutter` at 600, everything else 400. Three weights, a considered ladder.
+
+Two things were wrong with it, and only one was the one we went looking for.
+
+**The one we expected.** Commit Mono's release ships 400 and 700. There is no 500 or 700-
+adjacent middle; the 25-step weights (200…700) exist only as source files in the upstream
+repo. Satori does not synthesize weights — it uses whatever weight you declare for a file —
+so asking for 500 with only 400 registered silently renders 400. Three type steps would
+have collapsed into one with no error anywhere.
+
+**The one that mattered more.** Even with all three weights available — they load fine and
+Satori does render them distinctly, we checked — adjacent mono weights are invisible at
+this card's display ratio. Same arithmetic as 012: 1200 units shown at ~600px is 0.5px per
+unit, and the stroke difference between mono 400 and 500 on a 30-unit glyph does not
+survive that. It is a distinction that exists in the source and not on the screen.
+
+Fix: **fewer steps, not different ones.** `card/item` 500 → 400, `card/gutter` 600 → 700,
+two faces total. The gutter labels were never relying on weight anyway — rotation, position,
+0.18em tracking and being the only all-caps on the card are four separate signals already,
+and weight was the fifth.
+
+The general shape, which is the half worth writing up: **a spec can be internally coherent
+and still describe distinctions the medium cannot render.** Both defects were found with a
+calculator, one section apart, and both fixes removed something rather than adding it.
+
+Open risk carried to step 7: `card/item` and `card/version` are now the same weight, so
+name-versus-version rests entirely on `ink` / `ink-muted`. If that reads weak on the real
+card, `card/item` goes to 700 and versions stay at 400 — still two weights.
+
+## 015 — Commit Mono's release OTFs crash Satori; the TTFs in the same zip are fine
+**Date:** 2026-09-21 · **Cost:** ~0.5h · **Status:** resolved
+**Writeup material:** yes — short, concrete, the kind of thing nobody documents
+
+`CommitMono-1.143.zip` contains OTFs at the top level and TTFs in a `ttfautohint/`
+subdirectory. Loading a release **OTF** into Satori 0.33.4 throws:
+
+```
+ltagTable is not defined
+```
+
+The release OTFs carry an `ltag` table (a Apple-style language-tag table). Satori's font
+parsing is opentype.js-derived and references `ltagTable` in a scope where it isn't
+defined, so the parse dies before any rendering happens. The TTFs in the same archive have
+no `ltag` table and load without complaint, as do the upstream repo's source OTFs and both
+Archivo TTFs.
+
+The trap is that the OTFs are the obvious choice — top level of the zip, and OTF is the
+more "professional-sounding" format. The working files are one directory down under a name
+that reads like a build artifact.
+
+Fix: ship `ttfautohint/CommitMono-400-Regular.ttf` and `-700-Regular.ttf`. Recorded here
+rather than worked around, because the error message names an internal variable and
+nothing else, and the next person to hit it will search for exactly that string.
+
+Also worth knowing for GOTCHAS 003's neighbourhood: this is a second format trap in the
+same area. 003 says Satori cannot load WOFF2. This says it cannot load *these* OTFs either.
+"Satori accepts TTF, OTF and WOFF" is true as a statement about formats and insufficient as
+a statement about files.
+
+## 016 — The resvg failure was the bundler, not pnpm — and CLAUDE.md predicted the wrong fix
+**Date:** 2026-09-21 · **Cost:** ~0.5h · **Status:** resolved
+**Writeup material:** yes — a correct prediction pointed at the wrong cause
+
+`CLAUDE.md` warned that pnpm's strict linking would trip `@resvg/resvg-js` because it is a
+native binary, and pre-authorized `node-linker=hoisted` in `.npmrc` as the escape hatch.
+The package did fail. The diagnosis was wrong and the escape hatch would not have helped.
+
+Under pnpm, resolution worked fine: a plain `node` import and a `tsx` script both loaded
+resvg and rendered a PNG on the first try. It broke only inside a Next route handler:
+
+```
+Error: could not resolve "@resvg/resvg-js-darwin-arm64" into a module
+Aborted(ENOENT: ... '/ROOT/node_modules/.pnpm/harfbuzzjs@0.10.0/node_modules/harfbuzzjs/hb.wasm')
+```
+
+Two packages, one cause: **Turbopack bundles route-handler dependencies by default**, and
+both ship a non-JS asset that bundling relocates — resvg a platform-specific `.node`
+binary, satori a harfbuzz `.wasm`. The `/ROOT/` prefix in the path is the tell: that is a
+bundler-rewritten path, not a filesystem one. Nothing to do with the module layout on disk.
+
+Fix is one line in `next.config.ts`:
+
+```ts
+serverExternalPackages: ["@resvg/resvg-js", "satori"],
+```
+
+Two things worth keeping from this. **Satori needed it too** — the warning named only
+resvg, because "native binary" was the mental model and satori looks like pure JS. The
+actual predicate is "ships an asset that isn't JavaScript", which catches both. And the
+failure is runtime, not build: `tsc`, `eslint` and the dev server's own startup were all
+clean, and the route returned 500 only when requested.
+
+`.npmrc` was not touched and `node-linker=hoisted` was not needed. Leaving CLAUDE.md's
+warning in place — it pointed at the right package for the wrong reason, and the next
+native dependency may genuinely need it.
+
+## 017 — The renderer was byte-identical across two execution paths on the first try
+**Date:** 2026-09-21 · **Cost:** — · **Status:** confirmed
+**Writeup material:** yes — the one place the architecture paid off immediately
+
+Invariant I2 says the renderer is pure: same `(StackDoc, theme)`, same bytes. The test that
+proves it belongs to Milestone 2. It happened to hold on day one, and the evidence is worth
+keeping rather than re-deriving later.
+
+The same crude card rendered through two unrelated paths — a `tsx` script calling
+`renderToPng` directly, and a Next route handler under Turbopack with `satori` and
+`@resvg/resvg-js` marked external — produced identical bytes. Not similar sizes, identical
+sha256.
+
+Baselines from the crude renderer, Satori 0.33.4 + resvg-js 2.6.2, 2× zoom, 2400×1600:
+
+```
+crude-light-v1.png  81f24637d56c909ee7220d67830f33ffad35587837a9c6975b75fe3c8addd7e3
+crude-light-v2.png  929bf813598d729d2a4a5e9bdda04cd52a6dfa66efa150aa8a693452450e1c43
+crude-dark-v1.png   b022c1438c04eb22aa7f7f7ab526dc6ce2c629f52566ce5377eb0dcb09adb829
+crude-dark-v2.png   b1e5ae26889e88b7dbece1c84b1be78253dd3eb5e754b4bbc1f5cba202360e84
+```
+
+These are the crude card, so they are not the determinism test's snapshot — that one
+snapshots the real card from a `StackDoc`. They are the baseline for a narrower question:
+whether a toolchain change moved the bytes. If a Satori or resvg upgrade, a font swap, or
+a bundler setting changes these four hashes, the renderer stopped being the function it
+was, and that is worth knowing before it reaches the real card.
+
+Mildly surprising that it held across the bundler boundary at all, given GOTCHAS 016 —
+`serverExternalPackages` does not merely make the packages load, it makes them load the
+*same* code the script does. Had Turbopack bundled a different build of either library, the
+bytes could have diverged while both paths still "worked".
+
 
 ---
 

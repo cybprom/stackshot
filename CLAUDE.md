@@ -39,6 +39,10 @@ that assume a flat `node_modules`. `@resvg/resvg-js` is a native binary and is t
 candidate. If it fails to resolve, the escape hatch is `node-linker=hoisted` in `.npmrc` —
 and it gets a `GOTCHAS.md` entry, because it is exactly the kind of thing worth recording.
 
+The trigger to watch for is **"ships a non-JS asset"** — a `.node` binary, a `.wasm`,
+anything Turbopack relocates when it bundles — not "native binary". That reframe also
+catches `satori`, which is pure JS and still broke. See GOTCHAS 016.
+
 Not used in this project, despite being in the author's usual toolkit: TanStack Query,
 Zustand, Socket.IO, Framer Motion. There is no client state worth a store, no realtime,
 and motion is limited enough for CSS transitions. Do not introduce them.
