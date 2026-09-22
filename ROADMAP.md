@@ -171,6 +171,9 @@ The real work. Still no UI.
 4. `lib/normalize.ts` — deny, drop-unmapped, suppress, version-coerce, rank, slice.
 5. Record fixtures from 8 real repos into `tests/fixtures/`, including at least one pnpm
    monorepo, one Go repo, one Python repo, one Rust repo, and one repo with no manifest.
+   Include **`vercel/next.js`**: it's the test for GOTCHAS 024's tie-break, since the
+   current path order likely gives `packages/next` no slot. Decide the size-based tie-break
+   against its real card.
    Include **`Grandbusta/spyde`** — **someone else's repo**, not the author's. Recorded
    API responses only; nothing is ever embedded in it and it is never a deploy target. It earns a slot by differing from the rest of the set on four axes at
    once: a published npm package on `package-lock.json` rather than pnpm, exactly one

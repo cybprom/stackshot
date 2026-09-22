@@ -677,29 +677,54 @@ vercel/next.js, four demo apps from `examples/`, because `examples/` sorts befor
 Next.js. Fix: skip any path with a directory segment in a deny list (`examples`, `test`,
 `fixtures`, `e2e`, `demo`, `templates`, `vendor`, …). There's a Next.js-shaped table case
 in `tests/tree.test.ts`. `docs/` is deliberately still allowed. spyde's docs site is the
-first test of whether that reads as noise, and real Next.js fixtures confirm the rest in
-step 5.
+first test of whether that reads as noise.
+
+**The fix is only half the problem: the tie-break is still wrong.** With `examples/` gone,
+the four remaining slots go to the first four `packages/*` by path: `create-next-app`,
+`eslint-config-next`, `eslint-plugin-next`, `font`… `packages/next` itself sorts late and
+very likely gets no slot. The table case passes only because its input has four packages.
+**Candidate fix, not applied:** among equal-depth candidates, prefer the larger blob `size`
+from the tree entry, which we already have from call 2, before falling back to path. The
+real package tends to have the largest manifest. Step 5 decides this with the real card:
+vercel/next.js must be in its fixture set.
 
 Small related surprise: in code-unit order `packages/next-swc/` sorts *before*
 `packages/next/`, because `-` (0x2D) < `/` (0x2F). I got it wrong in the test expectation
 first. The code sorts by code unit on purpose, since `localeCompare` would vary by host.
 
-## 025 — `/rate_limit` reported zero usage while the headers showed 20+
-**Date:** 2026-09-22 · **Cost:** ~0.15h · **Status:** confirmed
+## 025 — `/rate_limit` reported zero usage while the headers showed it climbing
+**Date:** 2026-09-22 · **Cost:** ~0.4h, including the recheck · **Status:** confirmed
 **Writeup material:** maybe
 
 The plan was to measure the GraphQL and REST buckets by snapshotting `GET /rate_limit`
-before and after. Throughout, its body said `core used 0 / remaining 5000` and
-`graphql used 0 / remaining 5000`. The `x-ratelimit-*` headers on the real responses said
-`core used 20→22` and `graphql used 5, cost 1`, and they moved as expected. Cross-checking
-with the headers is the only reason the measurement means anything.
+before and after. Its body said `used 0` throughout, while the `x-ratelimit-*` headers on
+real responses moved as expected.
 
-Measured, from headers: GraphQL is its own bucket (`x-ratelimit-resource: graphql`, 5000,
-our query costs 1). The tree call is `core`. A cold resolve is 1 + 1, which roughly doubles
-ADR-0010's ceiling. Consequence for M4: the global budget guard must read response headers,
-or `rateLimit { remaining }` from call 1, never `/rate_limit`. Not investigated why
-`/rate_limit` disagrees. It may lag, or it may count per-token differently; for our
-purposes it doesn't matter.
+**Rechecked for a bucket mix-up, and it isn't one.** Each response's
+`x-ratelimit-resource` was compared against the matching `/rate_limit` key:
+
+```
+REST tree x3      resource=core     used 6 -> 7 -> 8     /rate_limit core.used     0
+GraphQL x3        resource=graphql  used 3 -> 4 -> 5     /rate_limit graphql.used  0
+/repos, seconds after a /rate_limit call    core used 9  /rate_limit core.used     0
+```
+
+- `/rate_limit`'s own response headers also say `core used 0`.
+- The response is `cache-control: no-cache` with no ETag, and it still reads 0 with a
+  cache-busting query string, so it isn't a cached response.
+- The token is a classic PAT with `x-oauth-scopes: ''`.
+- The two sources give different `reset` timestamps, as if `/rate_limit` were reporting a
+  different or fresh window. That part is not explained.
+
+**Measured, from headers:**
+- GraphQL is its own bucket (`x-ratelimit-resource: graphql`, 5000 points, and our query
+  costs 1).
+- The tree call is `core`.
+- A cold resolve is 1 + 1, which roughly doubles ADR-0010's ceiling.
+
+**Consequence for M4:** the global budget guard reads response headers, or
+`rateLimit { remaining }` from call 1, never `/rate_limit`. That would be right even if
+`/rate_limit` were accurate, because it saves a request.
 
 ---
 
