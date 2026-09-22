@@ -12,6 +12,7 @@ exports[`detect over each fixture repo > Grandbusta__spyde 1`] = `
   "npm:pdfkit@^0.20.2",
   "npm:typescript@^7.0.2",
   "npm:vitepress@^1.6.3",
+  "tool:github-actions",
   "tool:node@>=20",
   "tool:npm",
 ]
@@ -247,6 +248,8 @@ exports[`detect over each fixture repo > astral-sh__uv 1`] = `
   "pypi:ty@>=0.0.69",
   "pypi:typos@>=1.49.0",
   "pypi:validate-pyproject@>=0.25",
+  "tool:docker",
+  "tool:github-actions",
   "tool:python@>=3.8",
   "tool:rust",
   "tool:rust@1.96.0",
@@ -330,6 +333,7 @@ exports[`detect over each fixture repo > fastapi__full-stack-fastapi-template 1`
   "pypi:typer@>=0.27.1,<1.0.0",
   "pypi:zizmor@>=1.29.0",
   "tool:bun",
+  "tool:github-actions",
   "tool:python@>=3.14,<4.0",
   "tool:uv",
 ]
@@ -338,6 +342,7 @@ exports[`detect over each fixture repo > fastapi__full-stack-fastapi-template 1`
 exports[`detect over each fixture repo > github__gitignore 1`] = `
 [
   "action:actions/stale",
+  "tool:github-actions",
 ]
 `;
 
@@ -359,6 +364,7 @@ exports[`detect over each fixture repo > laravel__laravel 1`] = `
   "npm:laravel-vite-plugin@^3.1",
   "npm:tailwindcss@^4.0.0",
   "npm:vite@^8.0.0",
+  "tool:github-actions",
   "tool:php@^8.3",
 ]
 `;
@@ -695,6 +701,8 @@ exports[`detect over each fixture repo > mastodon__mastodon 1`] = `
   "npm:vitest@4.1.11",
   "npm:wicg-inert@3.1.3",
   "npm:ws@8.21.3",
+  "tool:docker",
+  "tool:github-actions",
   "tool:node@>=22",
   "tool:ruby@>= 3.3.0",
   "tool:yarn",
@@ -732,6 +740,7 @@ exports[`detect over each fixture repo > pocketbase__pocketbase 1`] = `
   "npm:leaflet@^1.9.4",
   "npm:pocketbase@^0.28.1",
   "npm:vite@^8.0.0",
+  "tool:github-actions",
   "tool:go@1.27",
 ]
 `;
@@ -1064,6 +1073,7 @@ exports[`detect over each fixture repo > vercel__next.js 1`] = `
   "npm:whatwg-fetch@3.0.0",
   "npm:ws@8.2.3",
   "npm:yargs@16.2.0",
+  "tool:github-actions",
   "tool:lerna",
   "tool:node@>=20.9.0",
   "tool:pnpm",

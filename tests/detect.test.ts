@@ -73,7 +73,7 @@ describe("detectors against recorded manifests", () => {
   it("gives manifests confidence 2 and Docker/CI signals confidence 1", () => {
     const signals = detect(recordedManifests("mastodon__mastodon"), []);
     for (const s of signals) {
-      const inferred = s.id.startsWith("docker:") || s.id.startsWith("action:");
+      const inferred = /^(docker:|action:|tool:docker$|tool:github-actions$)/.test(s.id);
       expect(s.confidence).toBe(inferred ? 1 : 2);
     }
   });
@@ -147,10 +147,10 @@ const EDGE: EdgeCase[] = [
       "FROM gcr.io/distroless/static:${TAG}",
       "FROM scratch",
     ].join("\n"),
-    ["docker:golang@1.23-alpine", "docker:gcr.io/distroless/static"]],
+    ["tool:docker", "docker:golang@1.23-alpine", "docker:gcr.io/distroless/static"]],
   ["compose: ${VAR:-default} and quoted images", detectDocker, "docker-compose.yml",
     'services:\n  db:\n    image: "postgres:${PG:-16}"\n  cache:\n    image: redis\n',
-    ["docker:postgres@16", "docker:redis"]],
+    ["tool:docker", "docker:postgres@16", "docker:redis"]],
   ["workflow: local actions, docker://, subpath actions, services", detectWorkflows, ".github/workflows/ci.yml",
     [
       "    steps:",
@@ -162,7 +162,7 @@ const EDGE: EdgeCase[] = [
       "      db:",
       "        image: postgres:16",
     ].join("\n"),
-    ["docker:alpine@3.20", "action:github/codeql-action", "docker:node@22", "docker:postgres@16"]],
+    ["tool:github-actions", "docker:alpine@3.20", "action:github/codeql-action", "docker:node@22", "docker:postgres@16"]],
 ];
 
 describe("detector edge cases", () => {
@@ -224,6 +224,6 @@ describe("detect over each fixture repo", () => {
   it("finds only CI signals in github/gitignore", () => {
     const signals = detect(recordedManifests("github__gitignore"), recordedRootPaths("github__gitignore"));
     expect(signals.length).toBeGreaterThan(0);
-    expect(signals.every((s) => s.id.startsWith("action:"))).toBe(true);
+    expect(signals.every((s) => s.id.startsWith("action:") || s.id === "tool:github-actions")).toBe(true);
   });
 });

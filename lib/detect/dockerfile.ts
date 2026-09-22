@@ -9,7 +9,9 @@ const COMPOSE = /^(docker-)?compose\.ya?ml$/;
 
 /** Every base image in a Dockerfile, or every `image:` in a compose file. ADR-0015. */
 export function detectDocker(contents: string, path: string): RawSignal[] {
-  return COMPOSE.test(basename(path)) ? fromCompose(contents, path) : fromDockerfile(contents, path);
+  const images = COMPOSE.test(basename(path)) ? fromCompose(contents, path) : fromDockerfile(contents, path);
+  // The file's existence is the "uses Docker" signal; the images are what it runs.
+  return [signal("tool", "docker", path, 1), ...images];
 }
 
 function fromDockerfile(contents: string, path: string): RawSignal[] {

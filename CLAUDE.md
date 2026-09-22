@@ -142,7 +142,8 @@ lib/
     index.ts                     orchestrates -> RawSignal[]
   stack-map/
     entries/*.ts                 the curated data, split by category
-    index.ts                     assembled map + lookup
+    deny.ts                      known noise, namespaced globs, never logged
+    index.ts                     assembled map + lookup (exact alias, then longest prefix)
     types.ts
   normalize.ts                   RawSignal[] -> StackDoc
   hash.ts                        stable stringify + sha256

@@ -208,7 +208,9 @@ generically.** Every image and action is emitted, and the map decides what rende
 (ADR-0015). `FROM node:22` → `docker:node@22`. `image: docker.io/library/postgres:16` →
 `docker:postgres@16`. `uses: actions/setup-go@v5` → `action:actions/setup-go`, with no
 version, because the ref is the action's. Dockerfile ARG defaults are substituted
-before matching.
+before matching. Each Dockerfile, compose file and workflow also emits one `tool:docker` or
+`tool:github-actions`, which is the "uses Docker" or "uses Actions" fact the card shows
+(ADR-0016).
 
 **Tooling from paths.** `lib/detect/paths.ts` turns *root* monorepo configs and lockfiles
 into `tool:` signals by presence alone, without opening them. Root only: nested lockfiles

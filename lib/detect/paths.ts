@@ -15,6 +15,8 @@ const ROOT_FILES: Record<string, string> = {
   "bun.lockb": "bun",
   "poetry.lock": "poetry",
   "uv.lock": "uv",
+  "deno.json": "deno",
+  "deno.jsonc": "deno",
 };
 
 /** Tooling signals from which root files exist. The one detector that takes paths. */

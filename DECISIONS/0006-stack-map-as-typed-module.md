@@ -1,6 +1,7 @@
 # ADR-0006: The stack map is a typed TS module in the repo, maintained by PR
 
 **Status:** Accepted
+**Amended by:** ADR-0016 (v1 is sized to each ecosystem's head, 223 entries, not ~120)
 **Date:** 2026-09-21
 
 ## Context

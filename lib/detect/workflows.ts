@@ -7,13 +7,14 @@ const IMAGE = /^\s*(?:-\s*)?(?:image|container):\s*["']?([^"'\s#{]+)/;
 
 /** Every `uses:` action and every container image. No YAML semantics. ADR-0015. */
 export function detectWorkflows(contents: string, path: string): RawSignal[] {
-  return contents.split("\n").flatMap((line) => {
+  const steps = contents.split("\n").flatMap((line) => {
     const uses = line.match(USES)?.[1];
     if (uses?.startsWith("docker://")) return imageSignal(uses.slice("docker://".length), path);
     if (uses) return actionSignal(uses, path);
     const image = line.match(IMAGE)?.[1];
     return image ? imageSignal(image, path) : [];
   });
+  return [signal("tool", "github-actions", path, 1), ...steps];
 }
 
 // `github/codeql-action/init@<sha>` → action:github/codeql-action. The ref is the

@@ -1,5 +1,24 @@
 export type Category = "frontend" | "backend" | "infra" | "tooling";
 
+// Signal id namespaces, "<ecosystem>:<name>". ADR-0015.
+export const ECOSYSTEMS = ["npm", "pypi", "go", "cargo", "gem", "composer", "docker", "action", "tool"] as const;
+export type Ecosystem = (typeof ECOSYSTEMS)[number];
+
+export type MapEntry = {
+  // Bare and kebab-case: "next", "postgres". Never namespaced.
+  id: string;
+  display: string;
+  category: Category;
+  // Rank within the layer. 90+ defines the project, 70s core, 50s notable, below 40 filler.
+  weight: number;
+  // One line, site only. ADR-0009.
+  description: string;
+  // Namespaced signal ids that resolve here. A trailing * matches a prefix.
+  aliases: string[];
+  // Entry ids this one makes redundant on the card.
+  suppresses?: string[];
+};
+
 export type RawSignal = {
   // "<ecosystem>:<name>", e.g. "npm:next", "docker:postgres". ADR-0015.
   id: string;

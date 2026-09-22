@@ -7,21 +7,25 @@ it is the only thing that survives one.*
 
 ```
 Milestone:  1 — resolver and stack map (Milestone 0 complete, tagged m0-spike)
-Last done:  M1 STEP 2 — lib/detect/ done and committed. One pure module per
-            manifest + paths.ts (root lockfiles/monorepo configs by presence).
-            Ids namespaced npm:/pypi:/go:/cargo:/gem:/composer:/docker:/
-            action:/tool: (ADR-0015); map ids stay bare, aliases namespaced.
-            Docker/CI extracted generically; ARG defaults substituted (028).
-            Also this session: nested language manifests now selected (026);
-            9 real fixture repos recorded, large trees reduced + guarded.
-            107 tests, detect snapshot per fixture, no network.
-Next:       Milestone 1 step 3 — lib/stack-map/: ~120 entries (id, display,
-            category, weight, description, suppresses, aliases as namespaced
-            signal ids) + namespaced deny list + map integrity test (also:
-            every alias has a known namespace). Use the detect snapshots in
-            tests/__snapshots__/ as the list of what real repos emit.
-Open:       GOTCHAS 024: selection tie-break — next.js gives packages/next no
-            slot. Two candidates recorded; step 5 decides against the fixture.
+Last done:  M1 STEP 3 — lib/stack-map/ done and committed. 223 entries
+            (59 frontend / 90 backend / 21 infra / 53 tooling) sized to each
+            ecosystem's head, not ~120 (ADR-0016). Aliases are namespaced ids
+            or trailing-* prefixes; exact wins, then longest prefix. Deny list
+            is namespaced globs, never logged. Integrity test + per-fixture
+            "important signals are mapped" test. Detectors now also emit
+            tool:docker / tool:github-actions (029). Selection: dot-dirs out of
+            the nested pool; fixtures asserted to match current selection.
+            367 tests, no network.
+Next:       Milestone 1 step 4 — lib/normalize.ts: deny, drop-unmapped (log),
+            suppress, version-coerce (ADR-0008; Docker tags like 24-trixie-slim,
+            Python specs like ">=3.14,<4.0", Go v1.2.3), rank by weight then
+            confidence then id, slice to 6 + overflow. Merge versions when
+            several signals map to one entry (tool:node >=20 vs docker:node 24).
+            Extend budget.test.ts to the full resolver. Snapshot per fixture.
+Open:       GOTCHAS 024: packages/next loses on depth to rspack/ and apps/.
+            Step 5 compares depth-then-size, size-first, one-per-ecosystem.
+            ADR-0016: next.js maps Firebase/Datadog/Emotion from root devDeps —
+            mapped isn't worth showing; normalize/step 5 must rank it out.
             GOTCHAS 027: 4s deadline failed locally on next.js/mastodon trees;
             measure from Vercel in M2 before trusting it.
             GraphQL is its own 5000-point bucket; cold resolve = 1 core + 1

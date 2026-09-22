@@ -801,6 +801,24 @@ showed laravel's `uses: laravel/.github/.github/workflows/…@main`, which is a 
 workflow, not an action. Both were caught by reading the detector output over the fixture
 set before writing assertions, not by the edge-case tables I'd planned.
 
+## 029 — The first map pass against the fixtures found gaps no snapshot could show
+**Date:** 2026-09-22 · **Cost:** ~0.3h · **Status:** resolved
+**Writeup material:** maybe — "what the card needs" isn't "what the manifests say"
+
+Two gaps, both found by checking each fixture's card-to-be rather than its signal list:
+
+- **Nothing emitted "uses Docker" or "uses GitHub Actions".** DESIGN.md's card shows both
+  as items, but the detectors emitted only *which* images and *which* actions. The fact of
+  using them was never a signal. Now each Dockerfile, compose file and workflow emits
+  `tool:docker` or `tool:github-actions` (ADR-0016). With CI plumbing like
+  `actions/checkout` denied, that's the only way GitHub Actions reaches a card at all.
+- **spyde's most important item was long tail.** Its only runtime dependency is
+  `pdfkit`. A map built from "what most projects use" leaves the sparsest card in the set
+  without the one thing the library is *about*. PDFKit and Puppeteer are now mapped.
+  That's defensible as head (PDF generation is a common app concern), but the general
+  lesson for step 5 stands: a one-dependency repo's one dependency is probably the thing
+  that defines it.
+
 ---
 
 *New entries go above this line as they happen.*
