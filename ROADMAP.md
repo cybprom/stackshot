@@ -206,6 +206,8 @@ The real work. Still no UI.
    the bug counter when the counters are built in M4.
 4. `app/api/resolve/route.ts`.
 5. `lib/cache.ts` — three key spaces, negative caching, `asOf` assignment on first write.
+   **Also measure resolve latency from the deployed function** on vercel/next.js and
+   mastodon/mastodon before trusting the 4s deadline (GOTCHAS 027).
 6. Determinism test: render twice, assert byte equality, snapshot the hash.
 7. **Gutter-fit test.** For every layer in a rendered card, assert the band's rendered
    height is at least the measured length of its rotated gutter label. ADR-0011 names the

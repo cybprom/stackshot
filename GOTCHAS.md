@@ -693,6 +693,12 @@ the remaining slots by depth. This guarantees a nested `go.mod` a slot even when
 shallower `package.json` files compete. It matters now that nested language manifests share
 the pool (026). The two candidates compose: ecosystem-first, then size, then path.
 
+**Confirmed on the real tree, 2026-09-22, and worse than predicted.** vercel/next.js at
+`86d3d61` selects `package.json, Cargo.toml, .github/workflows/automated_code_review.yml,
+.github/package.json, rspack/Cargo.toml, rspack/package.json`. `packages/*` never gets
+a slot: `.github/package.json` and `rspack/` are shallower. The fixture is committed, so
+step 5 can test either candidate against it.
+
 Small related surprise: in code-unit order `packages/next-swc/` sorts *before*
 `packages/next/`, because `-` (0x2D) < `/` (0x2F). I got it wrong in the test expectation
 first. The code sorts by code unit on purpose, since `localeCompare` would vary by host.
@@ -744,6 +750,36 @@ picking step 5's fixtures, when the list itself exposed it. Fix: nested language
 join the nested `package.json` pool, with the same depth order and the same deny list.
 There's a table case shaped like that repo in `tests/tree.test.ts`. The fairness of that
 shared pool is 024's open question.
+
+## 027 — The 4s resolve deadline fails on the repos people will try first, at least from here
+**Date:** 2026-09-22 · **Cost:** ~0.3h · **Status:** open — measure from Vercel in M2
+**Writeup material:** yes, if the Vercel numbers tell the same story
+
+Recording fixtures under the production timeouts (2.5s per fetch, 4s deadline) failed on
+exactly the repos a stranger would paste first. Timings measured from the recorder, run
+from the author's machine in Lagos:
+
+```
+                      GraphQL   tree            tree size   entries
+vercel/next.js        1.37s     4.03s           12.7 MB     32,826
+mastodon/mastodon     1.14s     3.53s            2.6 MB     10,042
+astral-sh/uv          1.26s     1.39s            0.5 MB      1,785
+github/gitignore      2.76s     1.05s            75 KB        319
+raw manifests         0.14–0.82s each
+```
+
+So the tree call alone exceeds the whole deadline for next.js here, and GraphQL latency
+varies by 2.5× on tiny responses. **These are not production numbers.** Vercel's region
+is much closer to GitHub, and the question is what they look like from there. It's open
+until M2 can measure it on a deployed function. Options if they are still bad:
+- raise the deadline, which eats into the render's share of the 8s estimate
+- run the two API calls, then the raw fetches in parallel (the recorder fetches serially;
+  `fetchManifest` itself is fine to parallelise)
+- on a cold miss for a large repo, serve a "generating" card and warm in the background
+
+Separately, `res.clone()` failed on the 12.7 MB tree body with "Body has already been
+read". The recorder now reads the body once and rebuilds the Response. `lib/github` never
+clones, so it isn't affected.
 
 ---
 
