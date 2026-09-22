@@ -185,6 +185,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 80,
     description: "HTML-over-the-wire: Turbo and Stimulus.",
     aliases: ["gem:turbo-rails", "gem:stimulus-rails", "npm:@hotwired/*"],
+    versionFrom: [],
   },
   {
     // Rendered by the backend, but it is the frontend's programming model.
@@ -235,6 +236,7 @@ export const FRONTEND: MapEntry[] = [
     description: "Utility-first CSS framework.",
     aliases: ["npm:tailwindcss", "npm:@tailwindcss/*", "gem:tailwindcss-rails"],
     suppresses: ["postcss", "autoprefixer"],
+    versionFrom: ["npm:tailwindcss", "npm:@tailwindcss/*"],
   },
   {
     id: "sass",
@@ -276,6 +278,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 64,
     description: "Unstyled, accessible UI primitives.",
     aliases: ["npm:@radix-ui/*", "npm:radix-ui"],
+    versionFrom: [],
   },
   {
     id: "mui",
@@ -332,6 +335,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 30,
     description: "Icon set.",
     aliases: ["npm:lucide-react", "npm:lucide-vue-next", "npm:lucide", "npm:lucide-svelte"],
+    versionFrom: [],
   },
   {
     id: "redux",
@@ -340,6 +344,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 66,
     description: "Predictable state container.",
     aliases: ["npm:redux", "npm:@reduxjs/toolkit", "npm:react-redux"],
+    versionFrom: ["npm:redux", "npm:@reduxjs/toolkit"],
   },
   {
     id: "zustand",
@@ -428,6 +433,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 40,
     description: "Internationalization framework.",
     aliases: ["npm:i18next", "npm:react-i18next"],
+    versionFrom: ["npm:i18next"],
   },
   {
     id: "d3",
@@ -444,6 +450,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 60,
     description: "3D graphics on WebGL.",
     aliases: ["npm:three", "npm:@react-three/fiber"],
+    versionFrom: ["npm:three"],
   },
   {
     id: "chartjs",
@@ -468,6 +475,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 46,
     description: "Interactive maps.",
     aliases: ["npm:leaflet", "npm:react-leaflet"],
+    versionFrom: ["npm:leaflet"],
   },
   {
     // Docs-site generators produce what readers see, so they sit with the UI.
@@ -494,5 +502,6 @@ export const FRONTEND: MapEntry[] = [
     weight: 46,
     description: "Markdown docs site generator.",
     aliases: ["pypi:mkdocs", "pypi:mkdocs-material"],
+    versionFrom: ["pypi:mkdocs"],
   },
 ];

@@ -40,6 +40,12 @@ describe("selectManifests", () => {
       ["package.json", "go.mod", "Dockerfile", ".github/workflows/ci.yml", "apps/web/package.json"],
     ],
     [
+      // fastapi/full-stack-fastapi-template ships compose.yml plus overrides.
+      "one compose file, in Compose's own lookup order",
+      ["docker-compose.yml", "compose.override.yml", "compose.yml", "Dockerfile"],
+      ["Dockerfile", "compose.yml"],
+    ],
+    [
       "only the first workflow, by path",
       [".github/workflows/release.yaml", ".github/workflows/ci.yml", ".github/workflows/lint.yml"],
       [".github/workflows/ci.yml"],

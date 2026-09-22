@@ -169,6 +169,7 @@ export const BACKEND: MapEntry[] = [
     weight: 78,
     description: "SQL-shaped TypeScript ORM.",
     aliases: ["npm:drizzle-orm", "npm:drizzle-kit"],
+    versionFrom: ["npm:drizzle-orm"],
   },
   {
     id: "typeorm",
@@ -234,6 +235,7 @@ export const BACKEND: MapEntry[] = [
       "docker:bitnami/postgresql",
     ],
     runtimeOnly: true,
+    versionFrom: ["docker:*"],
   },
   {
     id: "mysql",
@@ -252,6 +254,7 @@ export const BACKEND: MapEntry[] = [
       "docker:bitnami/mysql",
     ],
     runtimeOnly: true,
+    versionFrom: ["docker:*"],
   },
   {
     id: "mariadb",
@@ -261,6 +264,7 @@ export const BACKEND: MapEntry[] = [
     description: "MySQL-compatible relational database.",
     aliases: ["npm:mariadb", "docker:mariadb"],
     runtimeOnly: true,
+    versionFrom: ["docker:*"],
   },
   {
     id: "sqlite",
@@ -278,6 +282,7 @@ export const BACKEND: MapEntry[] = [
       "cargo:rusqlite",
     ],
     runtimeOnly: true,
+    versionFrom: [],
   },
   {
     id: "mongodb",
@@ -287,6 +292,7 @@ export const BACKEND: MapEntry[] = [
     description: "Document database.",
     aliases: ["npm:mongodb", "pypi:pymongo", "pypi:motor", "gem:mongoid", "go:go.mongodb.org/mongo-driver*", "docker:mongo"],
     runtimeOnly: true,
+    versionFrom: ["docker:*"],
   },
   {
     id: "redis",
@@ -306,6 +312,7 @@ export const BACKEND: MapEntry[] = [
       "docker:valkey/valkey",
     ],
     runtimeOnly: true,
+    versionFrom: ["docker:*"],
   },
   {
     id: "elasticsearch",
@@ -315,6 +322,7 @@ export const BACKEND: MapEntry[] = [
     description: "Search and analytics engine.",
     aliases: ["npm:@elastic/elasticsearch", "pypi:elasticsearch", "gem:chewy", "gem:elasticsearch", "docker:elasticsearch"],
     runtimeOnly: true,
+    versionFrom: ["docker:*"],
   },
   {
     id: "rabbitmq",
@@ -324,6 +332,7 @@ export const BACKEND: MapEntry[] = [
     description: "Message broker.",
     aliases: ["npm:amqplib", "pypi:pika", "gem:bunny", "docker:rabbitmq"],
     runtimeOnly: true,
+    versionFrom: ["docker:*"],
   },
   {
     id: "kafka",
@@ -333,6 +342,7 @@ export const BACKEND: MapEntry[] = [
     description: "Distributed event streaming.",
     aliases: ["npm:kafkajs", "pypi:kafka-python", "pypi:confluent-kafka", "docker:confluentinc/cp-kafka", "docker:apache/kafka"],
     runtimeOnly: true,
+    versionFrom: ["docker:*"],
   },
   {
     id: "django",
@@ -382,6 +392,7 @@ export const BACKEND: MapEntry[] = [
     weight: 74,
     description: "Python SQL toolkit and ORM.",
     aliases: ["pypi:sqlalchemy", "pypi:flask-sqlalchemy"],
+    versionFrom: ["pypi:sqlalchemy"],
   },
   {
     id: "sqlmodel",
@@ -407,6 +418,7 @@ export const BACKEND: MapEntry[] = [
     weight: 62,
     description: "Data validation from Python type hints.",
     aliases: ["pypi:pydantic", "pypi:pydantic-settings"],
+    versionFrom: ["pypi:pydantic"],
   },
   {
     id: "celery",
@@ -698,6 +710,7 @@ export const BACKEND: MapEntry[] = [
     weight: 70,
     description: "Client for the OpenAI API.",
     aliases: ["npm:openai", "pypi:openai"],
+    versionFrom: [],
   },
   {
     id: "anthropic",
@@ -706,6 +719,7 @@ export const BACKEND: MapEntry[] = [
     weight: 70,
     description: "Client for the Claude API.",
     aliases: ["npm:@anthropic-ai/sdk", "pypi:anthropic"],
+    versionFrom: [],
   },
   {
     id: "ai-sdk",
@@ -714,6 +728,7 @@ export const BACKEND: MapEntry[] = [
     weight: 70,
     description: "Vercel's TypeScript toolkit for LLM apps.",
     aliases: ["npm:ai", "npm:@ai-sdk/*"],
+    versionFrom: ["npm:ai"],
   },
   {
     id: "langchain",
@@ -722,6 +737,7 @@ export const BACKEND: MapEntry[] = [
     weight: 70,
     description: "Framework for LLM applications.",
     aliases: ["npm:langchain", "npm:@langchain/*", "pypi:langchain", "pypi:langchain-*"],
+    versionFrom: ["npm:langchain", "pypi:langchain"],
   },
   {
     id: "auth-js",
@@ -730,6 +746,7 @@ export const BACKEND: MapEntry[] = [
     weight: 62,
     description: "Authentication for web frameworks, formerly NextAuth.",
     aliases: ["npm:next-auth", "npm:@auth/*"],
+    versionFrom: ["npm:next-auth"],
   },
   {
     id: "better-auth",
@@ -746,6 +763,7 @@ export const BACKEND: MapEntry[] = [
     weight: 62,
     description: "Hosted authentication and user management.",
     aliases: ["npm:@clerk/*"],
+    versionFrom: [],
   },
   {
     id: "passport",
@@ -762,6 +780,7 @@ export const BACKEND: MapEntry[] = [
     weight: 64,
     description: "Payments API client.",
     aliases: ["npm:stripe", "npm:@stripe/*", "pypi:stripe", "gem:stripe", "composer:stripe/stripe-php"],
+    versionFrom: [],
   },
   {
     id: "pdfkit",

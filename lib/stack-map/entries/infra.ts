@@ -33,6 +33,7 @@ export const INFRA: MapEntry[] = [
     weight: 80,
     description: "Deployment platform.",
     aliases: ["npm:vercel", "npm:@vercel/analytics", "npm:@vercel/speed-insights", "npm:@vercel/blob", "npm:@vercel/kv", "npm:@vercel/postgres", "action:amondnet/vercel-action"],
+    versionFrom: [],
   },
   {
     id: "netlify",
@@ -41,6 +42,7 @@ export const INFRA: MapEntry[] = [
     weight: 78,
     description: "Deployment platform.",
     aliases: ["npm:netlify-cli", "npm:@netlify/*"],
+    versionFrom: [],
   },
   {
     id: "cloudflare",
@@ -49,6 +51,7 @@ export const INFRA: MapEntry[] = [
     weight: 80,
     description: "Workers, Pages and edge platform.",
     aliases: ["npm:wrangler", "npm:@cloudflare/*", "action:cloudflare/wrangler-action", "action:cloudflare/pages-action"],
+    versionFrom: [],
   },
   {
     id: "aws",
@@ -67,6 +70,7 @@ export const INFRA: MapEntry[] = [
       "cargo:aws-sdk-*",
       "action:aws-actions/*",
     ],
+    versionFrom: [],
   },
   {
     id: "gcp",
@@ -75,6 +79,7 @@ export const INFRA: MapEntry[] = [
     weight: 76,
     description: "Google Cloud Platform.",
     aliases: ["npm:@google-cloud/*", "pypi:google-cloud-*", "go:cloud.google.com/go*", "action:google-github-actions/*"],
+    versionFrom: [],
   },
   {
     id: "azure",
@@ -83,6 +88,7 @@ export const INFRA: MapEntry[] = [
     weight: 76,
     description: "Microsoft Azure.",
     aliases: ["npm:@azure/*", "pypi:azure-*", "action:azure/*"],
+    versionFrom: [],
   },
   {
     id: "supabase",
@@ -91,6 +97,7 @@ export const INFRA: MapEntry[] = [
     weight: 80,
     description: "Postgres platform with auth, storage and APIs.",
     aliases: ["npm:@supabase/*", "npm:supabase", "pypi:supabase", "action:supabase/setup-cli", "docker:supabase/*"],
+    versionFrom: [],
   },
   {
     id: "firebase",
@@ -99,6 +106,7 @@ export const INFRA: MapEntry[] = [
     weight: 78,
     description: "Google's app backend platform.",
     aliases: ["npm:firebase", "npm:firebase-admin", "npm:firebase-tools", "pypi:firebase-admin"],
+    versionFrom: [],
   },
   {
     id: "neon",
@@ -107,6 +115,7 @@ export const INFRA: MapEntry[] = [
     weight: 70,
     description: "Serverless Postgres.",
     aliases: ["npm:@neondatabase/serverless"],
+    versionFrom: [],
   },
   {
     id: "upstash",
@@ -115,6 +124,7 @@ export const INFRA: MapEntry[] = [
     weight: 66,
     description: "Serverless Redis and queues.",
     aliases: ["npm:@upstash/*"],
+    versionFrom: [],
   },
   {
     id: "fly",
@@ -156,6 +166,7 @@ export const INFRA: MapEntry[] = [
     weight: 64,
     description: "Error tracking and performance monitoring.",
     aliases: ["npm:@sentry/*", "pypi:sentry-sdk", "gem:sentry-ruby", "gem:sentry-rails", "go:github.com/getsentry/sentry-go", "cargo:sentry"],
+    versionFrom: [],
   },
   {
     id: "opentelemetry",
@@ -164,6 +175,7 @@ export const INFRA: MapEntry[] = [
     weight: 58,
     description: "Vendor-neutral traces, metrics and logs.",
     aliases: ["npm:@opentelemetry/*", "pypi:opentelemetry-*", "gem:opentelemetry-*", "go:go.opentelemetry.io/otel*"],
+    versionFrom: [],
   },
   {
     id: "datadog",
@@ -172,6 +184,7 @@ export const INFRA: MapEntry[] = [
     weight: 58,
     description: "Monitoring and APM.",
     aliases: ["npm:dd-trace", "pypi:ddtrace", "gem:datadog", "gem:ddtrace"],
+    versionFrom: [],
   },
   {
     id: "prometheus",
@@ -180,5 +193,6 @@ export const INFRA: MapEntry[] = [
     weight: 56,
     description: "Metrics collection.",
     aliases: ["npm:prom-client", "gem:prometheus_exporter", "go:github.com/prometheus/client_golang", "docker:prom/prometheus"],
+    versionFrom: [],
   },
 ];

@@ -145,7 +145,9 @@ lib/
     deny.ts                      known noise, namespaced globs, never logged
     index.ts                     assembled map + lookup (exact alias, then longest prefix)
     types.ts
-  normalize.ts                   RawSignal[] -> StackDoc
+  normalize.ts                   RawSignal[] -> StackContent (StackDoc minus asOf)
+  version.ts                     version specs -> display version (ADR-0017, 0018)
+  resolve.ts                     the full chain for one repo, client injected
   hash.ts                        stable stringify + sha256
   cache.ts                       Upstash wrapper, typed
   render/
@@ -157,6 +159,7 @@ lib/
   result.ts                      Result<T, E>, types only
 scripts/
   record-github.ts               records GitHub responses into tests/fixtures/github/
+  resolve.ts                     pnpm tsx scripts/resolve.ts owner/repo -> StackDoc JSON
 tests/
   fixtures/                      recorded GitHub responses, committed
   helpers/fixture-fetch.ts       serves fixtures as fetch; unknown URLs fail

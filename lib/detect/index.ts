@@ -23,6 +23,9 @@ const BY_NAME: Record<string, Detector> = {
   Gemfile: detectRuby,
   "composer.json": detectPhp,
   Dockerfile: detectDocker,
+  "compose.yaml": detectDocker,
+  "compose.yml": detectDocker,
+  "docker-compose.yaml": detectDocker,
   "docker-compose.yml": detectDocker,
 };
 

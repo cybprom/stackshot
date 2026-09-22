@@ -24,7 +24,8 @@ const LANGUAGE_MANIFESTS = [
   "composer.json",
 ];
 const NESTED_MANIFESTS = new Set(["package.json", ...LANGUAGE_MANIFESTS]);
-const ROOT_CONTAINER_MANIFESTS = ["Dockerfile", "docker-compose.yml"];
+// Compose's own lookup order; only the first present is read. fastapi uses compose.yml.
+const COMPOSE_FILES = ["compose.yaml", "compose.yml", "docker-compose.yaml", "docker-compose.yml"];
 const WORKFLOW = /^\.github\/workflows\/[^/]+\.ya?ml$/;
 
 // Demo and test apps would otherwise take the package.json slots: in vercel/next.js,
@@ -81,7 +82,8 @@ export function selectManifests(entries: TreeEntry[]): TreeEntry[] {
   const ordered = [
     ...at("package.json"),
     ...LANGUAGE_MANIFESTS.flatMap(at),
-    ...ROOT_CONTAINER_MANIFESTS.flatMap(at),
+    ...at("Dockerfile"),
+    ...COMPOSE_FILES.flatMap(at).slice(0, 1),
     ...eligible.filter((e) => WORKFLOW.test(e.path)).slice(0, 1),
     // Nested language manifests share the package.json pool, or a Python backend beside
     // a JS frontend never gets read. ADR-0001, GOTCHAS 026.

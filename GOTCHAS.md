@@ -780,6 +780,9 @@ until M2 can measure it on a deployed function. Options if they are still bad:
   pre-warming the normal path, not the fallback.** The card route's 4s only binds for a
   badge whose cache has expired, or for a URL typed by hand without going through the site.
 
+**Another local data point, 2026-09-22:** `scripts/resolve.ts vercel/next.js`, the full
+resolve with parallel manifest fetches, took **5.07s** end to end from here.
+
 Separately, `res.clone()` failed on the 12.7 MB tree body with "Body has already been
 read". The recorder now reads the body once and rebuilds the Response. `lib/github` never
 clones, so it isn't affected.
@@ -841,6 +844,32 @@ Two known gaps, both defaulting to runtime:
   misranked.
 - **go.mod has no dev/test split at all**, and Cargo `[workspace.dependencies]` is a
   shared list whose real scope depends on which member section references it.
+
+## 031 — `compose.yml` is Compose's canonical name, and selection only knew the legacy one
+**Date:** 2026-09-22 · **Cost:** ~0.2h · **Status:** resolved
+**Writeup material:** maybe
+
+fastapi's first card showed **PostgreSQL 3**, which is psycopg's version (032), because the
+one file that states the real server version was never fetched. The repo ships
+`compose.yml` plus `compose.override.yml` and `compose.deploy.yml`. Compose v2 has
+preferred `compose.yaml`/`compose.yml` for years. ARCHITECTURE's selection rule, written
+from memory, said `docker-compose.yml`. Selection now reads the first of `compose.yaml`,
+`compose.yml`, `docker-compose.yaml`, `docker-compose.yml`, which is Compose's own lookup
+order. Overrides are ignored. With it, fastapi reads **PostgreSQL 18** and gains Docker.
+The fixture-matches-selection test (from 024's fix) flagged the stale fixture straight
+away, which is exactly what it was for.
+
+## 032 — Implied entries borrowed their implier's version: "PostgreSQL 3", "AWS 1", "MkDocs 9"
+**Date:** 2026-09-22 · **Cost:** ~0.4h · **Status:** resolved
+**Writeup material:** yes — the first real cards, and every number on them looked plausible
+
+Drivers-imply-databases (ADR-0016) plus merge-every-signal's-version (ADR-0017) put the
+driver's, SDK's or plugin's version on the entry: psycopg 3 → PostgreSQL 3, aws-sdk-core
+1 → AWS 1, mkdocs-material 9 → MkDocs 9, react-redux 9 → Redux 9, `@vercel/analytics`
+3 → Vercel 3. No test caught it. Each version was parsed correctly, and each is a real
+number for something. The error was only visible by reading the cards as a stranger would.
+Fix: per-entry `versionFrom` (ADR-0018). The lesson for step 5's judgement pass: read the
+versions, not just the names.
 
 ---
 

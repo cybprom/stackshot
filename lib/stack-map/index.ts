@@ -22,6 +22,11 @@ prefixes.sort((a, b) => b[0].length - a[0].length);
 
 const denyPatterns = DENY.map(globToRegExp);
 
+/** Whether a signal id matches an alias pattern: exact, or a trailing-* prefix. */
+export function matchesAlias(signalId: string, pattern: string): boolean {
+  return pattern.endsWith("*") ? signalId.startsWith(pattern.slice(0, -1)) : signalId === pattern;
+}
+
 /** The map entry a namespaced signal id resolves to: exact alias first, then prefix. */
 export function lookup(signalId: string): MapEntry | undefined {
   return exact.get(signalId) ?? prefixes.find(([prefix]) => signalId.startsWith(prefix))?.[1];

@@ -17,6 +17,9 @@ export type MapEntry = {
   aliases: string[];
   // Entry ids this one makes redundant on the card.
   suppresses?: string[];
+  // Aliases whose versions are this entry's own; omitted means all. psycopg 3 isn't
+  // PostgreSQL 3, and a hosted service has no version at all ([]). ADR-0017.
+  versionFrom?: string[];
   // Omitted means "major". Go 1 and Python 3 say nothing, so those show minor. ADR-0017.
   versionPrecision?: "major" | "minor";
   // Dev-scope signals don't count at all: a library testing against pg doesn't run
@@ -66,3 +69,6 @@ export type StackDoc = {
   // Logged, never rendered (I3).
   unmapped: string[];
 };
+
+// Everything but asOf, which the cache sets on first write. Also the stack hash input.
+export type StackContent = Omit<StackDoc, "asOf">;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DENY, STACK_MAP, entryById, isDenied, lookup } from "@/lib/stack-map";
+import { DENY, STACK_MAP, entryById, isDenied, lookup, matchesAlias } from "@/lib/stack-map";
 import { ECOSYSTEMS } from "@/lib/stack-map/types";
 import { detect } from "@/lib/detect";
 import { recordedManifests, recordedRootPaths } from "@/tests/helpers/manifests";
@@ -79,6 +79,15 @@ describe("map integrity", () => {
   it("gives minor precision to the toolchains whose major says nothing", () => {
     const minor = STACK_MAP.filter((e) => e.versionPrecision === "minor").map((e) => e.id).sort();
     expect(minor).toEqual(["go", "python", "rust"]);
+  });
+
+  it("draws versions only from the entry's own aliases", () => {
+    for (const entry of STACK_MAP) {
+      for (const pattern of entry.versionFrom ?? []) {
+        const own = entry.aliases.some((a) => matchesAlias(probe(a), pattern) || a === pattern);
+        expect(own, `${entry.id}: versionFrom ${pattern} matches none of its aliases`).toBe(true);
+      }
+    }
   });
 
   it("namespaces every deny pattern with a known ecosystem", () => {

@@ -7,25 +7,26 @@ it is the only thing that survives one.*
 
 ```
 Milestone:  1 — resolver and stack map (Milestone 0 complete, tagged m0-spike)
-Last done:  M1 STEP 3 — lib/stack-map/ done and committed. 223 entries
-            (59 frontend / 90 backend / 21 infra / 53 tooling) sized to each
-            ecosystem's head, not ~120 (ADR-0016). Aliases are namespaced ids
-            or trailing-* prefixes; exact wins, then longest prefix. Deny list
-            is namespaced globs, never logged. Integrity test + per-fixture
-            "important signals are mapped" test. Detectors now also emit
-            tool:docker / tool:github-actions (029). Selection: dot-dirs out of
-            the nested pool; fixtures asserted to match current selection.
-            367 tests, no network.
-Next:       Milestone 1 step 4 — lib/normalize.ts: deny, drop-unmapped (log),
-            suppress, version-coerce (ADR-0008; Docker tags like 24-trixie-slim,
-            Python specs like ">=3.14,<4.0", Go v1.2.3), rank by weight then
-            confidence then id, slice to 6 + overflow. Merge versions when
-            several signals map to one entry (tool:node >=20 vs docker:node 24).
-            Extend budget.test.ts to the full resolver. Snapshot per fixture.
+Last done:  M1 STEP 4 — lib/normalize.ts, lib/version.ts, lib/resolve.ts,
+            scripts/resolve.ts. `pnpm tsx scripts/resolve.ts vercel/next.js`
+            prints a clean StackDoc (2 API calls, 5.07s from Lagos). Before it:
+            RawSignal.scope (dev-only ranks last, tooling exempt; runtimeOnly
+            DBs ignore dev), versionPrecision minor for go/python/rust
+            (ADR-0017), versionFrom (ADR-0018: psycopg 3 isn't PostgreSQL 3).
+            compose.yml now selected (031). Card snapshot per fixture in
+            tests/__snapshots__/resolve.test.ts.snap. 466 tests, no network.
+Next:       Milestone 1 step 5 — the judgement call. Fixture set is already
+            recorded (9 repos + missing/empty/truncated). Read every card in
+            resolve.test.ts.snap, names AND versions. Decide 024's ordering
+            (depth-then-size / size-first / one-per-ecosystem) against the
+            next.js fixture. Then M1's definition of done.
 Open:       GOTCHAS 024: packages/next loses on depth to rspack/ and apps/.
             Step 5 compares depth-then-size, size-first, one-per-ecosystem.
-            ADR-0016: next.js maps Firebase/Datadog/Emotion from root devDeps —
-            mapped isn't worth showing; normalize/step 5 must rank it out.
+            next.js infra still shows dev-only Firebase/Datadog: the scope rule
+            ranks them last, but infra has only 5 items so nothing displaces
+            them. Step 5: is "ranks below" enough, or should dev-only
+            non-tooling entries drop when runtime-backed ones exist?
+            Floors show old numbers ("Ruff 0.2" from >=0.2.2): ADR-0008's gap.
             GOTCHAS 027: 4s deadline failed locally on next.js/mastodon trees;
             measure from Vercel in M2 before trusting it.
             GraphQL is its own 5000-point bucket; cold resolve = 1 core + 1

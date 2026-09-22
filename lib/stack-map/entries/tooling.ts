@@ -101,6 +101,7 @@ export const TOOLING: MapEntry[] = [
     description: "Dev server and bundler.",
     aliases: ["npm:vite", "npm:laravel-vite-plugin", "npm:@vitejs/*"],
     suppresses: ["esbuild", "rollup"],
+    versionFrom: ["npm:vite"],
   },
   {
     id: "webpack",
@@ -149,6 +150,7 @@ export const TOOLING: MapEntry[] = [
     weight: 50,
     description: "Rust-based JavaScript compiler.",
     aliases: ["npm:@swc/core", "cargo:swc_core"],
+    versionFrom: ["npm:@swc/core"],
   },
   {
     // The header usually names TypeScript already, so this ranks low.
@@ -270,6 +272,7 @@ export const TOOLING: MapEntry[] = [
     weight: 46,
     description: "DOM testing utilities.",
     aliases: ["npm:@testing-library/*"],
+    versionFrom: [],
   },
   {
     id: "storybook",
@@ -342,6 +345,7 @@ export const TOOLING: MapEntry[] = [
     weight: 36,
     description: "Git hook framework.",
     aliases: ["pypi:pre-commit", "pypi:prek"],
+    versionFrom: ["pypi:pre-commit"],
   },
   {
     id: "goreleaser",
@@ -382,6 +386,7 @@ export const TOOLING: MapEntry[] = [
     weight: 60,
     description: "Ruby testing framework.",
     aliases: ["gem:rspec", "gem:rspec-rails"],
+    versionFrom: ["gem:rspec"],
   },
   {
     id: "rubocop",
@@ -390,6 +395,7 @@ export const TOOLING: MapEntry[] = [
     weight: 50,
     description: "Ruby linter and formatter.",
     aliases: ["gem:rubocop", "gem:rubocop-*"],
+    versionFrom: ["gem:rubocop"],
   },
   {
     id: "capybara",
@@ -431,5 +437,6 @@ export const TOOLING: MapEntry[] = [
     weight: 50,
     description: "Static analysis for PHP.",
     aliases: ["composer:phpstan/phpstan", "composer:larastan/larastan"],
+    versionFrom: ["composer:phpstan/phpstan"],
   },
 ];

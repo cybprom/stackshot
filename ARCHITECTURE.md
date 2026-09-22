@@ -100,7 +100,9 @@ one, no runtime theme detection, and no per-view telemetry.
 |---|---|---|
 | `lib/github/*` | nothing in `lib/` except types | detectors, normalizer, render |
 | `lib/detect/*` | `lib/stack-map/types` | anything that does I/O |
-| `lib/normalize` | `lib/stack-map`, detect types | `lib/github`, `lib/render` |
+| `lib/normalize` | `lib/stack-map`, `lib/version`, detect types | `lib/github`, `lib/render` |
+| `lib/version` | nothing | anything |
+| `lib/resolve` | `lib/github`, `lib/detect`, `lib/normalize` | `lib/render`, `lib/cache` |
 | `lib/render/*` | `lib/tokens`, StackDoc type | `lib/github`, `lib/cache` |
 | `app/**/route.ts` | everything | — |
 
@@ -191,7 +193,8 @@ commit to pin to (ADR-0014).
 1. `package.json` at root
 2. `pyproject.toml` · `requirements.txt` · `go.mod` · `Cargo.toml` · `Gemfile` ·
    `composer.json` at root
-3. `Dockerfile` / `docker-compose.yml` at root
+3. `Dockerfile`, plus the first of `compose.yaml` · `compose.yml` · `docker-compose.yaml` ·
+   `docker-compose.yml` at root (Compose's own lookup order)
 4. The first file matching `.github/workflows/*.y?ml`
 5. Remaining `package.json` files **and nested language manifests** (`pyproject.toml`,
    `requirements.txt`, `go.mod`, `Cargo.toml`, `Gemfile`, `composer.json` below the root)
@@ -250,18 +253,28 @@ RawSignal[]
    ├─ drop: anything with no entry in STACK_MAP  ──▶ push to unmapped[], log
    │        (signal ids resolve through map aliases: npm:next → next)
    │
-   ├─ suppress: for each surviving entry, remove every id in entry.suppresses
-   │            next        suppresses  react, react-dom
+   ├─ drop: dev-scope signals for runtimeOnly entries (databases: a dev pg ≠ PostgreSQL)
+   │
+   ├─ suppress: from the set as it stood, remove every id in entry.suppresses
+   │            next        suppresses  react
    │            nuxt        suppresses  vue
-   │            nestjs      suppresses  express, reflect-metadata
+   │            nestjs      suppresses  express, fastify
    │            vite        suppresses  esbuild, rollup
    │            tailwindcss suppresses  postcss, autoprefixer
    │
-   ├─ version: coerce range -> major integer, or drop
+   ├─ version: merge the entry's own signals (versionFrom), concrete beats floor,
+   │           higher wins, major or minor per entry, 0.x keeps its minor (ADR-0017/18)
    │
-   ├─ rank within category: entry.weight desc, then confidence desc, then id asc
+   ├─ rank within category: runtime-backed first (tooling exempt), then weight desc,
+   │                        then confidence desc, then id asc
    │
    └─ slice to 6, record overflow count
+
+`lib/normalize.ts` returns `StackContent`, meaning everything but `asOf`, which the cache
+assigns on first write. `lib/resolve.ts` runs the whole chain for one repo with an injected
+client: two API calls, manifests in parallel, then detect and normalize. Any manifest
+failure other than a 404 fails the resolve rather than yielding a partial stack, because a
+partial doc cached under its content hash would be served for 30 days.
 ```
 
 Suppression is the highest-leverage piece of the whole product and it is pure data. It is
