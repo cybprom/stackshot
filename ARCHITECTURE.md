@@ -185,7 +185,10 @@ Paths are skipped if any directory segment is `node_modules`, `examples`, `examp
 `fixtures`, `test`, `tests`, `__tests__`, `e2e`, `samples`, `demo`, `templates`, `bench` or
 `vendor` (case-insensitive), and blobs over 1 MB are skipped. Without the segment list,
 vercel/next.js gives every remaining slot to `examples/`, which sorts before `packages/`.
-`docs/` is deliberately allowed. GOTCHAS 024.
+`docs/` is deliberately allowed. Dot-prefixed directories (`.github`, `.devcontainer`,
+`.changeset`) are also out of the nested pool; otherwise `.github/package.json` wins on sort
+order alone. Workflows keep their own rule. Whether depth should lead the ordering at all is
+open until step 5. GOTCHAS 024.
 
 **Timeouts.** Every GitHub and raw fetch has a 2.5s timeout inside a 4s resolve deadline,
 so the ~2.4s cold render measured in M0 still fits under 8s. That 8s is our working

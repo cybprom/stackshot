@@ -3,6 +3,7 @@ import { createGitHubClient } from "@/lib/github/client";
 import { fetchRepoHead } from "@/lib/github/repo";
 import { fetchTree, MAX_MANIFEST_BYTES, selectManifests, type TreeEntry } from "@/lib/github/tree";
 import { fixtureFetch, loadResponses } from "@/tests/helpers/fixture-fetch";
+import { recordedManifests } from "@/tests/helpers/manifests";
 
 async function tree(fixture: string) {
   const client = createGitHubClient({ token: "t", fetch: fixtureFetch(loadResponses(fixture)) });
@@ -63,6 +64,19 @@ describe("selectManifests", () => {
       "nested language manifests obey the deny list",
       ["examples/go.mod", "tests/requirements.txt", "services/api/go.mod"],
       ["services/api/go.mod"],
+    ],
+    [
+      // vercel/next.js: .github/package.json sorted ahead of every real package.
+      "dot-prefixed directories are out of the nested pool; workflows keep their own rule",
+      [
+        ".github/package.json",
+        ".devcontainer/package.json",
+        ".changeset/package.json",
+        "apps/.hidden/package.json",
+        ".github/workflows/ci.yml",
+        "web/package.json",
+      ],
+      [".github/workflows/ci.yml", "web/package.json"],
     ],
     [
       "remaining package.json shallowest first, ties by path",
@@ -128,5 +142,30 @@ describe("selectManifests", () => {
   it("drops blobs over the size cap", () => {
     const big = entry("package.json", MAX_MANIFEST_BYTES + 1);
     expect(selectManifests([big, entry("go.mod")]).map((e) => e.path)).toEqual(["go.mod"]);
+  });
+});
+
+// A selection change must re-record the fixtures it affects, or detection tests run on
+// manifests the resolver would no longer fetch.
+describe("recorded fixtures match current selection", () => {
+  it.each([
+    "Grandbusta__spyde",
+    "vercel__next.js",
+    "fastapi__full-stack-fastapi-template",
+    "pocketbase__pocketbase",
+    "astral-sh__uv",
+    "mastodon__mastodon",
+    "laravel__laravel",
+    "github__gitignore",
+    "jlevy__the-art-of-command-line",
+  ])("%s", async (fixture) => {
+    const [owner = "", repo = ""] = fixture.split("__");
+    const client = createGitHubClient({ token: "t", fetch: fixtureFetch(loadResponses(fixture)) });
+    const head = await fetchRepoHead(client, owner, repo);
+    if (!head.ok) throw new Error(JSON.stringify(head.error));
+    const tree = await fetchTree(client, head.value);
+    if (!tree.ok) throw new Error(JSON.stringify(tree.error));
+    const selected = selectManifests(tree.value.entries).map((e) => e.path);
+    expect(recordedManifests(fixture).map((f) => f.path).sort()).toEqual([...selected].sort());
   });
 });

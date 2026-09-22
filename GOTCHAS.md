@@ -667,41 +667,38 @@ and none caught it, because each sentence is true on its own. Fix: call 1 is a s
 GraphQL query returning the head commit OID, the tree OID and the root entries
 (ADR-0014). Still 2 calls, and it also fixed 006's fallback.
 
-## 024 — Path order hands Next.js's `package.json` slots to `examples/`
-**Date:** 2026-09-22 · **Cost:** ~0h, caught in plan review · **Status:** anticipated
-**Writeup material:** yes — a one-line illustration of why "shallowest first" isn't a rule
+## 024 — Path order hands Next.js's `package.json` slots to everything but `packages/next`
+**Date:** 2026-09-22 · **Cost:** ~0.5h across three passes · **Status:** partly resolved; ordering open for step 5
+**Writeup material:** yes — each fix exposed the next layer, and the first diagnosis was wrong
 
-"Remaining package.json files, shallowest first" with ties broken by path would pick, for
-vercel/next.js, four demo apps from `examples/`, because `examples/` sorts before
-`packages/` at the same depth. The card would show the stack of the examples, not of
-Next.js. Fix: skip any path with a directory segment in a deny list (`examples`, `test`,
-`fixtures`, `e2e`, `demo`, `templates`, `vendor`, …). There's a Next.js-shaped table case
-in `tests/tree.test.ts`. `docs/` is deliberately still allowed. spyde's docs site is the
-first test of whether that reads as noise.
+"Remaining manifests, shallowest first, ties by path" failed on vercel/next.js in three
+separate ways. They look like one problem and aren't:
 
-**The fix is only half the problem: the tie-break is still wrong.** With `examples/` gone,
-the four remaining slots go to the first four `packages/*` by path: `create-next-app`,
-`eslint-config-next`, `eslint-plugin-next`, `font`… `packages/next` itself sorts late and
-very likely gets no slot. The table case passes only because its input has four packages.
-**Candidate fix, not applied:** among equal-depth candidates, prefer the larger blob `size`
-from the tree entry, which we already have from call 2, before falling back to path. The
-real package tends to have the largest manifest. Step 5 decides this with the real card:
-vercel/next.js must be in its fixture set.
+1. **`examples/` sorts before `packages/` at the same depth**, so four demo apps took the
+   slots. Fixed with the denied-segment list (`examples`, `test`, `fixtures`, …).
+   `docs/` is deliberately allowed.
+2. **`.github/package.json` sorted ahead of every real package**, because `.` precedes
+   letters. That's a missing deny rule, not a tie-break problem. Fixed: dot-prefixed
+   directories (`.github`, `.devcontainer`, `.changeset`, …) are out of the nested pool.
+   Workflows keep their own `.github/workflows/` rule. There's a table case.
+3. **Open: depth itself.** After both fixes, next.js at `3204d86` selects `package.json,
+   Cargo.toml, a workflow, rspack/Cargo.toml, rspack/package.json,
+   apps/bundle-analyzer/package.json`. `rspack/` (depth 2) and `apps/…` beat
+   `packages/next/package.json` (depth 3) on depth alone. My earlier "size tie-break at
+   equal depth" candidate never reaches `packages/next`, because it only breaks ties
+   *within* a depth. **The real question is whether depth should be primary at all.**
 
-**Second candidate, also not applied:** one nested manifest per ecosystem first, then fill
-the remaining slots by depth. This guarantees a nested `go.mod` a slot even when ten
-shallower `package.json` files compete. It matters now that nested language manifests share
-the pool (026). The two candidates compose: ecosystem-first, then size, then path.
+**Step 5 compares three orderings against the committed next.js fixture:**
+- **depth, then size.** Predicted to fail, for the reason above.
+- **size first, across all depths.** The real package tends to have the largest manifest,
+  whatever its depth.
+- **one per ecosystem, then size.** This also guarantees a nested `go.mod` a slot next to
+  a pile of `package.json` files (026).
 
-**Confirmed on the real tree, 2026-09-22, and worse than predicted.** vercel/next.js at
-`86d3d61` selects `package.json, Cargo.toml, .github/workflows/automated_code_review.yml,
-.github/package.json, rspack/Cargo.toml, rspack/package.json`. `packages/*` never gets
-a slot: `.github/package.json` and `rspack/` are shallower. The fixture is committed, so
-step 5 can test either candidate against it.
-
-Small related surprise: in code-unit order `packages/next-swc/` sorts *before*
-`packages/next/`, because `-` (0x2D) < `/` (0x2F). I got it wrong in the test expectation
-first. The code sorts by code unit on purpose, since `localeCompare` would vary by host.
+Blob sizes come free from the tree call, so none of the three costs a request. The small
+surprise on the way: in code-unit order, `packages/next-swc/` sorts *before*
+`packages/next/`, because `-` (0x2D) < `/` (0x2F). I got that wrong in a test expectation
+first.
 
 ## 025 — `/rate_limit` reported zero usage while the headers showed it climbing
 **Date:** 2026-09-22 · **Cost:** ~0.4h, including the recheck · **Status:** confirmed
@@ -776,6 +773,12 @@ until M2 can measure it on a deployed function. Options if they are still bad:
 - run the two API calls, then the raw fetches in parallel (the recorder fetches serially;
   `fetchManifest` itself is fine to parallelise)
 - on a cold miss for a large repo, serve a "generating" card and warm in the background
+- **two deadlines, one per route.** Only the Camo-facing card route needs 4s. The
+  site's `POST /api/resolve` has a human waiting and can afford much longer. A successful
+  resolve there writes the same KV entries the card route reads, so by the time anyone
+  pastes the `<picture>` snippet into a README, the card route is a cache hit. **That makes
+  pre-warming the normal path, not the fallback.** The card route's 4s only binds for a
+  badge whose cache has expired, or for a URL typed by hand without going through the site.
 
 Separately, `res.clone()` failed on the 12.7 MB tree body with "Body has already been
 read". The recorder now reads the body once and rebuilds the Response. `lib/github` never

@@ -85,7 +85,7 @@ export function selectManifests(entries: TreeEntry[]): TreeEntry[] {
     ...eligible.filter((e) => WORKFLOW.test(e.path)).slice(0, 1),
     // Nested language manifests share the package.json pool, or a Python backend beside
     // a JS frontend never gets read. ADR-0001, GOTCHAS 026.
-    ...eligible.filter((e) => depth(e.path) > 1 && NESTED_MANIFESTS.has(basename(e.path))),
+    ...eligible.filter((e) => depth(e.path) > 1 && NESTED_MANIFESTS.has(basename(e.path)) && !inDotDir(e.path)),
   ];
   return ordered.slice(0, MANIFEST_BUDGET);
 }
@@ -95,6 +95,14 @@ function hasDeniedSegment(path: string): boolean {
     .split("/")
     .slice(0, -1)
     .some((segment) => DENIED_SEGMENTS.has(segment.toLowerCase()));
+}
+
+// .github/package.json would otherwise win on sort order alone: "." precedes letters.
+function inDotDir(path: string): boolean {
+  return path
+    .split("/")
+    .slice(0, -1)
+    .some((segment) => segment.startsWith("."));
 }
 
 function basename(path: string): string {
