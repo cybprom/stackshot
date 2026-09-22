@@ -1,0 +1,11 @@
+{
+  "POST https://api.github.com/graphql": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "x-ratelimit-remaining": "4996",
+      "x-ratelimit-reset": "1790054189"
+    },
+    "body": "{\"data\":{\"repository\":null,\"rateLimit\":{\"remaining\":4996}},\"errors\":[{\"type\":\"NOT_FOUND\",\"path\":[\"repository\"],\"locations\":[{\"line\":3,\"column\":3}],\"message\":\"Could not resolve to a Repository with the name 'Grandbusta/stackshot-fixture-missing-repo'.\"}]}"
+  }
+}

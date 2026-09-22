@@ -1,0 +1,121 @@
+import { describe, expect, it } from "vitest";
+import { createGitHubClient } from "@/lib/github/client";
+import { fetchRepoHead } from "@/lib/github/repo";
+import { fetchTree, MAX_MANIFEST_BYTES, selectManifests, type TreeEntry } from "@/lib/github/tree";
+import { fixtureFetch, loadResponses } from "@/tests/helpers/fixture-fetch";
+
+async function tree(fixture: string) {
+  const client = createGitHubClient({ token: "t", fetch: fixtureFetch(loadResponses(fixture)) });
+  const head = await fetchRepoHead(client, "Grandbusta", "spyde");
+  if (!head.ok) throw new Error(JSON.stringify(head.error));
+  const res = await fetchTree(client, head.value);
+  if (!res.ok) throw new Error(JSON.stringify(res.error));
+  return res.value;
+}
+
+describe("fetchTree", () => {
+  it("returns every blob in a complete tree", async () => {
+    const t = await tree("Grandbusta__spyde");
+    expect(t.partial).toBe(false);
+    expect(t.entries).toHaveLength(86);
+  });
+
+  it("tops up a truncated tree with the root entries from call 1", async () => {
+    const t = await tree("derived__truncated-tree");
+    expect(t.partial).toBe(true);
+    expect(t.entries.map((e) => e.path)).toContain("package.json");
+    expect(selectManifests(t.entries)[0]?.path).toBe("package.json");
+  });
+});
+
+const entry = (path: string, size = 100): TreeEntry => ({ path, sha: path, size });
+const select = (paths: string[]) => selectManifests(paths.map((p) => entry(p))).map((e) => e.path);
+
+describe("selectManifests", () => {
+  const cases: [string, string[], string[]][] = [
+    [
+      "priority order, regardless of input order",
+      ["apps/web/package.json", ".github/workflows/ci.yml", "Dockerfile", "go.mod", "package.json"],
+      ["package.json", "go.mod", "Dockerfile", ".github/workflows/ci.yml", "apps/web/package.json"],
+    ],
+    [
+      "only the first workflow, by path",
+      [".github/workflows/release.yaml", ".github/workflows/ci.yml", ".github/workflows/lint.yml"],
+      [".github/workflows/ci.yml"],
+    ],
+    [
+      "nested workflows directories are not workflows",
+      ["apps/x/.github/workflows/ci.yml", "src/.github/workflows/ci.yml"],
+      [],
+    ],
+    [
+      "language manifests only at the root",
+      ["tools/go.mod", "py/pyproject.toml", "requirements.txt"],
+      ["requirements.txt"],
+    ],
+    [
+      "remaining package.json shallowest first, ties by path",
+      ["packages/b/package.json", "packages/a/core/package.json", "packages/a/package.json", "web/package.json"],
+      ["web/package.json", "packages/a/package.json", "packages/b/package.json", "packages/a/core/package.json"],
+    ],
+    [
+      "budget of six",
+      ["package.json", "go.mod", "Cargo.toml", "Dockerfile", ".github/workflows/ci.yml", "a/package.json", "b/package.json"],
+      ["package.json", "go.mod", "Cargo.toml", "Dockerfile", ".github/workflows/ci.yml", "a/package.json"],
+    ],
+    [
+      "docs/ is allowed",
+      ["docs/package.json"],
+      ["docs/package.json"],
+    ],
+    [
+      // vercel/next.js: examples/ sorts before packages/ at the same depth.
+      "Next.js-shaped repo gives its slots to packages/, not examples/",
+      [
+        "package.json",
+        ".github/workflows/build_and_test.yml",
+        "examples/blog-starter/package.json",
+        "examples/with-docker/package.json",
+        "examples/with-docker/Dockerfile",
+        "examples/with-jest/package.json",
+        "examples/with-tailwindcss/package.json",
+        "packages/create-next-app/package.json",
+        "packages/eslint-plugin-next/package.json",
+        "packages/next/package.json",
+        "packages/next-swc/package.json",
+        "test/e2e/app-dir/package.json",
+      ],
+      [
+        "package.json",
+        ".github/workflows/build_and_test.yml",
+        "packages/create-next-app/package.json",
+        "packages/eslint-plugin-next/package.json",
+        // Code-unit order: "-" sorts before "/".
+        "packages/next-swc/package.json",
+        "packages/next/package.json",
+      ],
+    ],
+  ];
+
+  it.each(cases)("%s", (_name, input, expected) => {
+    expect(select(input)).toEqual(expected);
+  });
+
+  it.each([
+    "node_modules", "examples", "example", "fixtures", "test", "tests", "__tests__",
+    "e2e", "samples", "demo", "templates", "bench", "vendor", "Examples",
+  ])("drops package.json under %s/", (segment) => {
+    expect(select([`${segment}/package.json`, `pkg/${segment}/app/package.json`])).toEqual([]);
+  });
+
+  it("judges only directories, so a file named like a denied segment is fine", () => {
+    expect(select(["test/package.json", "packages/test-utils/package.json"])).toEqual([
+      "packages/test-utils/package.json",
+    ]);
+  });
+
+  it("drops blobs over the size cap", () => {
+    const big = entry("package.json", MAX_MANIFEST_BYTES + 1);
+    expect(selectManifests([big, entry("go.mod")]).map((e) => e.path)).toEqual(["go.mod"]);
+  });
+});

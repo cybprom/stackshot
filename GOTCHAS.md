@@ -114,7 +114,7 @@ resolves on Vercel's build, which is a deploy-time failure, not a local one. Che
 Milestone 0.
 
 ## 006 — The recursive Trees API truncates on large repos
-**Date:** planning · **Cost:** — · **Status:** anticipated
+**Date:** planning · **Cost:** — · **Status:** resolved by design (2026-09-22)
 **Writeup material:** yes
 
 `GET /git/trees/{sha}?recursive=1` returns `truncated: true` and an incomplete file list
@@ -123,6 +123,11 @@ for large repos. Our entire detection substrate is that one call.
 Fallback: a root-level `/contents` listing, and mark the resulting doc as partial. This
 will happen on exactly the kind of famous monorepo people will try first, so it is not a
 rare edge case.
+
+**2026-09-22:** the planned fallback was itself wrong. `/contents` would have been a third
+API call and broken I6. Call 1 is now a GraphQL query that returns the root tree entries
+too (ADR-0014), so a truncated tree gets its root topped up for free, and the doc is marked
+partial. Not yet seen on a real truncated repo; the fixture for it is derived.
 
 ## 007 — `package.json` contains ranges, not versions
 **Date:** planning · **Cost:** — · **Status:** anticipated
@@ -208,6 +213,13 @@ win and it is the reason a plain PAT is sufficient.
 
 It is also not a documented API with a published quota. It could throttle without notice.
 The `/git/blobs` fallback must be built in Milestone 1, not deferred.
+
+**2026-09-22, confirmed and extended.** Ten raw fetches **with** the PAT moved the `core`
+`x-ratelimit-used` by zero, and raw responses carry no rate-limit headers at all. So
+`lib/github/client.ts` sends the token to raw. That's worth doing because unauthenticated
+raw is limited per IP, and Vercel's egress IPs are shared with every other tenant. The
+client fixes the raw host itself, so the token can't be sent anywhere else. The blob
+fallback is built and tested (throttled, timed out, and past-deadline cases).
 
 ## 011 — The GitHub apps may not honour `<picture>`
 **Date:** planning · **Cost:** — · **Status:** resolved for iOS · **Android untested**
@@ -640,6 +652,54 @@ the ratio is 0.5 px/unit, so a 30-unit item is 15px, not 7.5px — the heuristic
 2×. Measured reality is ~0.92 on desktop and ~0.29–0.32 on phones. Given this project has
 now been bitten three times by display-ratio arithmetic, the doc carries the measured
 numbers instead of a mnemonic.
+
+## 023 — `/repos` has no commit SHA; the 2-call plan was unbuildable as written
+**Date:** 2026-09-22 · **Cost:** ~0.25h, at planning time · **Status:** resolved
+**Writeup material:** yes — the plan and ADR-0010 both read fine until you try to write the URL
+
+ARCHITECTURE.md said: call 1 is `GET /repos`, call 2 is the recursive tree, then fetch
+manifests from raw "pinned to the resolved SHA". But `/repos` returns the default branch
+*name* and no SHA, and the tree call returns a *tree* SHA, which raw won't accept (it wants
+a commit-ish). There is no REST pair that gives metadata + a commit + the full tree.
+
+Caught while planning Milestone 1 step 1, before any code. Every doc had been reviewed
+and none caught it, because each sentence is true on its own. Fix: call 1 is a single
+GraphQL query returning the head commit OID, the tree OID and the root entries
+(ADR-0014). Still 2 calls, and it also fixed 006's fallback.
+
+## 024 — Path order hands Next.js's `package.json` slots to `examples/`
+**Date:** 2026-09-22 · **Cost:** ~0h, caught in plan review · **Status:** anticipated
+**Writeup material:** yes — a one-line illustration of why "shallowest first" isn't a rule
+
+"Remaining package.json files, shallowest first" with ties broken by path would pick, for
+vercel/next.js, four demo apps from `examples/`, because `examples/` sorts before
+`packages/` at the same depth. The card would show the stack of the examples, not of
+Next.js. Fix: skip any path with a directory segment in a deny list (`examples`, `test`,
+`fixtures`, `e2e`, `demo`, `templates`, `vendor`, …). There's a Next.js-shaped table case
+in `tests/tree.test.ts`. `docs/` is deliberately still allowed. spyde's docs site is the
+first test of whether that reads as noise, and real Next.js fixtures confirm the rest in
+step 5.
+
+Small related surprise: in code-unit order `packages/next-swc/` sorts *before*
+`packages/next/`, because `-` (0x2D) < `/` (0x2F). I got it wrong in the test expectation
+first. The code sorts by code unit on purpose, since `localeCompare` would vary by host.
+
+## 025 — `/rate_limit` reported zero usage while the headers showed 20+
+**Date:** 2026-09-22 · **Cost:** ~0.15h · **Status:** confirmed
+**Writeup material:** maybe
+
+The plan was to measure the GraphQL and REST buckets by snapshotting `GET /rate_limit`
+before and after. Throughout, its body said `core used 0 / remaining 5000` and
+`graphql used 0 / remaining 5000`. The `x-ratelimit-*` headers on the real responses said
+`core used 20→22` and `graphql used 5, cost 1`, and they moved as expected. Cross-checking
+with the headers is the only reason the measurement means anything.
+
+Measured, from headers: GraphQL is its own bucket (`x-ratelimit-resource: graphql`, 5000,
+our query costs 1). The tree call is `core`. A cold resolve is 1 + 1, which roughly doubles
+ADR-0010's ceiling. Consequence for M4: the global budget guard must read response headers,
+or `rateLimit { remaining }` from call 1, never `/rate_limit`. Not investigated why
+`/rate_limit` disagrees. It may lag, or it may count per-token differently; for our
+purposes it doesn't matter.
 
 ---
 

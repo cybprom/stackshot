@@ -7,19 +7,23 @@ it is the only thing that survives one.*
 
 ```
 Milestone:  1 — resolver and stack map (Milestone 0 complete, tagged m0-spike)
-Last done:  MILESTONE 0 COMPLETE and torn down. Seven steps, ADR-0011 records GO.
-            Rotated gutter works; <picture> switches on all five surfaces both
-            themes; Camo honours our max-age (v1->v2 at t+246s) and PURGE works;
-            cold render 2.39s vs 8s; card legible at 8.75px item size on a phone.
-            Evidence in docs/spike/. GOTCHAS 004, 008, 011-022. ADRs 0011, 0013.
-            Teardown done in-repo: crude renderer, spike scripts and the spike/*
-            route pins are gone. lib/spike-doc*.ts and scripts/assert-fits.tsx
-            deliberately REMAIN until M2 — the route has no other StackDoc source
-            and no error card yet. See ADR-0011's teardown section.
-Next:       Milestone 1 step 1 — lib/github/ client with the budget counter,
-            recursive tree call, raw fetch at pinned SHA. Commit at the end of
-            EVERY step from here, not the end of the milestone.
-Open:       Detection is entirely unproven — the spike rendered hardcoded data.
+Last done:  M1 STEP 1 — lib/github/ done and committed. Call 1 is GraphQL
+            (ADR-0014: /repos has no commit SHA, GOTCHAS 023); call 2 the REST
+            recursive tree; raw pinned to the commit, token sent (costs no core).
+            Per-request budget counter throws BudgetExceededError past 2 (8 under
+            blob fallback). 2.5s per fetch / 4s deadline. selectManifests has
+            the denied-segment list (GOTCHAS 024). 54 tests, no network.
+            Fixtures: spyde + missing repo recorded; empty + truncated derived.
+            scripts/record-github.ts records fixtures (needs GITHUB_TOKEN via
+            node --env-file=.env.local --import tsx).
+Next:       Milestone 1 step 2 — lib/detect/, one pure module per manifest
+            type, table-driven tests against real fixture files. Commit at the
+            end of EVERY step.
+Open:       GraphQL is its own 5000-point bucket; cold resolve = 1 core + 1
+            GraphQL. /rate_limit body lies (reported 0 used) — M4 guard must read
+            response headers (GOTCHAS 025).
+            M2 route needs the top-level catch + bug counter (M2 step 3).
+            Detection is entirely unproven — the spike rendered hardcoded data.
             M1's judgement call (do 8 real repos produce cards worth looking at?)
             is the largest remaining risk in the project.
             Rule ladder still compresses on phones: 5u and 3u land at 1.46/0.88px.
@@ -192,7 +196,11 @@ The real work. Still no UI.
 
 1. Port the spike's card into `lib/render/card.tsx`, driven by `StackDoc`.
 2. `lib/render/error-card.tsx` for all failure paths.
-3. `app/[owner]/[repo]/[file]/route.ts` with the reserved-word deny list.
+3. `app/[owner]/[repo]/[file]/route.ts` with the reserved-word deny list, and a
+   **top-level catch**. `BudgetExceededError` (and any other throw) is a bug: log it on its
+   own bug counter, separate from the failure-by-reason counts, then render an error card.
+   An uncaught throw would be a 500, which breaks I5. ADR-0012 gets an amendment line for
+   the bug counter when the counters are built in M4.
 4. `app/api/resolve/route.ts`.
 5. `lib/cache.ts` — three key spaces, negative caching, `asOf` assignment on first write.
 6. Determinism test: render twice, assert byte equality, snapshot the hash.

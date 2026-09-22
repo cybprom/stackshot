@@ -127,9 +127,10 @@ app/
   [owner]/[repo]/[file]/route.ts card-light.png | card-dark.png
 lib/
   github/
-    client.ts                    fetch wrapper, auth, budget counter
+    client.ts                    fetch wrapper, auth, budget counter, timeouts
+    repo.ts                      GraphQL call 1: metadata, pinned commit, root entries
     tree.ts                      recursive tree -> manifest paths
-    raw.ts                       raw.githubusercontent fetch at pinned sha
+    raw.ts                       raw.githubusercontent fetch at pinned sha, blob fallback
   detect/
     package-json.ts
     python.ts                    requirements.txt, pyproject.toml
@@ -150,8 +151,12 @@ lib/
     fonts.ts                     read at module scope
     render.ts                    (StackDoc, theme) -> PNG bytes
   tokens.ts                      design tokens, single source
+  result.ts                      Result<T, E>, types only
+scripts/
+  record-github.ts               records GitHub responses into tests/fixtures/github/
 tests/
   fixtures/                      recorded GitHub responses, committed
+  helpers/fixture-fetch.ts       serves fixtures as fetch; unknown URLs fail
   *.test.ts
 docs/
   spike/                         Milestone 0 output — screenshots, measurements

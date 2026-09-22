@@ -1,6 +1,7 @@
 # ADR-0010: A classic PAT for v1, and manifests fetched from raw.githubusercontent.com
 
 **Status:** Accepted
+**Amended by:** ADR-0014 (call 1 is GraphQL; `/repos` has no commit SHA)
 **Date:** 2026-09-21
 
 ## Context

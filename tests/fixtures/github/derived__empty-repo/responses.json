@@ -1,0 +1,11 @@
+{
+  "POST https://api.github.com/graphql": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "x-ratelimit-remaining": "4997",
+      "x-ratelimit-reset": "1790054189"
+    },
+    "body": "{\"data\": {\"repository\": {\"name\": \"spyde\", \"owner\": {\"login\": \"Grandbusta\"}, \"stargazerCount\": 10, \"primaryLanguage\": {\"name\": \"TypeScript\"}, \"defaultBranchRef\": null}, \"rateLimit\": {\"remaining\": 4997}}}"
+  }
+}

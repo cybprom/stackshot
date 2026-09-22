@@ -34,8 +34,8 @@ one, no runtime theme detection, and no per-view telemetry.
             │                                                   │
             │   1  parse owner/repo, reject non-github hosts    │
             │   2  KV get repo:{owner}/{repo}        ───────┐   │
-            │   3  GET /repos/{o}/{r}          [gh api 1]   │   │
-            │   4  GET /git/trees/{sha}?recursive=1 [api 2] │   │
+            │   3  GraphQL repo head: commit, root [api 1]  │   │
+            │   4  GET /git/trees/{tree}?recursive=1 [api 2]│   │
             │   5  select <=6 manifest paths from tree      │   │
             │   6  fetch manifests from raw.github  [raw]   │   │
             │  ─────────────── no network below ─────────   │   │
@@ -166,7 +166,8 @@ key and defeat the cache entirely.
 ## Detection strategy
 
 Scope is "(b-minus)" — see ADR-0001. The substrate is one recursive Trees API call, which
-returns every path in the repo in a single response.
+returns every path in the repo in a single response, preceded by one GraphQL query for the
+commit to pin to (ADR-0014).
 
 **Manifest selection, priority-ordered, budget of 6 fetches:**
 
@@ -175,7 +176,20 @@ returns every path in the repo in a single response.
    `composer.json` at root
 3. `Dockerfile` / `docker-compose.yml` at root
 4. The first file matching `.github/workflows/*.y?ml`
-5. Remaining `package.json` files, shallowest path first
+5. Remaining `package.json` files, shallowest path first, ties by code-unit path order
+
+Paths are skipped if any directory segment is `node_modules`, `examples`, `example`,
+`fixtures`, `test`, `tests`, `__tests__`, `e2e`, `samples`, `demo`, `templates`, `bench` or
+`vendor` (case-insensitive), and blobs over 1 MB are skipped. Without the segment list,
+vercel/next.js gives every remaining slot to `examples/`, which sorts before `packages/`.
+`docs/` is deliberately allowed. GOTCHAS 024.
+
+**Timeouts.** Every GitHub and raw fetch has a 2.5s timeout inside a 4s resolve deadline,
+so the ~2.4s cold render measured in M0 still fits under 8s. That 8s is our working
+estimate from the M0 plan, **not a measured Camo fetch timeout**. A hang becomes a
+`timeout` result and an error card; without the deadline, it would hold the route until
+Vercel's limit and Camo would show a broken image, breaking I5 in practice while every code
+path returns 200. ADR-0014.
 
 **Union every `package.json` found.** No workspace glob resolution, no `pnpm-workspace.yaml`
 parsing, no `turbo.json` parsing. The tree already tells us where the package.json files
@@ -279,10 +293,13 @@ These hold at all times. A change that breaks one requires an ADR.
 - **I5** — The card route always returns HTTP 200 with `content-type: image/png`. Every
   failure path renders an error card. A broken-image icon in a stranger's README is the
   worst outcome this project can produce.
-- **I6** — No request path makes more than **2 authenticated GitHub API calls**. Manifest
-  contents come from `raw.githubusercontent.com` pinned to the resolved SHA, which does
-  not consume the REST rate limit. Enforced by a counter in `lib/github/client.ts` that
-  throws past the budget, and asserted in tests.
+- **I6** — No request path makes more than **2 authenticated GitHub API calls**: one
+  GraphQL query and one REST tree call, and the counter counts both. Manifest contents come
+  from `raw.githubusercontent.com` pinned to the resolved commit, which consumes neither
+  bucket. The only exception is the `/git/blobs` fallback, which raises that request's
+  ceiling to 8. Enforced by a per-request counter in `lib/github/client.ts` that throws
+  `BudgetExceededError` past the budget (programmer error; see the failure table), and
+  asserted in tests. ADR-0014.
 - **I7** — Fonts are read from disk at module scope and embedded in the deployment. Never
   fetched at request time.
 - **I8** — `lib/render/` has no import path that reaches a network call.
@@ -293,13 +310,17 @@ These hold at all times. A change that breaks one requires an ADR.
 
 | Failure | Detection | Response |
 |---|---|---|
-| Repo not found / private | 404 from `/repos` | Error card: "Repo not found or private" · negative cache 10m |
-| Trees response `truncated: true` | Flag in response | Fall back to root `/contents` listing; mark doc `partial` |
+| Repo not found / private | GraphQL **200** with `repository: null` + `NOT_FOUND` — read the body, not the status | Error card: "Repo not found or private" · negative cache 10m |
+| Empty repo | `defaultBranchRef: null` | `empty_repo` → the no-manifests error card |
+| Trees response `truncated: true` | Flag in response | Top up with the root entries from call 1 (no extra call); mark doc `partial` |
 | No recognizable manifest | Empty signal set | Error card naming the manifests Stackshot reads |
 | Every signal unmapped | Empty `StackDoc.layers` | Error card; log all ids — this is the backlog |
-| GitHub rate limit exhausted | 403 + `x-ratelimit-remaining: 0` | Serve last-known card from KV if present, else error card · alert |
+| GitHub rate limit exhausted | 403/429 + `x-ratelimit-remaining: 0`, or GraphQL `RATE_LIMITED` | Serve last-known card from KV if present, else error card · alert |
+| Secondary rate limit | 403/429 + `retry-after` | Same as above; `resetAt` from `retry-after` |
+| GitHub or raw hangs | Per-fetch 2.5s / resolve 4s deadline | `timeout` → error card, well inside the 8s estimate |
+| A code path exceeds the call budget | `BudgetExceededError` **thrown** — a bug, not a GitHub failure | Passes through `lib/` untouched; the route's top-level catch logs it on a separate bug counter (not the failure-by-reason counts) and renders an error card, so I5 holds |
 | Satori throws on a glyph | Exception in render | Error card; log the package name and the glyph |
-| `raw.githubusercontent.com` throttles | Non-200 on raw fetch | Fall back to `/git/blobs` (costs API budget, temporarily raises I6 ceiling to 8) |
+| `raw.githubusercontent.com` throttles | Non-200 (not 404) or timeout on raw fetch | Fall back to `/git/blobs` (costs API budget, raises that request's ceiling to 8); skipped once the deadline has passed |
 | Card route used as a free proxy | Per-IP counter | 429 on the JSON API; the PNG route serves a rate-limit card |
 
 ---
@@ -309,8 +330,9 @@ These hold at all times. A change that breaks one requires an ADR.
 The badge route is a public endpoint that triggers work against a shared quota. Treat it
 as an open proxy until proven otherwise.
 
-- A classic PAT gives 5,000 REST requests/hour. At 2 calls per cold resolve that is 2,500
-  cold resolves/hour, before any caching. Caching should make the real number an order of
+- A classic PAT gives 5,000 REST requests/hour and, separately, 5,000 GraphQL points/hour.
+  A cold resolve costs 1 of each, so that is ~5,000 cold resolves/hour, before any
+  caching. Read the budget from response headers, not `/rate_limit` (GOTCHAS 025). Caching should make the real number an order of
   magnitude lower.
 - Per-IP limit on `POST /api/resolve`: 20/hour. The site is the only legitimate caller.
 - The PNG route is not IP-limited in the normal case (Camo is a small set of IPs and
