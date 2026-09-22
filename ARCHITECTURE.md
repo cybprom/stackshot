@@ -176,7 +176,10 @@ commit to pin to (ADR-0014).
    `composer.json` at root
 3. `Dockerfile` / `docker-compose.yml` at root
 4. The first file matching `.github/workflows/*.y?ml`
-5. Remaining `package.json` files, shallowest path first, ties by code-unit path order
+5. Remaining `package.json` files **and nested language manifests** (`pyproject.toml`,
+   `requirements.txt`, `go.mod`, `Cargo.toml`, `Gemfile`, `composer.json` below the root)
+   in one pool, shallowest path first, ties by code-unit path order. Without nested language
+   manifests, a Python backend beside a JS frontend never gets read. GOTCHAS 026.
 
 Paths are skipped if any directory segment is `node_modules`, `examples`, `example`,
 `fixtures`, `test`, `tests`, `__tests__`, `e2e`, `samples`, `demo`, `templates`, `bench` or

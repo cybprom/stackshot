@@ -15,7 +15,7 @@ export const MANIFEST_BUDGET = 6;
 // Bigger than any honest manifest; keeps a hostile one out of the function.
 export const MAX_MANIFEST_BYTES = 1_000_000;
 
-const ROOT_LANGUAGE_MANIFESTS = [
+const LANGUAGE_MANIFESTS = [
   "pyproject.toml",
   "requirements.txt",
   "go.mod",
@@ -23,6 +23,7 @@ const ROOT_LANGUAGE_MANIFESTS = [
   "Gemfile",
   "composer.json",
 ];
+const NESTED_MANIFESTS = new Set(["package.json", ...LANGUAGE_MANIFESTS]);
 const ROOT_CONTAINER_MANIFESTS = ["Dockerfile", "docker-compose.yml"];
 const WORKFLOW = /^\.github\/workflows\/[^/]+\.ya?ml$/;
 
@@ -79,10 +80,12 @@ export function selectManifests(entries: TreeEntry[]): TreeEntry[] {
 
   const ordered = [
     ...at("package.json"),
-    ...ROOT_LANGUAGE_MANIFESTS.flatMap(at),
+    ...LANGUAGE_MANIFESTS.flatMap(at),
     ...ROOT_CONTAINER_MANIFESTS.flatMap(at),
     ...eligible.filter((e) => WORKFLOW.test(e.path)).slice(0, 1),
-    ...eligible.filter((e) => e.path !== "package.json" && e.path.endsWith("/package.json")),
+    // Nested language manifests share the package.json pool, or a Python backend beside
+    // a JS frontend never gets read. ADR-0001, GOTCHAS 026.
+    ...eligible.filter((e) => depth(e.path) > 1 && NESTED_MANIFESTS.has(basename(e.path))),
   ];
   return ordered.slice(0, MANIFEST_BUDGET);
 }
@@ -92,6 +95,10 @@ function hasDeniedSegment(path: string): boolean {
     .split("/")
     .slice(0, -1)
     .some((segment) => DENIED_SEGMENTS.has(segment.toLowerCase()));
+}
+
+function basename(path: string): string {
+  return path.slice(path.lastIndexOf("/") + 1);
 }
 
 function depth(path: string): number {

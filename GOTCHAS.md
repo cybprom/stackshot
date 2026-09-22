@@ -688,6 +688,11 @@ from the tree entry, which we already have from call 2, before falling back to p
 real package tends to have the largest manifest. Step 5 decides this with the real card:
 vercel/next.js must be in its fixture set.
 
+**Second candidate, also not applied:** one nested manifest per ecosystem first, then fill
+the remaining slots by depth. This guarantees a nested `go.mod` a slot even when ten
+shallower `package.json` files compete. It matters now that nested language manifests share
+the pool (026). The two candidates compose: ecosystem-first, then size, then path.
+
 Small related surprise: in code-unit order `packages/next-swc/` sorts *before*
 `packages/next/`, because `-` (0x2D) < `/` (0x2F). I got it wrong in the test expectation
 first. The code sorts by code unit on purpose, since `localeCompare` would vary by host.
@@ -725,6 +730,20 @@ GraphQL x3        resource=graphql  used 3 -> 4 -> 5     /rate_limit graphql.use
 **Consequence for M4:** the global budget guard reads response headers, or
 `rateLimit { remaining }` from call 1, never `/rate_limit`. That would be right even if
 `/rate_limit` were accurate, because it saves a request.
+
+## 026 — Language manifests were only read at the root, which broke ADR-0001's promise
+**Date:** 2026-09-22 · **Cost:** ~0.25h · **Status:** resolved
+**Writeup material:** yes — a planning doc contradicting its own ADR, one level down
+
+ARCHITECTURE's selection rule read `pyproject.toml`, `go.mod` and the rest only at the
+root, and let only `package.json` in from deeper paths. ADR-0001 says a repo "with a Go
+service and a Next app" gets a card showing both. With that rule it couldn't:
+`fastapi/full-stack-fastapi-template` has `backend/pyproject.toml` and
+`frontend/package.json`, so its card would have shown no Python at all. Caught while
+picking step 5's fixtures, when the list itself exposed it. Fix: nested language manifests
+join the nested `package.json` pool, with the same depth order and the same deny list.
+There's a table case shaped like that repo in `tests/tree.test.ts`. The fairness of that
+shared pool is 024's open question.
 
 ---
 

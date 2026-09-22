@@ -49,9 +49,20 @@ describe("selectManifests", () => {
       [],
     ],
     [
-      "language manifests only at the root",
+      "root language manifests first, nested ones join the package.json pool",
       ["tools/go.mod", "py/pyproject.toml", "requirements.txt"],
-      ["requirements.txt"],
+      ["requirements.txt", "py/pyproject.toml", "tools/go.mod"],
+    ],
+    [
+      // fastapi/full-stack-fastapi-template: no root manifests, Python only in backend/.
+      "a nested Python backend is read beside a JS frontend",
+      ["backend/pyproject.toml", "frontend/package.json", "docker-compose.yml", "backend/app/main.py"],
+      ["docker-compose.yml", "backend/pyproject.toml", "frontend/package.json"],
+    ],
+    [
+      "nested language manifests obey the deny list",
+      ["examples/go.mod", "tests/requirements.txt", "services/api/go.mod"],
+      ["services/api/go.mod"],
     ],
     [
       "remaining package.json shallowest first, ties by path",
