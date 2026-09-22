@@ -1,5 +1,6 @@
 // M1 step 5 tool: cards for every fixture under each candidate nested-pool ordering
-// (GOTCHAS 024), with and without the candidate drop rule. Uses each fixture's recorded
+// (GOTCHAS 024), with and without the candidate drop rule, as text and as JSON for the
+// comparison page. Uses each fixture's recorded
 // tree (no API calls); manifests a recording didn't select are fetched from raw at the
 // same pinned commit and cached. Usage: pnpm tsx scripts/compare-selection.ts <cacheDir>
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -9,7 +10,11 @@ import { fetchRepoHead, type RepoHead } from "@/lib/github/repo";
 import { fetchTree, selectManifests, type NestedOrdering, type TreeEntry } from "@/lib/github/tree";
 import { detect } from "@/lib/detect";
 import { normalize } from "@/lib/normalize";
-import type { StackContent } from "@/lib/stack-map/types";
+import { isDenied, lookup } from "@/lib/stack-map";
+import { parseVersion } from "@/lib/version";
+import type { RawSignal } from "@/lib/stack-map/types";
+import { MAX_ITEMS_PER_LAYER } from "@/lib/normalize";
+import { matchesAlias } from "@/lib/stack-map";
 import { fixtureFetch, loadResponses } from "@/tests/helpers/fixture-fetch";
 import { recordedManifests } from "@/tests/helpers/manifests";
 
@@ -48,13 +53,55 @@ function named(repo: string, fallback: NestedOrdering): NestedOrdering {
   };
 }
 
-type Card = { lines: string[]; doc: StackContent };
+type Provenance = { id: string; source: string; scope: string; raw?: string; bound?: string; counted: boolean };
+type Item = { display: string; version?: string; hidden: boolean; from: Provenance[] };
+type Layer = { category: string; items: Item[]; overflow: number };
+type Variant = { key: string; selection: string[]; layers: Layer[] };
+type Report = { owner: string; repo: string; language: string | null; stars: number; variants: Variant[] };
 
-function card(doc: StackContent): string[] {
-  return doc.layers.map((l) => {
-    const items = l.items.map((i) => (i.version ? `${i.display} ${i.version}` : i.display)).join(", ");
+function card(layers: Layer[]): string[] {
+  return layers.map((l) => {
+    const items = l.items.filter((i) => !i.hidden).map((i) => (i.version ? `${i.display} ${i.version}` : i.display)).join(", ");
     return `${l.category.toUpperCase().padEnd(8)} ${items}${l.overflow ? `  +${l.overflow}` : ""}`;
   });
+}
+
+// Which signals survived deny, mapping and the runtimeOnly rule, per entry id.
+function provenance(signals: RawSignal[]): Map<string, RawSignal[]> {
+  const byEntry = new Map<string, RawSignal[]>();
+  for (const signal of signals) {
+    if (isDenied(signal.id)) continue;
+    const entry = lookup(signal.id);
+    if (!entry || (entry.runtimeOnly && signal.scope === "dev")) continue;
+    byEntry.set(entry.id, [...(byEntry.get(entry.id) ?? []), signal]);
+  }
+  return byEntry;
+}
+
+function layersOf(signals: RawSignal[], meta: Omit<Report, "variants">, drop: boolean): Layer[] {
+  const full = normalize(signals, meta, { dropDevOnlyWhenLayerShips: drop, itemsPerLayer: 999 });
+  const sources = provenance(signals);
+  return full.layers.map((layer) => ({
+    category: layer.category,
+    overflow: Math.max(0, layer.items.length - MAX_ITEMS_PER_LAYER),
+    items: layer.items.map((item, index) => {
+      const from = (sources.get(item.id) ?? []).map((s) => ({
+        id: s.id,
+        source: s.source,
+        scope: s.scope,
+        ...(s.rawVersion ? { raw: s.rawVersion, bound: parseVersion(s.rawVersion)?.bound ?? "none" } : {}),
+        counted: countsForVersion(item.id, s),
+      }));
+      return { display: item.display, hidden: index >= MAX_ITEMS_PER_LAYER, from, ...(item.version ? { version: item.version } : {}) };
+    }),
+  }));
+}
+
+// Mirrors normalize's versionFrom filter, so the page can mark the version's source.
+function countsForVersion(id: string, signal: RawSignal): boolean {
+  const entry = lookup(signal.id);
+  if (!entry || entry.id !== id || !signal.rawVersion) return false;
+  return entry.versionFrom ? entry.versionFrom.some((p) => matchesAlias(signal.id, p)) : true;
 }
 
 async function body(cacheDir: string, head: RepoHead, path: string, recorded: Map<string, string>): Promise<string> {
@@ -70,8 +117,10 @@ async function body(cacheDir: string, head: RepoHead, path: string, recorded: Ma
   return text;
 }
 
-async function main(cacheDir: string) {
+async function main(cacheDir: string, jsonPath?: string) {
   mkdirSync(cacheDir, { recursive: true });
+  const report: Report[] = [];
+
   for (const fixture of FIXTURES) {
     const [owner = "", repo = ""] = fixture.split("__");
     const client = createGitHubClient({ token: "fixture", fetch: fixtureFetch(loadResponses(fixture)) });
@@ -81,57 +130,44 @@ async function main(cacheDir: string) {
     if (!tree.ok) throw new Error(`${fixture}: ${JSON.stringify(tree.error)}`);
     const recorded = new Map(recordedManifests(fixture).map((f) => [f.path, f.contents]));
     const paths = tree.value.entries.map((e) => e.path);
+    const meta = { owner, repo, language: head.value.language, stars: head.value.stars };
 
-    const orderings: [string, NestedOrdering][] = [
-      ["today (depth, path)", (c) => c],
-      ["a", a],
-      ["b", b],
-      ["c", cOrdering],
-      ["d→a", named(repo, a)],
-      ["d→b", named(repo, b)],
-      ["d→c", named(repo, cOrdering)],
+    const orderings: [string, NestedOrdering, boolean][] = [
+      ["today", (c) => c, false],
+      ["a", a, false],
+      ["a+drop", a, true],
+      ["b", b, false],
+      ["c", cOrdering, false],
+      ["d→a", named(repo, a), false],
+      ["d→b", named(repo, b), false],
+      ["d→c", named(repo, cOrdering), false],
     ];
-    // Group orderings that select the same manifests, so identical cards print once.
-    const groups = new Map<string, { names: string[]; selection: string[] }>();
-    for (const [name, ordering] of orderings) {
+
+    const variants: Variant[] = [];
+    for (const [key, ordering, drop] of orderings) {
       const selection = selectManifests(tree.value.entries, ordering).map((e) => e.path);
-      const key = selection.join("\n");
-      const group = groups.get(key) ?? { names: [], selection };
-      group.names.push(name);
-      groups.set(key, group);
-    }
-
-    console.log(`\n## ${owner}/${repo}${groups.size === 1 ? "  (all orderings select the same manifests)" : ""}\n`);
-    for (const { names, selection } of groups.values()) {
-      const files = await Promise.all(selection.map(async (path) => ({ path, contents: await body(cacheDir, head.value, path, recorded) })));
+      const files = await Promise.all(
+        selection.map(async (path) => ({ path, contents: await body(cacheDir, head.value, path, recorded) })),
+      );
       const signals = detect(files, paths);
-      const meta = { owner, repo, language: head.value.language, stars: head.value.stars };
-      const plain: Card = { doc: normalize(signals, meta), lines: [] };
-      plain.lines = card(plain.doc);
-      const withRule = normalize(signals, meta, { dropDevOnlyWhenLayerShips: true });
-      const dropped = card(withRule);
-      const shown = (doc: StackContent) => new Set(doc.layers.flatMap((l) => l.items.map((i) => i.display)));
-      const everything = (dropDevOnlyWhenLayerShips: boolean) =>
-        shown(normalize(signals, meta, { dropDevOnlyWhenLayerShips, itemsPerLayer: 999 }));
-      const after = everything(true);
-      const removed = [...everything(false)].filter((d) => !after.has(d));
-      const surfaced = [...shown(withRule)].filter((d) => !shown(plain.doc).has(d));
-
-      console.log(`### ${names.join(" = ")}\n`);
-      console.log("```");
-      console.log(`nested: ${selection.filter((p) => p.includes("/") && !p.startsWith(".github/")).join(", ") || "(none)"}`);
-      console.log("");
-      for (const line of plain.lines) console.log(line);
-      const changed = dropped.filter((line, i) => line !== plain.lines[i]);
-      console.log("");
-      if (changed.length === 0 && removed.length === 0) console.log("drop rule: no change");
-      else {
-        console.log(`drop rule: removes ${removed.join(", ")}${surfaced.length ? `; surfaces ${surfaced.join(", ")}` : ""}`);
-        for (const line of changed) console.log(`         → ${line}`);
-      }
-      console.log("```\n");
+      variants.push({ key, selection, layers: layersOf(signals, meta, drop) });
     }
+    report.push({ ...meta, variants });
+
+    console.log(`\n## ${owner}/${repo}\n`);
+    for (const variant of variants) {
+      const same = variants.find((v) => v !== variant && v.key !== variant.key && JSON.stringify(v.layers) === JSON.stringify(variant.layers));
+      console.log(`### ${variant.key}${same ? ` (same card as ${same.key})` : ""}`);
+      console.log("```");
+      for (const line of card(variant.layers)) console.log(line);
+      console.log("```");
+    }
+  }
+
+  if (jsonPath) {
+    writeFileSync(jsonPath, JSON.stringify(report, null, 2));
+    console.log(`\nwrote ${jsonPath}`);
   }
 }
 
-main(process.argv[2] ?? "compare-cache");
+main(process.argv[2] ?? "compare-cache", process.argv[3]);
