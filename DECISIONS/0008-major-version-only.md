@@ -1,6 +1,7 @@
 # ADR-0008: Display major versions only
 
 **Status:** Accepted
+**Amended by:** ADR-0017 (minor precision for Go, Python and Rust; how versions merge)
 **Date:** 2026-09-21
 
 ## Context

@@ -5,6 +5,7 @@ import { signal } from "@/lib/detect/signal";
 const USES = /^\s*(?:-\s*)?uses:\s*["']?([^"'\s#]+)/;
 const IMAGE = /^\s*(?:-\s*)?(?:image|container):\s*["']?([^"'\s#{]+)/;
 
+// All dev scope: a workflow is CI, and its service containers are test fixtures.
 /** Every `uses:` action and every container image. No YAML semantics. ADR-0015. */
 export function detectWorkflows(contents: string, path: string): RawSignal[] {
   const steps = contents.split("\n").flatMap((line) => {
@@ -14,7 +15,7 @@ export function detectWorkflows(contents: string, path: string): RawSignal[] {
     const image = line.match(IMAGE)?.[1];
     return image ? imageSignal(image, path) : [];
   });
-  return [signal("tool", "github-actions", path, 1), ...steps];
+  return [signal("tool", "github-actions", path, 1, "dev"), ...steps];
 }
 
 // `github/codeql-action/init@<sha>` → action:github/codeql-action. The ref is the
@@ -23,10 +24,10 @@ function actionSignal(uses: string, path: string): RawSignal[] {
   // Local actions and reusable workflows (…/.github/workflows/x.yml) aren't tools.
   if (uses.startsWith("./") || uses.includes("/.github/workflows/")) return [];
   const [owner, repo] = uses.replace(/@.*$/, "").toLowerCase().split("/");
-  return owner && repo ? [signal("action", `${owner}/${repo}`, path, 1)] : [];
+  return owner && repo ? [signal("action", `${owner}/${repo}`, path, 1, "dev")] : [];
 }
 
 function imageSignal(ref: string, path: string): RawSignal[] {
   const image = parseImageRef(ref);
-  return image ? [signal("docker", image.name, path, 1, image.tag)] : [];
+  return image ? [signal("docker", image.name, path, 1, "dev", image.tag)] : [];
 }

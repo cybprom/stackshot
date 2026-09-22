@@ -27,6 +27,7 @@ export const BACKEND: MapEntry[] = [
     weight: 45,
     description: "Python runtime.",
     aliases: ["tool:python", "docker:python", "action:actions/setup-python"],
+    versionPrecision: "minor",
   },
   {
     id: "go",
@@ -35,6 +36,7 @@ export const BACKEND: MapEntry[] = [
     weight: 45,
     description: "Go toolchain.",
     aliases: ["tool:go", "docker:golang", "action:actions/setup-go"],
+    versionPrecision: "minor",
   },
   {
     id: "rust",
@@ -43,6 +45,7 @@ export const BACKEND: MapEntry[] = [
     weight: 45,
     description: "Rust toolchain.",
     aliases: ["tool:rust", "docker:rust", "action:dtolnay/rust-toolchain", "action:actions-rust-lang/setup-rust-toolchain"],
+    versionPrecision: "minor",
   },
   {
     id: "ruby",
@@ -230,6 +233,7 @@ export const BACKEND: MapEntry[] = [
       "docker:postgis/postgis",
       "docker:bitnami/postgresql",
     ],
+    runtimeOnly: true,
   },
   {
     id: "mysql",
@@ -247,6 +251,7 @@ export const BACKEND: MapEntry[] = [
       "docker:mysql",
       "docker:bitnami/mysql",
     ],
+    runtimeOnly: true,
   },
   {
     id: "mariadb",
@@ -255,6 +260,7 @@ export const BACKEND: MapEntry[] = [
     weight: 80,
     description: "MySQL-compatible relational database.",
     aliases: ["npm:mariadb", "docker:mariadb"],
+    runtimeOnly: true,
   },
   {
     id: "sqlite",
@@ -271,6 +277,7 @@ export const BACKEND: MapEntry[] = [
       "go:github.com/mattn/go-sqlite3",
       "cargo:rusqlite",
     ],
+    runtimeOnly: true,
   },
   {
     id: "mongodb",
@@ -279,6 +286,7 @@ export const BACKEND: MapEntry[] = [
     weight: 80,
     description: "Document database.",
     aliases: ["npm:mongodb", "pypi:pymongo", "pypi:motor", "gem:mongoid", "go:go.mongodb.org/mongo-driver*", "docker:mongo"],
+    runtimeOnly: true,
   },
   {
     id: "redis",
@@ -297,6 +305,7 @@ export const BACKEND: MapEntry[] = [
       "docker:redis",
       "docker:valkey/valkey",
     ],
+    runtimeOnly: true,
   },
   {
     id: "elasticsearch",
@@ -305,6 +314,7 @@ export const BACKEND: MapEntry[] = [
     weight: 70,
     description: "Search and analytics engine.",
     aliases: ["npm:@elastic/elasticsearch", "pypi:elasticsearch", "gem:chewy", "gem:elasticsearch", "docker:elasticsearch"],
+    runtimeOnly: true,
   },
   {
     id: "rabbitmq",
@@ -313,6 +323,7 @@ export const BACKEND: MapEntry[] = [
     weight: 66,
     description: "Message broker.",
     aliases: ["npm:amqplib", "pypi:pika", "gem:bunny", "docker:rabbitmq"],
+    runtimeOnly: true,
   },
   {
     id: "kafka",
@@ -321,6 +332,7 @@ export const BACKEND: MapEntry[] = [
     weight: 68,
     description: "Distributed event streaming.",
     aliases: ["npm:kafkajs", "pypi:kafka-python", "pypi:confluent-kafka", "docker:confluentinc/cp-kafka", "docker:apache/kafka"],
+    runtimeOnly: true,
   },
   {
     id: "django",

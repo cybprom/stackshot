@@ -819,6 +819,29 @@ Two gaps, both found by checking each fixture's card-to-be rather than its signa
   lesson for step 5 stands: a one-dependency repo's one dependency is probably the thing
   that defines it.
 
+## 030 — Confidence 2 said "declared", not "shipped": every devDependency ranked like the stack
+**Date:** 2026-09-22 · **Cost:** ~0.4h · **Status:** resolved in the model; applied in step 4
+**Writeup material:** yes — Firebase on the Next.js card is a good concrete failure
+
+Found when reading the step-3 coverage output: next.js mapped Firebase, Datadog and Emotion.
+They're in its root `devDependencies` because it tests integrations against them. Every
+`package.json` signal was confidence 2 and weight is global, so the normalizer had nothing
+to rank them out with. Detectors knew the scope all along and threw it away. `RawSignal`
+now carries `scope: "runtime" | "dev"`.
+
+Checking the fixtures with scope in hand: **next.js's root `package.json` has zero runtime
+dependencies**. Everything is dev, including React. Its card gets "Next.js" at all only
+because `apps/bundle-analyzer/package.json` happened to be selected and declares `next` at
+runtime. That makes the 024 ordering question more pointed for step 5.
+
+Two known gaps, both defaulting to runtime:
+- **Gemfile `group :development, :test do … end` blocks aren't tracked.** mastodon's
+  RuboCop and RSpec are therefore runtime-scoped. They map to tooling, which is exempt from
+  the dev rule, so today it costs nothing. A test-only gem mapping to backend would be
+  misranked.
+- **go.mod has no dev/test split at all**, and Cargo `[workspace.dependencies]` is a
+  shared list whose real scope depends on which member section references it.
+
 ---
 
 *New entries go above this line as they happen.*

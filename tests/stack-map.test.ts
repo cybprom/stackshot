@@ -72,6 +72,15 @@ describe("map integrity", () => {
     }
   });
 
+  it("uses runtimeOnly only outside tooling, where dev scope is the norm", () => {
+    for (const entry of STACK_MAP.filter((e) => e.runtimeOnly)) expect(entry.category, entry.id).not.toBe("tooling");
+  });
+
+  it("gives minor precision to the toolchains whose major says nothing", () => {
+    const minor = STACK_MAP.filter((e) => e.versionPrecision === "minor").map((e) => e.id).sort();
+    expect(minor).toEqual(["go", "python", "rust"]);
+  });
+
   it("namespaces every deny pattern with a known ecosystem", () => {
     for (const pattern of DENY) expect(pattern).toMatch(NAMESPACED);
   });

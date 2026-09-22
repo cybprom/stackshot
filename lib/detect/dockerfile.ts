@@ -11,7 +11,7 @@ const COMPOSE = /^(docker-)?compose\.ya?ml$/;
 export function detectDocker(contents: string, path: string): RawSignal[] {
   const images = COMPOSE.test(basename(path)) ? fromCompose(contents, path) : fromDockerfile(contents, path);
   // The file's existence is the "uses Docker" signal; the images are what it runs.
-  return [signal("tool", "docker", path, 1), ...images];
+  return [signal("tool", "docker", path, 1, "runtime"), ...images];
 }
 
 function fromDockerfile(contents: string, path: string): RawSignal[] {
@@ -33,7 +33,7 @@ function fromDockerfile(contents: string, path: string): RawSignal[] {
     if (from[2]) stages.add(from[2].toLowerCase());
     if (isStage) continue;
     const image = parseImageRef(ref);
-    if (image) signals.push(signal("docker", image.name, path, 1, image.tag));
+    if (image) signals.push(signal("docker", image.name, path, 1, "runtime", image.tag));
   }
   return signals;
 }
@@ -42,6 +42,6 @@ function fromCompose(contents: string, path: string): RawSignal[] {
   return contents.split("\n").flatMap((line) => {
     const match = line.match(IMAGE);
     const image = match?.[1] ? parseImageRef(substitute(match[1], new Map())) : null;
-    return image ? [signal("docker", image.name, path, 1, image.tag)] : [];
+    return image ? [signal("docker", image.name, path, 1, "runtime", image.tag)] : [];
   });
 }

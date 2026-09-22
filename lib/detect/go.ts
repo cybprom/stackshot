@@ -3,6 +3,7 @@ import { signal } from "@/lib/detect/signal";
 
 const REQUIRE_LINE = /^([^\s()]+)\s+(v\S+)/;
 
+// go.mod doesn't separate test dependencies, so everything is runtime scope.
 /** go.mod require lines and the go directive. `// indirect` is transitive, so skipped. */
 export function detectGo(contents: string, path: string): RawSignal[] {
   const signals: RawSignal[] = [];
@@ -21,14 +22,14 @@ export function detectGo(contents: string, path: string): RawSignal[] {
 
     const directive = line.match(/^go\s+(\d\S*)/);
     if (directive?.[1]) {
-      signals.push(signal("tool", "go", path, 2, directive[1]));
+      signals.push(signal("tool", "go", path, 2, "runtime", directive[1]));
       continue;
     }
 
     const body = inRequireBlock ? line : line.match(/^require\s+(.*)$/)?.[1];
     if (!body || /\/\/\s*indirect/.test(body)) continue;
     const req = body.match(REQUIRE_LINE);
-    if (req?.[1] && req[2]) signals.push(signal("go", req[1], path, 2, req[2]));
+    if (req?.[1] && req[2]) signals.push(signal("go", req[1], path, 2, "runtime", req[2]));
   }
   return signals;
 }

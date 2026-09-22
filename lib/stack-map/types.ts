@@ -17,7 +17,15 @@ export type MapEntry = {
   aliases: string[];
   // Entry ids this one makes redundant on the card.
   suppresses?: string[];
+  // Omitted means "major". Go 1 and Python 3 say nothing, so those show minor. ADR-0017.
+  versionPrecision?: "major" | "minor";
+  // Dev-scope signals don't count at all: a library testing against pg doesn't run
+  // PostgreSQL. Databases and brokers, whose drivers imply them.
+  runtimeOnly?: boolean;
 };
+
+// "runtime": part of what ships or runs. "dev": declared only for development, test or CI.
+export type Scope = "runtime" | "dev";
 
 export type RawSignal = {
   // "<ecosystem>:<name>", e.g. "npm:next", "docker:postgres". ADR-0015.
@@ -26,12 +34,13 @@ export type RawSignal = {
   source: string;
   // 2 = declared dependency, 1 = inferred from CI or Docker.
   confidence: 1 | 2;
+  scope: Scope;
 };
 
 export type StackItem = {
   id: string;
   display: string;
-  // Major only. See ADR-0008.
+  // Major, or major.minor where the entry says so. ADR-0008, ADR-0017.
   version?: string;
   // Site only — never rendered on the card. See ADR-0009.
   description: string;

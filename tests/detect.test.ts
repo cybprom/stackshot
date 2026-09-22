@@ -18,6 +18,10 @@ type Detector = (contents: string, path: string) => RawSignal[];
 // "id@version", or bare "id" when the signal carries no version.
 const tags = (signals: RawSignal[]) => signals.map((s) => (s.rawVersion ? `${s.id}@${s.rawVersion}` : s.id));
 const run = (detector: Detector, contents: string, path: string) => tags(detector(contents, path));
+// Snapshots also record scope, so a scope change shows up in review.
+const scopedTags = (signals: RawSignal[]) =>
+  signals.map((s) => `${s.rawVersion ? `${s.id}@${s.rawVersion}` : s.id}${s.scope === "dev" ? " [dev]" : ""}`);
+const scopeOf = (signals: RawSignal[], id: string) => signals.filter((s) => s.id === id).map((s) => s.scope);
 const real = (detector: Detector, fixture: string, path: string) =>
   run(detector, recordedManifest(fixture, path), path);
 
@@ -171,6 +175,55 @@ describe("detector edge cases", () => {
   });
 });
 
+describe("scope", () => {
+  // [name, detector, path, contents, id, expected scopes]
+  const cases: [string, Detector, string, string, string, string[]][] = [
+    ["npm dependencies ship", detectPackageJson, "package.json", '{"dependencies":{"pg":"^8"}}', "npm:pg", ["runtime"]],
+    ["npm devDependencies don't", detectPackageJson, "package.json", '{"devDependencies":{"pg":"^8"}}', "npm:pg", ["dev"]],
+    ["npm: in both sections is runtime", detectPackageJson, "package.json",
+      '{"devDependencies":{"pg":"^7"},"dependencies":{"pg":"^8"}}', "npm:pg", ["runtime"]],
+    ["npm: engines is the runtime", detectPackageJson, "package.json", '{"engines":{"node":">=20"}}', "tool:node", ["runtime"]],
+    ["npm: packageManager is tooling", detectPackageJson, "package.json", '{"packageManager":"pnpm@10.1.0"}', "tool:pnpm", ["dev"]],
+    ["pyproject: a feature extra ships", detectPython, "pyproject.toml",
+      '[project.optional-dependencies]\npostgres = ["psycopg"]', "pypi:psycopg", ["runtime"]],
+    ["pyproject: a test extra doesn't", detectPython, "pyproject.toml",
+      '[project.optional-dependencies]\ntest = ["psycopg"]', "pypi:psycopg", ["dev"]],
+    ["pyproject: PEP 735 groups are dev", detectPython, "pyproject.toml",
+      '[dependency-groups]\nci = ["psycopg"]', "pypi:psycopg", ["dev"]],
+    ["pyproject: Poetry groups are dev", detectPython, "pyproject.toml",
+      '[tool.poetry.group.docs.dependencies]\nmkdocs = "^1"', "pypi:mkdocs", ["dev"]],
+    ["Cargo: dev- and build-dependencies are dev", detectRust, "Cargo.toml",
+      '[dependencies]\nserde = "1"\n[dev-dependencies]\ninsta = "1"\n[build-dependencies]\ncc = "1"',
+      "cargo:insta", ["dev"]],
+    ["Cargo: target-specific dev-dependencies are dev", detectRust, "Cargo.toml",
+      "[target.'cfg(unix)'.dev-dependencies]\nnix = \"0.29\"", "cargo:nix", ["dev"]],
+    ["composer: require-dev is dev", detectPhp, "composer.json",
+      '{"require":{"laravel/framework":"^11"},"require-dev":{"phpunit/phpunit":"^11"}}', "composer:phpunit/phpunit", ["dev"]],
+    ["Dockerfile images ship", detectDocker, "Dockerfile", "FROM node:22", "docker:node", ["runtime"]],
+    ["workflow service containers are CI fixtures", detectWorkflows, ".github/workflows/ci.yml",
+      "    services:\n      db:\n        image: postgres:16", "docker:postgres", ["dev"]],
+    ["Gemfile groups aren't tracked, so runtime", detectRuby, "Gemfile",
+      "group :test do\n  gem 'rspec-rails'\nend", "gem:rspec-rails", ["runtime"]],
+  ];
+
+  it.each(cases)("%s", (_name, detector, path, contents, id, expected) => {
+    expect(scopeOf(detector(contents, path), id)).toEqual(expected);
+  });
+
+  it("next.js's root package.json is all devDependencies", () => {
+    const signals = detectPackageJson(recordedManifest("vercel__next.js", "package.json"), "package.json");
+    expect(new Set(signals.filter((s) => s.id.startsWith("npm:")).map((s) => s.scope))).toEqual(new Set(["dev"]));
+    expect(scopeOf(signals, "npm:firebase")).toEqual(["dev"]);
+  });
+
+  it("fastapi's backend ships FastAPI and develops with pytest", () => {
+    const path = "backend/pyproject.toml";
+    const signals = detectPython(recordedManifest("fastapi__full-stack-fastapi-template", path), path);
+    expect(scopeOf(signals, "pypi:fastapi")).toEqual(["runtime"]);
+    expect(scopeOf(signals, "pypi:pytest")).toEqual(["dev"]);
+  });
+});
+
 describe("parseImageRef", () => {
   it.each([
     ["postgres", { name: "postgres" }],
@@ -213,7 +266,7 @@ const FIXTURES = [
 describe("detect over each fixture repo", () => {
   it.each(FIXTURES)("%s", (fixture) => {
     const signals = detect(recordedManifests(fixture), recordedRootPaths(fixture));
-    expect([...new Set(tags(signals))].sort()).toMatchSnapshot();
+    expect([...new Set(scopedTags(signals))].sort()).toMatchSnapshot();
   });
 
   it("finds nothing in a repo with no manifests and no workflows", () => {

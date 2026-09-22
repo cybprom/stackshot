@@ -1,6 +1,6 @@
 import { parse } from "smol-toml";
 import { z } from "zod";
-import type { RawSignal } from "@/lib/stack-map/types";
+import type { RawSignal, Scope } from "@/lib/stack-map/types";
 import { basename, signal } from "@/lib/detect/signal";
 
 const StringList = z.array(z.unknown()).catch([]);
@@ -31,6 +31,9 @@ const PyprojectSchema = z.object({
     .catch(undefined),
 });
 
+// Optional-dependency extras with these names are for the project's own development.
+const DEV_EXTRA = /^(dev|develop|development|test|tests|testing|lint|linting|docs?|typing|types|format|ci|bench)$/i;
+
 // PEP 508: a name, optional [extras], then the version spec up to any ";" marker.
 const REQUIREMENT = /^([A-Za-z0-9][A-Za-z0-9._-]*)\s*(?:\[[^\]]*\])?\s*([^;@]*)/;
 
@@ -44,7 +47,7 @@ function fromRequirements(contents: string, path: string): RawSignal[] {
     const text = line.replace(/(^|\s)#.*$/, "").trim();
     // Options (-r, -e, --index-url) and bare URLs aren't named dependencies.
     if (!text || text.startsWith("-") || /^[a-z+]+:\/\//i.test(text)) return [];
-    return requirement(text, path);
+    return requirement(text, path, "runtime");
   });
 }
 
@@ -54,36 +57,43 @@ function fromPyproject(contents: string, path: string): RawSignal[] {
   const { project, tool } = parsed.data;
   const poetry = tool?.poetry;
 
-  const pep508 = [
-    ...(project?.dependencies ?? []),
-    ...Object.values(project?.["optional-dependencies"] ?? {}).flat(),
-    // PEP 735 groups may also hold {include-group = "..."} tables, which aren't deps.
-    ...Object.values(parsed.data["dependency-groups"] ?? {}).flat(),
-  ].flatMap((dep) => (typeof dep === "string" ? requirement(dep, path) : []));
-
-  const poetryTables = [
-    poetry?.dependencies ?? {},
-    poetry?.["dev-dependencies"] ?? {},
-    ...Object.values(poetry?.group ?? {}).map((g) => g.dependencies ?? {}),
+  const lists: [unknown[], Scope][] = [
+    [project?.dependencies ?? [], "runtime"],
+    ...Object.entries(project?.["optional-dependencies"] ?? {}).map(
+      ([extra, deps]): [unknown[], Scope] => [deps, DEV_EXTRA.test(extra) ? "dev" : "runtime"],
+    ),
+    // PEP 735 groups are never published, so they're development-only by definition.
+    ...Object.values(parsed.data["dependency-groups"] ?? {}).map((deps): [unknown[], Scope] => [deps, "dev"]),
   ];
-  const poetryDeps = poetryTables.flatMap((table) =>
+  // PEP 735 groups may also hold {include-group = "..."} tables, which aren't deps.
+  const pep508 = lists.flatMap(([deps, scope]) =>
+    deps.flatMap((dep) => (typeof dep === "string" ? requirement(dep, path, scope) : [])),
+  );
+
+  // Poetry's main table ships; dev-dependencies and every group are for development.
+  const poetryTables: [Record<string, unknown>, Scope][] = [
+    [poetry?.dependencies ?? {}, "runtime"],
+    [poetry?.["dev-dependencies"] ?? {}, "dev"],
+    ...Object.values(poetry?.group ?? {}).map((g): [Record<string, unknown>, Scope] => [g.dependencies ?? {}, "dev"]),
+  ];
+  const poetryDeps = poetryTables.flatMap(([table, scope]) =>
     Object.entries(table).flatMap(([name, spec]) => {
       const version = typeof spec === "string" ? spec : versionField(spec);
-      if (name === "python") return [signal("tool", "python", path, 2, version)];
-      return [signal("pypi", normalize(name), path, 2, version)];
+      if (name === "python") return [signal("tool", "python", path, 2, "runtime", version)];
+      return [signal("pypi", normalize(name), path, 2, scope, version)];
     }),
   );
 
   const requiresPython = project?.["requires-python"];
-  const python = requiresPython ? [signal("tool", "python", path, 2, requiresPython)] : [];
+  const python = requiresPython ? [signal("tool", "python", path, 2, "runtime", requiresPython)] : [];
   return [...pep508, ...poetryDeps, ...python];
 }
 
-function requirement(text: string, path: string): RawSignal[] {
+function requirement(text: string, path: string, scope: Scope): RawSignal[] {
   const match = text.trim().match(REQUIREMENT);
   if (!match?.[1]) return [];
   const spec = match[2]?.trim();
-  return [signal("pypi", normalize(match[1]), path, 2, spec || undefined)];
+  return [signal("pypi", normalize(match[1]), path, 2, scope, spec || undefined)];
 }
 
 // PEP 503: Flask, flask and FLASK, and foo_bar and foo-bar, are one package.

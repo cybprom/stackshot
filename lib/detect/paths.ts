@@ -1,28 +1,28 @@
-import type { RawSignal } from "@/lib/stack-map/types";
+import type { RawSignal, Scope } from "@/lib/stack-map/types";
 import { signal } from "@/lib/detect/signal";
 
-// Presence only; no lockfile is ever opened. Root only: next.js's examples/ hold yarn,
-// npm and bun lockfiles that say nothing about what the project itself uses.
-const ROOT_FILES: Record<string, string> = {
-  "pnpm-workspace.yaml": "pnpm-workspace",
-  "turbo.json": "turborepo",
-  "nx.json": "nx",
-  "lerna.json": "lerna",
-  "pnpm-lock.yaml": "pnpm",
-  "yarn.lock": "yarn",
-  "package-lock.json": "npm",
-  "bun.lock": "bun",
-  "bun.lockb": "bun",
-  "poetry.lock": "poetry",
-  "uv.lock": "uv",
-  "deno.json": "deno",
-  "deno.jsonc": "deno",
+// Presence only, never opened, root only: next.js's examples/ hold lockfiles that say
+// nothing about the project. Lockfiles are dev tooling; deno.json declares the runtime.
+const ROOT_FILES: Record<string, [string, Scope]> = {
+  "pnpm-workspace.yaml": ["pnpm-workspace", "dev"],
+  "turbo.json": ["turborepo", "dev"],
+  "nx.json": ["nx", "dev"],
+  "lerna.json": ["lerna", "dev"],
+  "pnpm-lock.yaml": ["pnpm", "dev"],
+  "yarn.lock": ["yarn", "dev"],
+  "package-lock.json": ["npm", "dev"],
+  "bun.lock": ["bun", "dev"],
+  "bun.lockb": ["bun", "dev"],
+  "poetry.lock": ["poetry", "dev"],
+  "uv.lock": ["uv", "dev"],
+  "deno.json": ["deno", "runtime"],
+  "deno.jsonc": ["deno", "runtime"],
 };
 
 /** Tooling signals from which root files exist. The one detector that takes paths. */
 export function detectPaths(paths: string[]): RawSignal[] {
   return paths.flatMap((path) => {
     const tool = path.includes("/") ? undefined : ROOT_FILES[path];
-    return tool ? [signal("tool", tool, path, 1)] : [];
+    return tool ? [signal("tool", tool[0], path, 1, tool[1])] : [];
   });
 }

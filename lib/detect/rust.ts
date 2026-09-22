@@ -1,6 +1,6 @@
 import { parse } from "smol-toml";
 import { z } from "zod";
-import type { RawSignal } from "@/lib/stack-map/types";
+import type { RawSignal, Scope } from "@/lib/stack-map/types";
 import { signal } from "@/lib/detect/signal";
 
 const DepTable = z.record(z.string(), z.unknown()).optional().catch(undefined);
@@ -23,6 +23,8 @@ const CargoSchema = DepSections.extend({
   target: z.record(z.string(), DepSections.catch({})).optional().catch(undefined),
 });
 
+type DepTableValue = z.infer<typeof DepTable>;
+
 const DepSpec = z.object({
   version: z.string().optional(),
   path: z.string().optional(),
@@ -35,31 +37,31 @@ export function detectRust(contents: string, path: string): RawSignal[] {
   if (!parsed.success) return [];
   const cargo = parsed.data;
 
-  const tables = [
-    cargo.dependencies,
-    cargo["dev-dependencies"],
-    cargo["build-dependencies"],
-    cargo.workspace?.dependencies,
-    ...Object.values(cargo.target ?? {}).flatMap((t) => [
-      t.dependencies,
-      t["dev-dependencies"],
-      t["build-dependencies"],
-    ]),
+  const sections = (t: z.infer<typeof DepSections>): [DepTableValue, Scope][] => [
+    [t.dependencies, "runtime"],
+    [t["dev-dependencies"], "dev"],
+    [t["build-dependencies"], "dev"],
+  ];
+  const tables: [DepTableValue, Scope][] = [
+    ...sections(cargo),
+    // Shared by members for every section, so its real scope is unknowable here.
+    [cargo.workspace?.dependencies, "runtime"],
+    ...Object.values(cargo.target ?? {}).flatMap(sections),
   ];
 
-  const deps = tables.flatMap((table) =>
+  const deps = tables.flatMap(([table, scope]) =>
     Object.entries(table ?? {}).flatMap(([key, spec]) => {
-      if (typeof spec === "string") return [signal("cargo", key, path, 2, spec)];
+      if (typeof spec === "string") return [signal("cargo", key, path, 2, scope, spec)];
       const detail = DepSpec.safeParse(spec);
-      if (!detail.success) return [signal("cargo", key, path, 2)];
+      if (!detail.success) return [signal("cargo", key, path, 2, scope)];
       // A path dependency is one of the repo's own crates.
       if (detail.data.path) return [];
-      return [signal("cargo", detail.data.package ?? key, path, 2, detail.data.version)];
+      return [signal("cargo", detail.data.package ?? key, path, 2, scope, detail.data.version)];
     }),
   );
 
   const rustVersion = cargo.package?.["rust-version"] ?? cargo.workspace?.package?.["rust-version"];
-  const rust = signal("tool", "rust", path, 2, typeof rustVersion === "string" ? rustVersion : undefined);
+  const rust = signal("tool", "rust", path, 2, "runtime", typeof rustVersion === "string" ? rustVersion : undefined);
   return [...deps, rust];
 }
 

@@ -122,12 +122,13 @@ type RawSignal = {
   rawVersion?: string;  // "^15.1.0", "22-alpine", undefined
   source: string;       // "package.json", "Dockerfile", ".github/workflows/ci.yml"
   confidence: 1 | 2;    // 2 = declared dependency, 1 = inferred from CI/Docker
+  scope: "runtime" | "dev"; // ships or runs, vs development/test/CI only (below)
 };
 
 type StackItem = {
   id: string;
   display: string;      // "Next.js"
-  version?: string;     // "15"  — major only
+  version?: string;     // "15"; "1.22" for Go, Python, Rust (ADR-0017)
   description: string;  // shown on the site, never on the card
 };
 
@@ -147,6 +148,22 @@ type StackDoc = {
   unmapped: string[];   // logged, never rendered
 };
 ```
+
+### `scope`, and why confidence isn't enough
+
+Every `package.json` signal is confidence 2, and weight is global, so without scope nothing
+separates a shipped dependency from a root devDependency. next.js's root has Firebase,
+Datadog and Emotion as devDependencies (it tests integrations against them), and they'd
+rank like the stack. Detectors set scope where the manifest says it: npm `devDependencies`,
+Python dev extras and PEP 735 and Poetry groups, Cargo `dev-`/`build-dependencies`, composer
+`require-dev`. Workflows are CI, so dev. Dockerfile and compose are runtime. go.mod has no
+split, and Gemfile groups aren't tracked, so both default to runtime (GOTCHAS 030).
+
+Normalization uses it twice:
+- A frontend, backend or infra entry backed **only** by dev signals ranks below every
+  entry with a runtime signal. Tooling is exempt, because dev scope is normal there.
+- Entries marked `runtimeOnly` (databases and brokers, which their drivers imply) ignore
+  dev signals entirely. A library testing against `pg` doesn't run PostgreSQL.
 
 ### `asOf`, and why it isn't "now"
 

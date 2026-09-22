@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { RawSignal } from "@/lib/stack-map/types";
+import type { RawSignal, Scope } from "@/lib/stack-map/types";
 import { signal } from "@/lib/detect/signal";
 
 const DepsSchema = z.record(z.string(), z.unknown()).optional().catch(undefined);
@@ -20,16 +20,21 @@ export function detectPackageJson(contents: string, path: string): RawSignal[] {
   if (!parsed.success) return [];
   const pkg = parsed.data;
 
-  const deps = Object.entries({ ...pkg.devDependencies, ...pkg.dependencies }).flatMap(([name, range]) => {
-    if (typeof range !== "string") return [signal("npm", name, path, 2)];
+  // A name in both sections is a runtime dependency, with the runtime range.
+  const declared = new Map<string, [unknown, Scope]>();
+  for (const [name, range] of Object.entries(pkg.devDependencies ?? {})) declared.set(name, [range, "dev"]);
+  for (const [name, range] of Object.entries(pkg.dependencies ?? {})) declared.set(name, [range, "runtime"]);
+
+  const deps = [...declared].flatMap(([name, [range, scope]]) => {
+    if (typeof range !== "string") return [signal("npm", name, path, 2, scope)];
     if (LOCAL_PROTOCOL.test(range)) return [];
-    return [signal("npm", name, path, 2, range)];
+    return [signal("npm", name, path, 2, scope, range)];
   });
 
   const tools: RawSignal[] = [];
-  if (pkg.engines?.node) tools.push(signal("tool", "node", path, 2, pkg.engines.node));
+  if (pkg.engines?.node) tools.push(signal("tool", "node", path, 2, "runtime", pkg.engines.node));
   const manager = pkg.packageManager?.match(/^([a-z]+)@([^+]+)/);
-  if (manager?.[1]) tools.push(signal("tool", manager[1], path, 2, manager[2]));
+  if (manager?.[1]) tools.push(signal("tool", manager[1], path, 2, "dev", manager[2]));
 
   return [...deps, ...tools];
 }
