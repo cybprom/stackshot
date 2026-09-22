@@ -781,6 +781,23 @@ Separately, `res.clone()` failed on the 12.7 MB tree body with "Body has already
 read". The recorder now reads the body once and rebuilds the Response. `lib/github` never
 clones, so it isn't affected.
 
+## 028 — Real Dockerfiles hide the image behind ARGs, and name stages after images
+**Date:** 2026-09-22 · **Cost:** ~0.2h · **Status:** resolved
+**Writeup material:** yes — the textbook `FROM node:22` never appeared in the fixture set
+
+mastodon's Dockerfile starts `FROM ${BASE_REGISTRY}/node:${NODE_MAJOR_VERSION}-${DEBIAN_VERSION}-slim AS node`.
+A `FROM` regex on its own gets `${BASE_REGISTRY}/node` and emits nothing useful. The ARG
+defaults are all in the file (`BASE_REGISTRY="docker.io"`, `NODE_MAJOR_VERSION="24"`), so
+substituting them before matching turns it into `docker:node@24-trixie-slim`. The same file
+then has `FROM ruby AS mastodon`, where `ruby` is an *earlier stage*, not the Docker Hub
+image. Stage names are tracked and skipped.
+
+The same pass over real workflows showed that nearly every action is SHA-pinned
+(`actions/checkout@de0fac2… # v6.0.2`), so the ref is worthless as a version. It also
+showed laravel's `uses: laravel/.github/.github/workflows/…@main`, which is a reusable
+workflow, not an action. Both were caught by reading the detector output over the fixture
+set before writing assertions, not by the edge-case tables I'd planned.
+
 ---
 
 *New entries go above this line as they happen.*

@@ -28,6 +28,7 @@ Use `0000-template.md` as the starting point.
 | 0012 | Measure embeds and intent, not views | Accepted |
 | 0013 | Downstream `max-age` is the staleness lever for embedded cards | Accepted |
 | 0014 | Call 1 is a GraphQL query, not REST `/repos` | Accepted |
+| 0015 | Namespaced signal ids; Docker and CI extracted generically | Accepted |
 
 ADR-0011 records the spike's measured results and the go/no-go call. It exists, the call
 was **go**, and it owes a teardown — see its final section.

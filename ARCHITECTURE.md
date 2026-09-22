@@ -118,7 +118,7 @@ content hash.
 type Category = "frontend" | "backend" | "infra" | "tooling";
 
 type RawSignal = {
-  id: string;           // "next", "postgres", "github-actions"
+  id: string;           // "npm:next", "docker:postgres", "action:actions/setup-go" (ADR-0015)
   rawVersion?: string;  // "^15.1.0", "22-alpine", undefined
   source: string;       // "package.json", "Dockerfile", ".github/workflows/ci.yml"
   confidence: 1 | 2;    // 2 = declared dependency, 1 = inferred from CI/Docker
@@ -200,10 +200,16 @@ are; resolving globs would give us the same set with more code. `pnpm-workspace.
 `turbo.json` are used only as *signals* that the repo is a monorepo, which gets rendered
 as a tooling item.
 
-**Dockerfile and workflows are regex-matched against a signal list, never parsed.**
-`FROM node:22` → `node@22`. `image: postgres:16` → `postgres@16`. `actions/setup-go` →
-`go`. `uses: supabase/setup-cli` → `supabase`. If the regex list grows past ~40 entries,
-that is a sign this should have been scope (a).
+**Dockerfile, compose and workflows are line-matched, never parsed, and extracted
+generically.** Every image and action is emitted, and the map decides what renders
+(ADR-0015). `FROM node:22` → `docker:node@22`. `image: docker.io/library/postgres:16` →
+`docker:postgres@16`. `uses: actions/setup-go@v5` → `action:actions/setup-go`, with no
+version, because the ref is the action's. Dockerfile ARG defaults are substituted
+before matching.
+
+**Tooling from paths.** `lib/detect/paths.ts` turns *root* monorepo configs and lockfiles
+into `tool:` signals by presence alone, without opening them. Root only: nested lockfiles
+under `examples/` say nothing about the project.
 
 **Never parse a lockfile.** A dependency that appears only in a lockfile is transitive, and
 transitive dependencies are noise. This is a hard rule, not a v1 shortcut.
@@ -215,11 +221,12 @@ transitive dependencies are noise. This is a hard rule, not a v1 shortcut.
 ```
 RawSignal[]
    │
-   ├─ drop: anything matching the deny list
-   │        (@types/*, eslint-config-*, eslint-plugin-*, prettier-plugin-*,
+   ├─ drop: anything matching the deny list (namespaced, ADR-0015)
+   │        (npm: @types/*, eslint-config-*, eslint-plugin-*, prettier-plugin-*,
    │         @babel/*, tslib, typescript-eslint, husky, lint-staged)
    │
    ├─ drop: anything with no entry in STACK_MAP  ──▶ push to unmapped[], log
+   │        (signal ids resolve through map aliases: npm:next → next)
    │
    ├─ suppress: for each surviving entry, remove every id in entry.suppresses
    │            next        suppresses  react, react-dom

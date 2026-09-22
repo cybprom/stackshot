@@ -1,6 +1,7 @@
 export type Category = "frontend" | "backend" | "infra" | "tooling";
 
 export type RawSignal = {
+  // "<ecosystem>:<name>", e.g. "npm:next", "docker:postgres". ADR-0015.
   id: string;
   rawVersion?: string;
   source: string;

@@ -7,23 +7,28 @@ it is the only thing that survives one.*
 
 ```
 Milestone:  1 — resolver and stack map (Milestone 0 complete, tagged m0-spike)
-Last done:  M1 STEP 1 — lib/github/ done and committed. Call 1 is GraphQL
-            (ADR-0014: /repos has no commit SHA, GOTCHAS 023); call 2 the REST
-            recursive tree; raw pinned to the commit, token sent (costs no core).
-            Per-request budget counter throws BudgetExceededError past 2 (8 under
-            blob fallback). 2.5s per fetch / 4s deadline. selectManifests has
-            the denied-segment list (GOTCHAS 024). 54 tests, no network.
-            Fixtures: spyde + missing repo recorded; empty + truncated derived.
-            scripts/record-github.ts records fixtures (needs GITHUB_TOKEN via
-            node --env-file=.env.local --import tsx).
-Next:       Milestone 1 step 2 — lib/detect/, one pure module per manifest
-            type, table-driven tests against real fixture files. Commit at the
-            end of EVERY step.
-Open:       GraphQL is its own 5000-point bucket; cold resolve = 1 core + 1
+Last done:  M1 STEP 2 — lib/detect/ done and committed. One pure module per
+            manifest + paths.ts (root lockfiles/monorepo configs by presence).
+            Ids namespaced npm:/pypi:/go:/cargo:/gem:/composer:/docker:/
+            action:/tool: (ADR-0015); map ids stay bare, aliases namespaced.
+            Docker/CI extracted generically; ARG defaults substituted (028).
+            Also this session: nested language manifests now selected (026);
+            9 real fixture repos recorded, large trees reduced + guarded.
+            107 tests, detect snapshot per fixture, no network.
+Next:       Milestone 1 step 3 — lib/stack-map/: ~120 entries (id, display,
+            category, weight, description, suppresses, aliases as namespaced
+            signal ids) + namespaced deny list + map integrity test (also:
+            every alias has a known namespace). Use the detect snapshots in
+            tests/__snapshots__/ as the list of what real repos emit.
+Open:       GOTCHAS 024: selection tie-break — next.js gives packages/next no
+            slot. Two candidates recorded; step 5 decides against the fixture.
+            GOTCHAS 027: 4s deadline failed locally on next.js/mastodon trees;
+            measure from Vercel in M2 before trusting it.
+            GraphQL is its own 5000-point bucket; cold resolve = 1 core + 1
             GraphQL. /rate_limit body lies (reported 0 used) — M4 guard must read
             response headers (GOTCHAS 025).
             M2 route needs the top-level catch + bug counter (M2 step 3).
-            Detection is entirely unproven — the spike rendered hardcoded data.
+            Detection now runs on 9 real repos, but raw signals are not a card:
             M1's judgement call (do 8 real repos produce cards worth looking at?)
             is the largest remaining risk in the project.
             Rule ladder still compresses on phones: 5u and 3u land at 1.46/0.88px.

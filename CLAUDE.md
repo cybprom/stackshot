@@ -135,8 +135,10 @@ lib/
     package-json.ts
     python.ts                    requirements.txt, pyproject.toml
     go.ts | rust.ts | ruby.ts | php.ts
-    dockerfile.ts
+    dockerfile.ts                Dockerfile and compose
     workflows.ts
+    paths.ts                     root lockfiles and monorepo configs, by presence
+    signal.ts | image-ref.ts     shared helpers, not detectors
     index.ts                     orchestrates -> RawSignal[]
   stack-map/
     entries/*.ts                 the curated data, split by category
@@ -186,6 +188,10 @@ drift, and at publishing time there is no way to tell which is current.
   programmer error only.
 - Every `lib/detect/*` module exports a single pure function with the shape
   `(fileContents: string, path: string) => RawSignal[]`. No I/O inside detectors.
+  Exceptions: `paths.ts` takes `(paths: string[])`, because it reads presence rather than
+  contents, and `signal.ts` and `image-ref.ts` are shared helpers, not detectors.
+- Signal ids are `<ecosystem>:<name>` (ADR-0015). Build them with `signal()`, never by
+  hand.
 - Tailwind classes only on the site. The card is inline styles inside Satori — Satori does
   not run Tailwind.
 
