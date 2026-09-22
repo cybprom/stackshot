@@ -13,6 +13,7 @@ const REPOS = [
   "mastodon__mastodon",
   "laravel__laravel",
   "github__gitignore",
+  "pmndrs__zustand",
 ];
 
 function clientFor(fixture: string) {

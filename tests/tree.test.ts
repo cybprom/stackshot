@@ -164,6 +164,7 @@ describe("recorded fixtures match current selection", () => {
     "laravel__laravel",
     "github__gitignore",
     "jlevy__the-art-of-command-line",
+    "pmndrs__zustand",
   ])("%s", async (fixture) => {
     const [owner = "", repo = ""] = fixture.split("__");
     const client = createGitHubClient({ token: "t", fetch: fixtureFetch(loadResponses(fixture)) });

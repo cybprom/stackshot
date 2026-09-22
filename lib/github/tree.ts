@@ -72,8 +72,12 @@ export async function fetchTree(
   return { ok: true, value: { entries: [...entries, ...missingRoot], partial: true } };
 }
 
+// Orders the nested pool (manifests below the root). Open until step 5: GOTCHAS 024.
+export type NestedOrdering = (candidates: TreeEntry[]) => TreeEntry[];
+const byDepthThenPath: NestedOrdering = (candidates) => candidates;
+
 /** Picks at most six manifests, in ARCHITECTURE.md's priority order. */
-export function selectManifests(entries: TreeEntry[]): TreeEntry[] {
+export function selectManifests(entries: TreeEntry[], orderNested: NestedOrdering = byDepthThenPath): TreeEntry[] {
   const eligible = entries
     .filter((e) => e.size <= MAX_MANIFEST_BYTES && !hasDeniedSegment(e.path))
     .sort((a, b) => depth(a.path) - depth(b.path) || compare(a.path, b.path));
@@ -87,7 +91,7 @@ export function selectManifests(entries: TreeEntry[]): TreeEntry[] {
     ...eligible.filter((e) => WORKFLOW.test(e.path)).slice(0, 1),
     // Nested language manifests share the package.json pool, or a Python backend beside
     // a JS frontend never gets read. ADR-0001, GOTCHAS 026.
-    ...eligible.filter((e) => depth(e.path) > 1 && NESTED_MANIFESTS.has(basename(e.path)) && !inDotDir(e.path)),
+    ...orderNested(eligible.filter((e) => depth(e.path) > 1 && NESTED_MANIFESTS.has(basename(e.path)) && !inDotDir(e.path))),
   ];
   return ordered.slice(0, MANIFEST_BUDGET);
 }

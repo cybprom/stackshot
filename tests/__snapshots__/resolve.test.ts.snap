@@ -63,6 +63,17 @@ exports[`resolve against each fixture repo > mastodon__mastodon 1`] = `
 ]
 `;
 
+exports[`resolve against each fixture repo > pmndrs__zustand 1`] = `
+[
+  "pmndrs/zustand · TypeScript · 58724 stars",
+  "FRONTEND React 19, Redux 5",
+  "BACKEND  Node 12",
+  "INFRA    GitHub Actions",
+  "TOOLING  pnpm workspaces, Vitest 4, TypeScript 6, esbuild 0.28, Rollup 4, ESLint 9  +3 more",
+  "unmapped: 17",
+]
+`;
+
 exports[`resolve against each fixture repo > pocketbase__pocketbase 1`] = `
 [
   "pocketbase/pocketbase · Go · 61124 stars",

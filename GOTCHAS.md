@@ -871,6 +871,35 @@ number for something. The error was only visible by reading the cards as a stran
 Fix: per-entry `versionFrom` (ADR-0018). The lesson for step 5's judgement pass: read the
 versions, not just the names.
 
+## 033 — Four nested-pool orderings, one card: selection moved files, not stacks
+**Date:** 2026-09-22 · **Cost:** ~0.6h · **Status:** open — the author reads the cards and picks
+**Writeup material:** yes — the ordering question 024 spent three passes on barely matters to the card
+
+`scripts/compare-selection.ts` ran every fixture under today's ordering and four
+candidates: (a) depth then size, (b) size first, (c) one per ecosystem then size, (d) a
+directory named after the repo first, then a–c. Across 9 repos, **a, b, c and d give the
+same card on every fixture.** The only card difference in the whole matrix is next.js,
+today versus all four. Why: a monorepo's root already declares the union (workspace
+dependencies, root devDependencies), so swapping which nested manifest fills slot 5 rarely
+adds a mapped entry.
+
+What the run turned up instead:
+- **Selecting `packages/next` removes "Next.js" from the next.js card.** A package's own
+  name is never one of its dependencies. Today's "Next.js 16" is an accident:
+  `apps/bundle-analyzer` is a Next app. A repo can't appear on its own card by
+  dependency, under any ordering.
+- **Size-first (b, c) selects vendored code:** `packages/next/src/compiled/@babel/runtime/package.json`
+  beats real packages on size. Either ordering needs `compiled` (and likely `dist`) in the
+  denied segments.
+- **next.js's Firebase and Datadog come from the root devDependencies under every
+  ordering**, not from missing `packages/next`. The step-5 premise that 024 would fix them
+  doesn't hold on this data.
+- **The candidate drop rule never fires on next.js's infra.** It needs a runtime-backed
+  entry in the layer, and next.js's infra has none under any ordering, so Firebase and
+  Datadog stay. Where it does fire: next.js today loses Tailwind, Emotion, Sass and Express;
+  a–d lose Express; fastapi loses Typer (from overflow, invisible). zustand is unchanged
+  and keeps React, which is the rule's required outcome.
+
 ---
 
 *New entries go above this line as they happen.*

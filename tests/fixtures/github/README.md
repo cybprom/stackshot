@@ -17,6 +17,7 @@ manifests. A reduced tree is derived data: it is not the full listing GitHub ret
 | `astral-sh__uv` | Rust workspace plus pyproject | Recorded, **tree reduced** |
 | `mastodon__mastodon` | Ruby, Dockerfile, compose | Recorded, **tree reduced** |
 | `laravel__laravel` | PHP | Recorded |
+| `pmndrs__zustand` | React library: React only as peer and dev dependency, no runtime deps. The drop rule's test case | Recorded |
 | `github__gitignore` | **CI signals only**: one workflow, no manifests | Recorded |
 | `jlevy__the-art-of-command-line` | **No manifest and no workflows** | Recorded |
 | `Grandbusta__stackshot-fixture-missing-repo` | GraphQL's 200 + `repository: null` + `NOT_FOUND` | Recorded |

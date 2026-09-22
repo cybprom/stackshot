@@ -10,8 +10,12 @@ const LAYER_ORDER: Category[] = ["frontend", "backend", "infra", "tooling"];
 
 type Candidate = { entry: MapEntry; signals: RawSignal[] };
 
+// Candidate rule under evaluation in M1 step 5; off by default until decided.
+// itemsPerLayer lets the step-5 harness see what overflow hides.
+export type NormalizeOptions = { dropDevOnlyWhenLayerShips?: boolean; itemsPerLayer?: number };
+
 /** RawSignal[] → StackContent: deny, map, suppress, version, rank, slice. */
-export function normalize(signals: RawSignal[], meta: RepoMeta): StackContent {
+export function normalize(signals: RawSignal[], meta: RepoMeta, options: NormalizeOptions = {}): StackContent {
   const unmapped = new Set<string>();
   const byEntry = new Map<string, Candidate>();
 
@@ -34,13 +38,16 @@ export function normalize(signals: RawSignal[], meta: RepoMeta): StackContent {
   const survivors = [...byEntry.values()].filter((c) => !suppressed.has(c.entry.id));
 
   const layers = LAYER_ORDER.flatMap((category): StackLayer[] => {
-    const ranked = survivors.filter((c) => c.entry.category === category).sort(byRank);
+    const inLayer = survivors.filter((c) => c.entry.category === category);
+    const layerShips = category !== "tooling" && inLayer.some(shipped);
+    const kept = options.dropDevOnlyWhenLayerShips && layerShips ? inLayer.filter((c) => !manifestDevOnly(c)) : inLayer;
+    const ranked = kept.sort(byRank);
     if (ranked.length === 0) return [];
     return [
       {
         category,
-        items: ranked.slice(0, MAX_ITEMS_PER_LAYER).map(toItem),
-        overflow: Math.max(0, ranked.length - MAX_ITEMS_PER_LAYER),
+        items: ranked.slice(0, options.itemsPerLayer ?? MAX_ITEMS_PER_LAYER).map(toItem),
+        overflow: Math.max(0, ranked.length - (options.itemsPerLayer ?? MAX_ITEMS_PER_LAYER)),
       },
     ];
   });
@@ -61,6 +68,12 @@ function byRank(a: Candidate, b: Candidate): number {
 
 function shipped(c: Candidate): boolean {
   return c.entry.category === "tooling" || c.signals.some((s) => s.scope === "runtime");
+}
+
+// Declared only as a manifest devDependency. CI and Docker signals are exempt, as
+// tooling is: GitHub Actions is dev-scoped infra and belongs on the card.
+function manifestDevOnly(c: Candidate): boolean {
+  return c.signals.every((s) => s.scope === "dev" && s.confidence === 2);
 }
 
 function confidence(c: Candidate): number {

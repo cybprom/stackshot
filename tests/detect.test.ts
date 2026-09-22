@@ -261,6 +261,7 @@ const FIXTURES = [
   "laravel__laravel",
   "github__gitignore",
   "jlevy__the-art-of-command-line",
+  "pmndrs__zustand",
 ];
 
 describe("detect over each fixture repo", () => {
