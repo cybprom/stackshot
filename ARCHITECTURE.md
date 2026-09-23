@@ -263,7 +263,8 @@ RawSignal[]
    │            tailwindcss suppresses  postcss, autoprefixer
    │
    ├─ version: merge the entry's own signals (versionFrom), concrete beats floor,
-   │           higher wins, major or minor per entry, 0.x keeps its minor (ADR-0017/18)
+   │           higher wins, major or minor per entry, 0.x keeps its minor, and a
+   │           floor-only entry shows no version at all (ADR-0017/18/19)
    │
    ├─ rank within category: runtime-backed first (tooling exempt), then weight desc,
    │                        then confidence desc, then id asc

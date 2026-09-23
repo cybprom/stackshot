@@ -13,6 +13,7 @@ exports[`detect over each fixture repo > Grandbusta__spyde 1`] = `
   "npm:typescript@^7.0.2 [dev]",
   "npm:vitepress@^1.6.3 [dev]",
   "tool:github-actions [dev]",
+  "tool:node@20 [dev]",
   "tool:node@>=20",
   "tool:npm [dev]",
 ]
@@ -760,6 +761,7 @@ exports[`detect over each fixture repo > pmndrs__zustand 1`] = `
   "npm:use-sync-external-store@^1.6.0 [dev]",
   "npm:vitest@^4.1.10 [dev]",
   "tool:github-actions [dev]",
+  "tool:node [dev]",
   "tool:node@>=12.20.0",
   "tool:npm [dev]",
   "tool:pnpm [dev]",
@@ -800,6 +802,8 @@ exports[`detect over each fixture repo > pocketbase__pocketbase 1`] = `
   "npm:vite@^8.0.0 [dev]",
   "tool:github-actions [dev]",
   "tool:go@1.27",
+  "tool:go@>=1.27.1 [dev]",
+  "tool:node@>=25.2.1 [dev]",
 ]
 `;
 

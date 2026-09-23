@@ -900,6 +900,31 @@ What the run turned up instead:
   a–d lose Express; fastapi loses Typer (from overflow, invisible). zustand is unchanged
   and keeps React, which is the rule's required outcome.
 
+## 034 — "Node 12" on zustand: a compatibility floor printed as the version
+**Date:** 2026-09-23 · **Cost:** ~0.5h · **Status:** resolved
+**Writeup material:** yes — the clearest example of a true number that is not the answer
+
+zustand's card said **Node 12**, from `engines.node: ">=12.20.0"`. Nothing else backed it:
+its workflow says `node-version: 'lts/*'`. Node 12 is the oldest runtime zustand tolerates,
+in a field almost nobody updates; the project runs LTS. uv had the same shape, printing
+**Python 3.8** from `requires-python`.
+
+spyde is what made it visible by contrast: `engines.node ">=20"` *and* a workflow pinning
+`node-version: 20` — the same "Node 20" on the card, but right. Two cards, same rule, one
+correct by coincidence.
+
+Two changes (ADR-0019): a floor never renders alone, and **workflow `with:` inputs are now
+read**, which is where the concrete pin usually lives. That second part was a gap, not a
+tweak: the detector read `uses:` and images and never looked at `with:`, so a repo pinning
+`node-version: 22` in CI and nothing in `engines` had no version at all. Only keys naming a
+toolchain are read; the bare `version:` key means the action's own version
+(`setup-uv`, `goreleaser-action`) and is skipped. `lts/*` and `${{ matrix.node }}` yield the
+tool with no version.
+
+**Cost, paid deliberately:** Python cards lose most versions, because PEP 508 specs are
+nearly always `>=x,<y`. fastapi drops FastAPI, Pydantic, Alembic, pytest, Ruff and Python
+to bare names.
+
 ---
 
 *New entries go above this line as they happen.*

@@ -18,14 +18,16 @@ export function parseVersion(raw: string): ParsedVersion | null {
   return best(alternatives);
 }
 
-/** One display version from every raw version backing an entry. ADR-0017. */
+/** One display version from every raw version backing an entry. ADR-0017, ADR-0019. */
 export function mergeVersions(raws: (string | undefined)[], precision: Precision): string | undefined {
   const parsed = raws.flatMap((raw) => {
     const version = raw ? parseVersion(raw) : null;
     return version ? [version] : [];
   });
   const chosen = best(parsed);
-  return chosen ? formatVersion(chosen.parts, precision) : undefined;
+  // A floor alone is not a version: ">=12.20.0" says what still runs, not what this is
+  // built on. Without a concrete source, the card says nothing. ADR-0019.
+  return chosen?.bound === "concrete" ? formatVersion(chosen.parts, precision) : undefined;
 }
 
 export function formatVersion(parts: number[], precision: Precision): string | undefined {

@@ -52,7 +52,7 @@ describe("formatVersion", () => {
   });
 });
 
-describe("mergeVersions (ADR-0017)", () => {
+describe("mergeVersions (ADR-0017, ADR-0019)", () => {
   it("prefers what the project runs over what it tolerates", () => {
     expect(mergeVersions([">=20", "24-trixie-slim"], "major")).toBe("24");
   });
@@ -61,8 +61,15 @@ describe("mergeVersions (ADR-0017)", () => {
     expect(mergeVersions(["^18.2.0", "^19.0.0"], "major")).toBe("19");
   });
 
-  it("takes the highest floor when there are only floors", () => {
-    expect(mergeVersions([">=18", ">=20.9.0"], "major")).toBe("20");
+  it("shows no version when every source is a floor", () => {
+    // ">=12.20.0" is what still runs, not what the project is built on. ADR-0019.
+    expect(mergeVersions([">=18", ">=20.9.0"], "major")).toBeUndefined();
+    expect(mergeVersions([">=12.20.0", "lts/*"], "major")).toBeUndefined();
+    expect(mergeVersions([">=3.14,<4.0"], "minor")).toBeUndefined();
+  });
+
+  it("uses a concrete source when one joins the floors", () => {
+    expect(mergeVersions([">=20", "20"], "major")).toBe("20");
   });
 
   it("ignores signals without a usable version", () => {
@@ -72,7 +79,7 @@ describe("mergeVersions (ADR-0017)", () => {
 
   it("shows minor for toolchains whose major never moves", () => {
     expect(mergeVersions(["1.27"], "minor")).toBe("1.27");
-    expect(mergeVersions([">=3.14,<4.0"], "minor")).toBe("3.14");
+    expect(mergeVersions(["3.14.1"], "minor")).toBe("3.14");
     expect(mergeVersions(["1.96.0"], "minor")).toBe("1.96");
   });
 

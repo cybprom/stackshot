@@ -43,8 +43,13 @@ describe("normalize", () => {
   });
 
   it("uses minor precision for Go, Python and Rust", () => {
-    const doc = run(["tool:go@1.27", "tool:python@>=3.14,<4.0", "tool:rust@1.96.0", "tool:ruby@>= 3.3.0"]);
+    const doc = run(["tool:go@1.27", "tool:python@3.14.1", "tool:rust@1.96.0", "tool:ruby@3.3.0"]);
     expect(card(doc)).toEqual(["backend: Go 1.27, Python 3.14, Ruby 3, Rust 1.96"]);
+  });
+
+  it("drops a version backed only by floors (ADR-0019)", () => {
+    expect(card(run(["tool:node@>=12.20.0"]))).toEqual(["backend: Node"]);
+    expect(card(run(["tool:node@>=12.20.0", "tool:node@20"]))).toEqual(["backend: Node 20"]);
   });
 
   it("takes a database's version from its image, never its driver", () => {

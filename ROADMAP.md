@@ -20,7 +20,13 @@ Next:       Milestone 1 step 5 — the judgement call. Fixture set is already
             resolve.test.ts.snap, names AND versions. Decide 024's ordering
             (depth-then-size / size-first / one-per-ecosystem) against the
             next.js fixture. Then M1's definition of done.
-Open:       GOTCHAS 024: packages/next loses on depth to rspack/ and apps/.
+Open:       Drop rule's guard is inert where the noise is worst: it needs a
+            runtime-backed entry in the layer, and libraries and monorepo
+            roots have none. Redux survives on zustand, Firebase/Datadog on
+            next.js. Options written up 2026-09-23; author decides.
+            Should a repo's own product appear on its card? zustand's card
+            doesn't say Zustand, spyde's doesn't say spyde.
+            GOTCHAS 024: packages/next loses on depth to rspack/ and apps/.
             Step 5 compares depth-then-size, size-first, one-per-ecosystem.
             next.js infra still shows dev-only Firebase/Datadog: the scope rule
             ranks them last, but infra has only 5 items so nothing displaces

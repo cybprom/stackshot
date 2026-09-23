@@ -3,6 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-09-22
 **Amends:** ADR-0008
+**Amended by:** ADR-0019 (floor-only sources show no version)
 
 ## Context
 
