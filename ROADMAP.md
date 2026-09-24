@@ -7,19 +7,19 @@ it is the only thing that survives one.*
 
 ```
 Milestone:  1 — resolver and stack map (Milestone 0 complete, tagged m0-spike)
-Last done:  M1 STEP 4 — lib/normalize.ts, lib/version.ts, lib/resolve.ts,
-            scripts/resolve.ts. `pnpm tsx scripts/resolve.ts vercel/next.js`
-            prints a clean StackDoc (2 API calls, 5.07s from Lagos). Before it:
-            RawSignal.scope (dev-only ranks last, tooling exempt; runtimeOnly
-            DBs ignore dev), versionPrecision minor for go/python/rust
-            (ADR-0017), versionFrom (ADR-0018: psycopg 3 isn't PostgreSQL 3).
-            compose.yml now selected (031). Card snapshot per fixture in
-            tests/__snapshots__/resolve.test.ts.snap. 466 tests, no network.
-Next:       Milestone 1 step 5 — the judgement call. Fixture set is already
-            recorded (9 repos + missing/empty/truncated). Read every card in
-            resolve.test.ts.snap, names AND versions. Decide 024's ordering
-            (depth-then-size / size-first / one-per-ecosystem) against the
-            next.js fixture. Then M1's definition of done.
+Last done:  MILESTONE 1 COMPLETE. lib/github, lib/detect, lib/stack-map (223
+            entries), lib/normalize + lib/version + lib/resolve, 9 recorded
+            fixtures, 479 tests, no network in the run. DoD verified:
+            `pnpm tsx scripts/resolve.ts vercel/next.js` prints a clean
+            StackDoc in 2 API calls; snapshots, map integrity and the budget
+            test all green. Judgement pass done by the author over all nine
+            cards; it found four real bugs, each now an ADR: versionFrom
+            (0018), floors (0019), bounded ranges (0020), the repo-level dev
+            guard (0021). ADRs 0014-0021, GOTCHAS 023-035.
+Next:       Milestone 2 step 1 — port the spike card into lib/render/card.tsx,
+            driven by a real StackDoc. lib/spike-doc*.ts and
+            scripts/assert-fits.tsx can go once the route has a StackDoc
+            source and an error card (ADR-0011's teardown section).
 Open:       Drop rule's guard is inert where the noise is worst: it needs a
             runtime-backed entry in the layer, and libraries and monorepo
             roots have none. Redux survives on zustand, Firebase/Datadog on
@@ -206,6 +206,22 @@ The real work. Still no UI.
 - **The judgement call:** you look at all 8 outputs and each one is a card you'd be happy
   to have in your own README. If any of them reads as noise, the map is wrong, not the
   code.
+
+---
+
+### Actual cost, against the 1-weekend estimate
+
+**Three calendar days** (2026-09-22 to 09-24), 14 commits, in assisted sessions. As with
+Milestone 0, elapsed is not focused hours and the figure does not transfer to a human-only
+estimate. Two things are worth carrying forward:
+
+- **The map was not the expensive part.** ADR-0006 predicted the curated data would be the
+  work. 223 entries took one pass. The expensive part was everything that only shows up
+  when you read a rendered card: versions attached to the wrong package (0018), floors
+  printed as facts (0019, 0020), and devDependencies ranked as stack (0021).
+- **Four of the five bugs in this milestone were found by reading output, not by tests.**
+  Every one of them had passing tests at the time. The judgement call in the DoD was not
+  ceremony; it was the highest-yield hour of the milestone.
 
 ---
 
