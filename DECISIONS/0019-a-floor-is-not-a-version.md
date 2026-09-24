@@ -3,6 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-09-23
 **Amends:** ADR-0017
+**Amended by:** ADR-0020 (a bounded range renders when its bound pins the displayed digits)
 
 ## Context
 

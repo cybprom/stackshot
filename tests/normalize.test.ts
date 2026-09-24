@@ -4,7 +4,8 @@ import { normalize } from "@/lib/normalize";
 
 const META = { owner: "o", repo: "r", language: "TypeScript", stars: 1 };
 
-// "npm:react@^19" or "npm:react@^19 [dev]"; docker:/action: signals get confidence 1.
+// "npm:react@^19" or "npm:react@^19 [dev]". Inferred signals — images, actions, and the
+// "uses Docker/Actions" facts — carry confidence 1, exactly as the detectors emit them.
 function sig(tag: string): RawSignal {
   const dev = tag.endsWith(" [dev]");
   const bare = dev ? tag.slice(0, -" [dev]".length) : tag;
@@ -12,7 +13,7 @@ function sig(tag: string): RawSignal {
   const id = at === -1 ? bare : bare.slice(0, at);
   const rawVersion = at === -1 ? undefined : bare.slice(at + 1);
   const scope: Scope = dev ? "dev" : "runtime";
-  const confidence = /^(docker|action):/.test(id) ? 1 : 2;
+  const confidence = /^(docker:|action:|tool:docker$|tool:github-actions$)/.test(id) ? 1 : 2;
   return rawVersion ? { id, rawVersion, source: "test", confidence, scope } : { id, source: "test", confidence, scope };
 }
 
@@ -70,13 +71,24 @@ describe("normalize", () => {
   });
 
   describe("scope", () => {
-    it("ranks dev-only frontend/backend/infra entries below any runtime-backed one", () => {
-      // Firebase (78) outweighs Sentry (64), but next.js only has Firebase as a devDependency.
+    it("drops manifest-dev-only entries once the repo ships anything (ADR-0021)", () => {
+      // Firebase (78) outweighs Sentry (64), but it is only a devDependency here.
       const doc = run(["npm:firebase@^10 [dev]", "npm:@sentry/nextjs@^8"]);
-      expect(card(doc)).toEqual(["infra: Sentry, Firebase"]);
+      expect(card(doc)).toEqual(["infra: Sentry"]);
     });
 
-    it("lets one runtime signal make an entry runtime-backed", () => {
+    it("keeps them when the repo declares no runtime dependency at all", () => {
+      // zustand: React and Redux are devDependencies, and there is nothing else.
+      const doc = run(["npm:react@^19 [dev]", "npm:redux@^5 [dev]", "tool:node@>=12.20.0"]);
+      expect(card(doc)).toEqual(["frontend: React 19, Redux 5", "backend: Node"]);
+    });
+
+    it("never drops CI or Docker signals, which are inferred, not declared", () => {
+      const doc = run(["npm:react@^19", "tool:github-actions [dev]", "docker:postgres@16"]);
+      expect(card(doc)).toEqual(["frontend: React 19", "backend: PostgreSQL 16", "infra: GitHub Actions"]);
+    });
+
+    it("keeps an entry that has any runtime signal of its own", () => {
       const doc = run(["npm:firebase@^10 [dev]", "npm:firebase@^10", "npm:@sentry/nextjs@^8"]);
       expect(card(doc)).toEqual(["infra: Firebase, Sentry"]);
     });

@@ -10,9 +10,8 @@ const LAYER_ORDER: Category[] = ["frontend", "backend", "infra", "tooling"];
 
 type Candidate = { entry: MapEntry; signals: RawSignal[] };
 
-// Candidate rule under evaluation in M1 step 5; off by default until decided.
 // itemsPerLayer lets the step-5 harness see what overflow hides.
-export type NormalizeOptions = { dropDevOnlyWhenLayerShips?: boolean; itemsPerLayer?: number };
+export type NormalizeOptions = { itemsPerLayer?: number };
 
 /** RawSignal[] → StackContent: deny, map, suppress, version, rank, slice. */
 export function normalize(signals: RawSignal[], meta: RepoMeta, options: NormalizeOptions = {}): StackContent {
@@ -37,10 +36,15 @@ export function normalize(signals: RawSignal[], meta: RepoMeta, options: Normali
   const suppressed = new Set([...byEntry.values()].flatMap((c) => c.entry.suppresses ?? []));
   const survivors = [...byEntry.values()].filter((c) => !suppressed.has(c.entry.id));
 
+  // A repo that declares no runtime dependency anywhere is a library, and its dev
+  // dependencies are all it has. One that has them and still shows dev-only entries in a
+  // layer is showing its tooling. ADR-0021.
+  const shipsSomething = signals.some(isRuntimeDependency);
+
   const layers = LAYER_ORDER.flatMap((category): StackLayer[] => {
     const inLayer = survivors.filter((c) => c.entry.category === category);
-    const layerShips = category !== "tooling" && inLayer.some(shipped);
-    const kept = options.dropDevOnlyWhenLayerShips && layerShips ? inLayer.filter((c) => !manifestDevOnly(c)) : inLayer;
+    const kept =
+      shipsSomething && category !== "tooling" ? inLayer.filter((c) => !manifestDevOnly(c)) : inLayer;
     const ranked = kept.sort(byRank);
     if (ranked.length === 0) return [];
     return [
@@ -74,6 +78,12 @@ function shipped(c: Candidate): boolean {
 // tooling is: GitHub Actions is dev-scoped infra and belongs on the card.
 function manifestDevOnly(c: Candidate): boolean {
   return c.signals.every((s) => s.scope === "dev" && s.confidence === 2);
+}
+
+// A declared dependency that ships. `engines.node` is a declaration about the host, not a
+// dependency, so a library that only declares it still counts as shipping nothing.
+function isRuntimeDependency(signal: RawSignal): boolean {
+  return signal.scope === "runtime" && signal.confidence === 2 && !signal.id.startsWith("tool:");
 }
 
 function confidence(c: Candidate): number {

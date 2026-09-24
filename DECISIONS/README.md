@@ -33,6 +33,8 @@ Use `0000-template.md` as the starting point.
 | 0017 | Version precision per entry, and how several versions merge | Accepted |
 | 0018 | A version comes from the entry's own package, not what implies it | Accepted |
 | 0019 | A floor alone is not a version | Accepted |
+| 0020 | A bounded range renders when its bound pins what we display | Accepted |
+| 0021 | Dev-only entries drop only when the repo ships something | Accepted |
 
 ADR-0011 records the spike's measured results and the go/no-go call. It exists, the call
 was **go**, and it owes a teardown — see its final section.

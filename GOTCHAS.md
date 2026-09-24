@@ -925,6 +925,28 @@ tool with no version.
 nearly always `>=x,<y`. fastapi drops FastAPI, Pydantic, Alembic, pytest, Ruff and Python
 to bare names.
 
+## 035 — The repo-level guard still empties a layer, on the two cards nobody was watching
+**Date:** 2026-09-24 · **Cost:** ~0.2h · **Status:** open — author decides whether to add an exception
+**Writeup material:** yes — the guard chosen *because* it can't empty a layer, emptying a layer
+
+ADR-0021 picked the repo-level guard partly because, unlike the unguarded rule, it cannot
+strip a layer bare on a library. zustand proved that: no runtime dependency anywhere, so
+nothing drops, and React and Redux stay.
+
+It does strip a layer on two repos that *do* ship something:
+
+- **spyde** loses its whole FRONTEND layer. VitePress is a devDependency because it builds
+  the docs site, and spyde's one runtime dependency (PDFKit) turns the guard on. The card
+  the author had just confirmed as correct now has three layers instead of four.
+- **laravel** loses FRONTEND for the same reason: Tailwind sits in devDependencies by
+  Laravel convention, and `laravel/framework` turns the guard on.
+- uv loses MkDocs the same way, though its frontend layer was only ever a docs generator.
+
+Both readings are defensible — a docs-site dependency is not the project's frontend — but
+the failure mode is the one the decision was meant to avoid, just entered from the other
+side. The obvious exception is "never let the rule empty a layer: keep the highest-ranked
+dev-only entry instead". Not applied; the author is reading the cards.
+
 ---
 
 *New entries go above this line as they happen.*

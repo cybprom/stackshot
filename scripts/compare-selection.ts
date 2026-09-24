@@ -78,8 +78,8 @@ function provenance(signals: RawSignal[]): Map<string, RawSignal[]> {
   return byEntry;
 }
 
-function layersOf(signals: RawSignal[], meta: Omit<Report, "variants">, drop: boolean): Layer[] {
-  const full = normalize(signals, meta, { dropDevOnlyWhenLayerShips: drop, itemsPerLayer: 999 });
+function layersOf(signals: RawSignal[], meta: Omit<Report, "variants">): Layer[] {
+  const full = normalize(signals, meta, { itemsPerLayer: 999 });
   const sources = provenance(signals);
   return full.layers.map((layer) => ({
     category: layer.category,
@@ -132,25 +132,24 @@ async function main(cacheDir: string, jsonPath?: string) {
     const paths = tree.value.entries.map((e) => e.path);
     const meta = { owner, repo, language: head.value.language, stars: head.value.stars };
 
-    const orderings: [string, NestedOrdering, boolean][] = [
-      ["today", (c) => c, false],
-      ["a", a, false],
-      ["a+drop", a, true],
-      ["b", b, false],
-      ["c", cOrdering, false],
-      ["d→a", named(repo, a), false],
-      ["d→b", named(repo, b), false],
-      ["d→c", named(repo, cOrdering), false],
+    const orderings: [string, NestedOrdering][] = [
+      ["today", (c) => c],
+      ["a", a],
+      ["b", b],
+      ["c", cOrdering],
+      ["d→a", named(repo, a)],
+      ["d→b", named(repo, b)],
+      ["d→c", named(repo, cOrdering)],
     ];
 
     const variants: Variant[] = [];
-    for (const [key, ordering, drop] of orderings) {
+    for (const [key, ordering] of orderings) {
       const selection = selectManifests(tree.value.entries, ordering).map((e) => e.path);
       const files = await Promise.all(
         selection.map(async (path) => ({ path, contents: await body(cacheDir, head.value, path, recorded) })),
       );
       const signals = detect(files, paths);
-      variants.push({ key, selection, layers: layersOf(signals, meta, drop) });
+      variants.push({ key, selection, layers: layersOf(signals, meta) });
     }
     report.push({ ...meta, variants });
 
