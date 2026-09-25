@@ -3,6 +3,7 @@
 exports[`resolve against each fixture repo > Grandbusta__spyde 1`] = `
 [
   "Grandbusta/spyde · TypeScript · 10 stars",
+  "FRONTEND VitePress 1",
   "BACKEND  Node 20, PDFKit 0.20",
   "INFRA    GitHub Pages, GitHub Actions",
   "TOOLING  TypeScript 7, npm",
@@ -13,6 +14,7 @@ exports[`resolve against each fixture repo > Grandbusta__spyde 1`] = `
 exports[`resolve against each fixture repo > astral-sh__uv 1`] = `
 [
   "astral-sh/uv · Rust · 90053 stars",
+  "FRONTEND MkDocs",
   "BACKEND  Tokio 1, clap 4, Python, Rust 1.96, Serde 1",
   "INFRA    Docker, GitHub Actions",
   "TOOLING  uv, Ruff, ty, Black, insta 1",
@@ -24,7 +26,7 @@ exports[`resolve against each fixture repo > fastapi__full-stack-fastapi-templat
 [
   "fastapi/full-stack-fastapi-template · TypeScript · 45678 stars",
   "FRONTEND React 19, Tailwind 4, TanStack Router 1, TanStack Query 5, Radix UI, Zod 4  +2 more",
-  "BACKEND  FastAPI, PostgreSQL 18, SQLModel, Pydantic, Alembic 1, Python  +2 more",
+  "BACKEND  FastAPI, PostgreSQL 18, SQLModel, Pydantic, Alembic 1, Python  +3 more",
   "INFRA    Docker, Sentry, GitHub Actions",
   "TOOLING  Vite 8, Bun, uv, Playwright 1, pytest, Ruff  +5 more",
   "unmapped: 27",
@@ -42,6 +44,7 @@ exports[`resolve against each fixture repo > github__gitignore 1`] = `
 exports[`resolve against each fixture repo > laravel__laravel 1`] = `
 [
   "laravel/laravel · Blade · 84991 stars",
+  "FRONTEND Tailwind 4",
   "BACKEND  Laravel 13, PHP 8",
   "INFRA    GitHub Actions",
   "TOOLING  Vite 8, PHPUnit 12, Pint 1",
@@ -85,9 +88,9 @@ exports[`resolve against each fixture repo > pocketbase__pocketbase 1`] = `
 exports[`resolve against each fixture repo > vercel__next.js 1`] = `
 [
   "vercel/next.js · JavaScript · 142397 stars",
-  "FRONTEND Next.js 16, Radix UI, SWR 2, Lucide",
-  "BACKEND  Node, Tokio 1, napi-rs 3, clap 4, Rust, Serde 1",
-  "INFRA    GitHub Actions",
+  "FRONTEND Next.js 16, Radix UI, SWR 2, Lucide, Tailwind 4, Emotion 11  +1 more",
+  "BACKEND  Node, Tokio 1, napi-rs 3, clap 4, Rust, Serde 1  +1 more",
+  "INFRA    Vercel, Firebase, Datadog, OpenTelemetry, GitHub Actions",
   "TOOLING  Turborepo 2, pnpm workspaces, Lerna 9, Jest 29, Playwright 1, webpack 5  +5 more",
   "unmapped: 236",
 ]

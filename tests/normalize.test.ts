@@ -71,13 +71,13 @@ describe("normalize", () => {
   });
 
   describe("scope", () => {
-    it("drops manifest-dev-only entries once the repo ships anything (ADR-0021)", () => {
+    it("ranks dev-only entries last but never drops them (ADR-0022)", () => {
       // Firebase (78) outweighs Sentry (64), but it is only a devDependency here.
       const doc = run(["npm:firebase@^10 [dev]", "npm:@sentry/nextjs@^8"]);
-      expect(card(doc)).toEqual(["infra: Sentry"]);
+      expect(card(doc)).toEqual(["infra: Sentry, Firebase"]);
     });
 
-    it("keeps them when the repo declares no runtime dependency at all", () => {
+    it("keeps a library's dev-declared frontend", () => {
       // zustand: React and Redux are devDependencies, and there is nothing else.
       const doc = run(["npm:react@^19 [dev]", "npm:redux@^5 [dev]", "tool:node@>=12.20.0"]);
       expect(card(doc)).toEqual(["frontend: React 19, Redux 5", "backend: Node"]);

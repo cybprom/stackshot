@@ -15,33 +15,28 @@ Last done:  MILESTONE 1 COMPLETE. lib/github, lib/detect, lib/stack-map (223
             test all green. Judgement pass done by the author over all nine
             cards; it found four real bugs, each now an ADR: versionFrom
             (0018), floors (0019), bounded ranges (0020), the repo-level dev
-            guard (0021). ADRs 0014-0021, GOTCHAS 023-035.
+            guard (0021, since reverted by 0022). ADRs 0014-0022, GOTCHAS 023-036.
 Next:       Milestone 2 step 1 — port the spike card into lib/render/card.tsx,
             driven by a real StackDoc. lib/spike-doc*.ts and
             scripts/assert-fits.tsx can go once the route has a StackDoc
             source and an error card (ADR-0011's teardown section).
-Open:       Drop rule's guard is inert where the noise is worst: it needs a
-            runtime-backed entry in the layer, and libraries and monorepo
-            roots have none. Redux survives on zustand, Firebase/Datadog on
-            next.js. Options written up 2026-09-23; author decides.
-            Should a repo's own product appear on its card? zustand's card
-            doesn't say Zustand, spyde's doesn't say spyde.
-            GOTCHAS 024: packages/next loses on depth to rspack/ and apps/.
-            Step 5 compares depth-then-size, size-first, one-per-ecosystem.
-            next.js infra still shows dev-only Firebase/Datadog: the scope rule
-            ranks them last, but infra has only 5 items so nothing displaces
-            them. Step 5: is "ranks below" enough, or should dev-only
-            non-tooling entries drop when runtime-backed ones exist?
-            Floors show old numbers ("Ruff 0.2" from >=0.2.2): ADR-0008's gap.
+Open:       Dev-only noise stays on next.js (Firebase, Datadog, OpenTelemetry):
+            ADR-0022 reverted the drop rule after it cost spyde, laravel and
+            uv a correct layer. GOTCHAS 036 has the analysis over all nine
+            fixtures — a map field for conventionally-dev technologies plus
+            reading peerDependencies for the library case. Neither built.
+            GOTCHAS 024: nested-pool ordering. All four candidates give
+            identical cards on all 9 fixtures, so nothing favours a change;
+            today's depth-then-path stands by default, not by evidence.
+            Should a repo's own product appear on its card? zustand's doesn't
+            say Zustand, spyde's doesn't say spyde. No ordering fixes it: a
+            package's own name is never its own dependency.
             GOTCHAS 027: 4s deadline failed locally on next.js/mastodon trees;
             measure from Vercel in M2 before trusting it.
             GraphQL is its own 5000-point bucket; cold resolve = 1 core + 1
             GraphQL. /rate_limit body lies (reported 0 used) — M4 guard must read
             response headers (GOTCHAS 025).
             M2 route needs the top-level catch + bug counter (M2 step 3).
-            Detection now runs on 9 real repos, but raw signals are not a card:
-            M1's judgement call (do 8 real repos produce cards worth looking at?)
-            is the largest remaining risk in the project.
             Rule ladder still compresses on phones: 5u and 3u land at 1.46/0.88px.
             Accepted, not solved. No ladder on 1200 units fixes it. (022)
             Accent bar / header / footer / padding are coupled to the gutter label:

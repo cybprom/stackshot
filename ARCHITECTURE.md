@@ -262,9 +262,6 @@ RawSignal[]
    │            vite        suppresses  esbuild, rollup
    │            tailwindcss suppresses  postcss, autoprefixer
    │
-   ├─ drop: manifest-dev-only entries outside tooling, if the repo declares any
-   │         runtime dependency at all (ADR-0021)
-   │
    ├─ version: merge the entry's own signals (versionFrom), concrete beats floor,
    │           higher wins, major or minor per entry, 0.x keeps its minor; an
    │           unbounded floor shows nothing, a bounded one shows what its bound

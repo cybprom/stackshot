@@ -36,16 +36,10 @@ export function normalize(signals: RawSignal[], meta: RepoMeta, options: Normali
   const suppressed = new Set([...byEntry.values()].flatMap((c) => c.entry.suppresses ?? []));
   const survivors = [...byEntry.values()].filter((c) => !suppressed.has(c.entry.id));
 
-  // A repo that declares no runtime dependency anywhere is a library, and its dev
-  // dependencies are all it has. One that has them and still shows dev-only entries in a
-  // layer is showing its tooling. ADR-0021.
-  const shipsSomething = signals.some(isRuntimeDependency);
-
+  // Dev-only entries rank last but are never dropped: ADR-0022 reverted the guard that
+  // dropped them, because it cost three fixtures a correct layer.
   const layers = LAYER_ORDER.flatMap((category): StackLayer[] => {
-    const inLayer = survivors.filter((c) => c.entry.category === category);
-    const kept =
-      shipsSomething && category !== "tooling" ? inLayer.filter((c) => !manifestDevOnly(c)) : inLayer;
-    const ranked = kept.sort(byRank);
+    const ranked = survivors.filter((c) => c.entry.category === category).sort(byRank);
     if (ranked.length === 0) return [];
     return [
       {
@@ -72,18 +66,6 @@ function byRank(a: Candidate, b: Candidate): number {
 
 function shipped(c: Candidate): boolean {
   return c.entry.category === "tooling" || c.signals.some((s) => s.scope === "runtime");
-}
-
-// Declared only as a manifest devDependency. CI and Docker signals are exempt, as
-// tooling is: GitHub Actions is dev-scoped infra and belongs on the card.
-function manifestDevOnly(c: Candidate): boolean {
-  return c.signals.every((s) => s.scope === "dev" && s.confidence === 2);
-}
-
-// A declared dependency that ships. `engines.node` is a declaration about the host, not a
-// dependency, so a library that only declares it still counts as shipping nothing.
-function isRuntimeDependency(signal: RawSignal): boolean {
-  return signal.scope === "runtime" && signal.confidence === 2 && !signal.id.startsWith("tool:");
 }
 
 function confidence(c: Candidate): number {

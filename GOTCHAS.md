@@ -926,7 +926,7 @@ nearly always `>=x,<y`. fastapi drops FastAPI, Pydantic, Alembic, pytest, Ruff a
 to bare names.
 
 ## 035 — The repo-level guard still empties a layer, on the two cards nobody was watching
-**Date:** 2026-09-24 · **Cost:** ~0.2h · **Status:** open — author decides whether to add an exception
+**Date:** 2026-09-24 · **Cost:** ~0.2h · **Status:** resolved by reverting the rule (ADR-0022)
 **Writeup material:** yes — the guard chosen *because* it can't empty a layer, emptying a layer
 
 ADR-0021 picked the repo-level guard partly because, unlike the unguarded rule, it cannot
@@ -942,10 +942,50 @@ It does strip a layer on two repos that *do* ship something:
   Laravel convention, and `laravel/framework` turns the guard on.
 - uv loses MkDocs the same way, though its frontend layer was only ever a docs generator.
 
-Both readings are defensible — a docs-site dependency is not the project's frontend — but
-the failure mode is the one the decision was meant to avoid, just entered from the other
-side. The obvious exception is "never let the rule empty a layer: keep the highest-ranked
-dev-only entry instead". Not applied; the author is reading the cards.
+**2026-09-25:** the author checked all three and they are genuinely those projects'
+frontends, so the rule was reverted outright (ADR-0022). The keep-the-top-entry exception
+was rejected too: it would have restored them by refusing to empty a layer, not by
+understanding what they are. See 036 for what the fixtures say actually separates them.
+
+## 036 — What actually separates Tailwind-on-laravel from Firebase-on-next.js
+**Date:** 2026-09-25 · **Cost:** ~0.4h · **Status:** open — analysis only, nothing built
+**Writeup material:** yes — the answer was a property of the technology, not of the manifest
+
+After ADR-0022 reverted the drop rule, the question was what distinguishes a dev-declared
+entry that belongs on the card from one that doesn't. Every dev-only, non-tooling entry in
+the nine fixtures — thirteen of them, the whole population:
+
+```
+spyde      VitePress                                                    docs/package.json
+uv         MkDocs                                                       pyproject.toml
+laravel    Tailwind                                                     package.json
+fastapi    Typer                                                        pyproject.toml
+zustand    React, Redux                                                 package.json
+next.js    Tailwind, Sass, Emotion, Express,
+           Firebase, Datadog, OpenTelemetry, Vercel                     package.json
+mastodon, pocketbase, gitignore                                         (none)
+```
+
+**The proposed reading — build-time tools versus integration tests — holds for 11 of 13.**
+Stated so the map can carry it: some technologies are *conventionally* declared as dev
+dependencies, and their scope says nothing about their role. Tailwind, Sass, VitePress and
+MkDocs are never runtime dependencies of anything; being in `devDependencies` is where they
+live. Everything else — Firebase, Datadog, OpenTelemetry, Vercel's SDKs, Express, Emotion,
+Typer — is normally a runtime dependency, so a dev-only declaration is the unusual case,
+and it means a test fixture. That is a property of the technology and belongs in the map.
+
+**The two it does not explain are zustand's React and Redux**, and they are a different
+axis: the library case. React is `>=18.0.0` in zustand's **peerDependencies** as well as
+its devDependencies; Redux is only a devDependency, and it is there to test the redux
+middleware. Peers are exactly the declaration that means "the host runs this", and
+`lib/detect/package-json.ts` discards them today by an explicit decision. Reading them
+would keep React and drop Redux, which is the right split for that card.
+
+**Caveat the fixtures cannot settle:** Svelte and SvelteKit are conventionally
+devDependencies while genuinely being a project's frontend. No fixture contains one —
+pocketbase's UI has no Svelte at all, only leaflet and vite — so the convention list has to
+be written from knowledge of each ecosystem, not from this fixture set, and it will be
+wrong somewhere until real repos test it.
 
 ---
 

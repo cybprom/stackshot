@@ -1,6 +1,7 @@
 # ADR-0021: Dev-only entries drop only when the repo ships something
 
-**Status:** Accepted
+**Status:** Superseded
+**Superseded by:** ADR-0022 (it emptied a correct layer on three of nine fixtures)
 **Date:** 2026-09-24
 
 ## Context
