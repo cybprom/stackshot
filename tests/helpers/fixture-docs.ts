@@ -3,9 +3,6 @@ import { createGitHubClient } from "@/lib/github/client";
 import { resolve } from "@/lib/resolve";
 import { fixtureFetch, loadResponses } from "@/tests/helpers/fixture-fetch";
 
-// The cache assigns asOf on first write; a fixed date keeps renders comparable.
-export const FIXTURE_AS_OF = "2026-09-25";
-
 export const DOC_FIXTURES = [
   "Grandbusta__spyde",
   "vercel__next.js",
@@ -24,5 +21,5 @@ export async function fixtureDoc(fixture: string): Promise<StackDoc> {
   const client = createGitHubClient({ token: "fixture", fetch: fixtureFetch(loadResponses(fixture)) });
   const result = await resolve(client, owner, repo);
   if (!result.ok) throw new Error(`${fixture}: ${JSON.stringify(result.error)}`);
-  return { ...result.value.doc, asOf: FIXTURE_AS_OF };
+  return result.value.doc;
 }

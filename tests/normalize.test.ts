@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RawSignal, Scope, StackContent } from "@/lib/stack-map/types";
+import type { RawSignal, Scope, StackDoc } from "@/lib/stack-map/types";
 import { normalize } from "@/lib/normalize";
 
 const META = { owner: "o", repo: "r", language: "TypeScript", stars: 1 };
@@ -19,7 +19,7 @@ function sig(tag: string): RawSignal {
 
 const run = (tags: string[]) => normalize(tags.map(sig), META);
 // "frontend: Next.js 15, Tailwind 4" per layer, for readable expectations.
-const card = (doc: StackContent) =>
+const card = (doc: StackDoc) =>
   doc.layers.map(
     (l) =>
       `${l.category}: ${l.items.map((i) => (i.version ? `${i.display} ${i.version}` : i.display)).join(", ")}` +

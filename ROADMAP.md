@@ -7,31 +7,36 @@ it is the only thing that survives one.*
 
 ```
 Milestone:  2 — renderer and routes (Milestone 1 complete)
-Last done:  M2 STEP 2 — lib/render/error-card.tsx, five reasons (not_found,
-            no_manifests, nothing_mapped, rate_limited, unavailable) x both
-            themes. ADR-0024 is why five and not one per failure-table row.
-            lib/failure.ts maps ResolveError -> FailureReason above the render
-            boundary, because M3's /api/resolve needs the same five.
-            lib/repo-ref.ts gates owner/repo at the route before any API call.
-            The header and outer chrome are now shared in lib/render/chrome.tsx
-            by both cards. GOTCHAS 039: rendering a 100-char name found the
-            repo-name ladder broken on BOTH cards — 3 lines overflowing the
-            header band, and unbroken names not wrapping at all. DESIGN's TYPE
-            section has the new rule (36 step, wordBreak, 2-line clamp,
-            ellipsis as the backstop). The error card is a fixed 1200x518
-            (ERROR_CARD_HEIGHT, derived from the chrome tokens); renderToPng
-            takes a height now. scripts/render-cards.ts writes the error cards
-            and the two long-name success cards too.
-Next:       Milestone 2 step 3 — app/[owner]/[repo]/[file]/route.ts: reserved
-            words, isRepoRef before any call, resolve + cache, failureReason
-            for the typed failures and BUG_REASON in the top-level catch on
-            its own bug counter. That is what retires lib/spike-doc*.ts and
-            scripts/assert-fits.tsx (ADR-0011's teardown section).
-            GOTCHAS 040 is step 3's: GitHub names are case-insensitive, so the
-            repo pointer is keyed on the REQUEST lowercased (the lookup runs
-            before call 1, so a canonical key would miss and spend budget),
-            while the card DISPLAYS the canonical owner/name from the
-            response. Renames fall out of it: same key, current name.
+Last done:  M2 STEP 3 — the card route is real. app/[owner]/[repo]/[file]
+            resolves, caches and renders; lib/serve-card.ts composes it with
+            the client injected, so every row of the failure table is tested
+            from fixtures with no network. lib/cache.ts (3 key spaces, Zod on
+            read, negative caching, no-op when unconfigured, every failure a
+            miss), lib/hash.ts, lib/counters.ts (failure-by-reason + a
+            SEPARATE bug counter), lib/env.ts (lazy, NEVER throws) with
+            scripts/check-env.ts wired into `pnpm build` so missing config
+            fails the deploy instead of every README at once.
+            ADR-0025 removed asOf: it recorded when Stackshot first saw a
+            stack, not when the repo changed one, so it was wrong on day one
+            and reset on the 30d TTL. The pipeline is now stateless and
+            StackContent is gone. Footer right is empty on both cards.
+            ADR-0026 sets the whole cache chain with an explicit max-age
+            (bare `public` = heuristic freshness at Fastly/Camo): success
+            3600/86400/swr 7d, error 300/600. Worst-case staleness 25h and
+            15m, and the dominant term is our own edge.
+            Spike teardown done per ADR-0011: spike-doc*, spike-card,
+            assert-fits deleted. Both things ADR-0011 wanted kept were kept —
+            worstCaseDoc() is regenerated from STACK_MAP, and the fit check
+            moved into tests/fit.test.ts, where GOTCHAS 041 found it had been
+            measuring the card's own frame (797/800 for every card, dense or
+            empty). It uses onNodeDetected now, with a test that it detects a
+            real overflow.
+Next:       Milestone 2 step 4 — app/api/resolve/route.ts. Then step 5's
+            deployed latency measurement (GOTCHAS 027), step 6 determinism,
+            step 7 gutter-fit.
+            NOT YET DONE and needed before any deploy: Upstash credentials in
+            .env.local and Vercel, and serverExternalPackages for satori AND
+            resvg (GOTCHAS 016).
 Open:       GOTCHAS 038 now has the success card's variable height as its next
             candidate, as its own step: satori takes width-only and derives
             height, but our tree returns 390/750/750 for 1/4/4 layers, which
@@ -54,9 +59,6 @@ Open:       GOTCHAS 038 now has the success card's variable height as its next
             GOTCHAS 027: the 4s resolve deadline failed locally on next.js and
             mastodon; measure it from a deployed function in M2 before
             trusting it. Options there include two deadlines, one per route.
-            M2 step 3's route needs the top-level catch that logs a thrown
-            BudgetExceededError on its own bug counter, separate from the
-            failure-by-reason counts, then renders an error card (I5).
             dropWhenDevOnly is a convention claim, pinned in
             tests/stack-map.test.ts. Watch for a real card losing something
             real: unflag it, one line.
@@ -68,8 +70,6 @@ Open:       GOTCHAS 038 now has the success card's variable height as its next
             Accent bar / header / footer / padding are coupled to the gutter label:
             ~71u of chrome headroom before FRONTEND overlaps, silently. M2 step 7
             is the test that enforces it. (021, 004)
-            M2 sets the whole cache chain, not max-age alone — our edge s-maxage
-            dominates staleness, not Camo. (0013)
             Commit Mono release OTFs crash satori; use the TTFs (015).
             serverExternalPackages needed for satori AND resvg (016).
 ```
@@ -258,7 +258,7 @@ estimate. Two things are worth carrying forward:
    An uncaught throw would be a 500, which breaks I5. ADR-0012 gets an amendment line for
    the bug counter when the counters are built in M4.
 4. `app/api/resolve/route.ts`.
-5. `lib/cache.ts` — three key spaces, negative caching, `asOf` assignment on first write.
+5. `lib/cache.ts` — three key spaces, negative caching.
    **Also measure resolve latency from the deployed function** on vercel/next.js and
    mastodon/mastodon before trusting the 4s deadline (GOTCHAS 027).
 6. Determinism test: render twice, assert byte equality, snapshot the hash.

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { StackDoc } from "@/lib/stack-map/types";
 import { Card } from "@/lib/render/card";
 import { renderToPng } from "@/lib/render/render";
-import { DOC_FIXTURES, FIXTURE_AS_OF, fixtureDoc } from "@/tests/helpers/fixture-docs";
+import { DOC_FIXTURES, fixtureDoc } from "@/tests/helpers/fixture-docs";
 
 const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
 // A blank 2400x1600 PNG compresses to a few KB; a drawn card is far larger.
@@ -50,8 +50,4 @@ describe("shapes real docs produce that the spike never had", () => {
     expect(light.equals(dark)).toBe(false);
   });
 
-  it("uses the doc's asOf, never the clock (I2)", async () => {
-    const doc = await fixtureDoc("Grandbusta__spyde");
-    expect(doc.asOf).toBe(FIXTURE_AS_OF);
-  });
 });

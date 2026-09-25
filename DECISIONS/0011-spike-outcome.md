@@ -106,4 +106,15 @@ Milestone 2, for reasons that were not obvious when the list was written:
 
 They go when Milestone 2 replaces them, which is where the gutter-fit test lands anyway.
 
+**Done, at M2 step 3 (2026-09-25).** `lib/spike-doc.ts`, `lib/spike-doc-worst.ts`,
+`scripts/spike-card.tsx` and `scripts/assert-fits.tsx` are deleted; the card route now
+resolves for real. Both things this section said would be lost were kept rather than
+rebuilt from memory:
+
+- `WORST_CASE_DOC` lives on in `tests/fit.test.ts` as `worstCaseDoc()`, generated from the
+  real `STACK_MAP` — every layer full of the longest display names its category actually
+  has — which is a better worst case than the hand-written one it replaces.
+- `assert-fits.tsx`'s check moved into the same file, and turned out to have been
+  measuring the card's own frame rather than its content. See GOTCHAS 041.
+
 `docs/spike/` is the durable record and stays.

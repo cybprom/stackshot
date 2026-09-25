@@ -1126,6 +1126,37 @@ GitHub, and spends the budget this entry exists to save.
   special case.
 - Only the very first request for a repo, in any spelling, pays a cold resolve.
 
+## 041 — The spike's fit check was measuring its own frame
+**Date:** 2026-09-25 · **Cost:** ~20m · **Status:** fixed
+**Writeup material:** yes
+
+ADR-0011 kept `scripts/assert-fits.tsx` through Milestone 1 on the grounds that it was
+"the only automated guard on the layout at all". Moving it into the suite at teardown, the
+first thing worth doing was printing the numbers it produced rather than just its verdict:
+
+```
+worst            797.0 / 800
+vercel__next.js  797.0 / 800
+github__gitignore 797.0 / 800
+```
+
+Every card, from a one-item card to the densest fixture, scored **exactly 797**. The
+script scraped the rendered SVG for the lowest drawn `y`, and the lowest thing on every
+card is the card's own frame rect, which is the canvas less the border. The content it was
+supposed to be watching never entered the number. It would still have caught text drawn
+below the canvas, so it was not worthless — but it passed identically whether the layout
+had 3 units of headroom or 300, which is not what anyone reading "fits, 3.0 spare" would
+believe.
+
+The replacement uses `onNodeDetected`, satori's own layout pass, which reports absolute
+`top`/`height` per node. Checked against a deliberate failure — the densest fixture on a
+600-unit canvas reports 659 — and that check is now a test of its own, because a
+green suite built on a metric that never moves is worse than no suite.
+
+**The lesson is not about satori.** A guard whose output is a boolean will report success
+for years without anyone noticing it stopped measuring. The thirty seconds that found this
+was printing the intermediate value.
+
 ---
 
 *New entries go above this line as they happen.*

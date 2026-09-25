@@ -67,12 +67,6 @@ export type StackDoc = {
   stars: number;
   // At most 4, empty categories omitted entirely.
   layers: StackLayer[];
-  // The date this stack shape was first seen, not now — hashing "now" would
-  // break render determinism (I2). Excluded from the hash input.
-  asOf: string;
   // Logged, never rendered (I3).
   unmapped: string[];
 };
-
-// Everything but asOf, which the cache sets on first write. Also the stack hash input.
-export type StackContent = Omit<StackDoc, "asOf">;

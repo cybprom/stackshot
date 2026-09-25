@@ -50,8 +50,9 @@ one, no runtime theme detection, and no per-view telemetry.
                 ▼                               ▼           │
      ┌─────────────────────┐        ┌───────────────────────┴──┐
      │ KV  repo:{o}/{r}    │        │ KV  stack:{stackHash}    │
-     │ { sha, stackHash }  │        │ StackDoc (incl. asOf)    │
-     │ ttl 1h              │        │ ttl 30d                  │
+     │ lowercased request  │        │ StackDoc                 │
+     │ { canonical, sha,   │        │ ttl 30d                  │
+     │   stackHash } ttl 1h│        │                          │
      └─────────────────────┘        └──────────────────────────┘
 
 
@@ -104,11 +105,18 @@ one, no runtime theme detection, and no per-view telemetry.
 | `lib/version` | nothing | anything |
 | `lib/resolve` | `lib/github`, `lib/detect`, `lib/normalize` | `lib/render`, `lib/cache` |
 | `lib/failure` | `ResolveError` **as a type only** | anything at run time |
-| `lib/repo-ref` | nothing | anything |
+| `lib/repo-ref`, `lib/hash` | nothing | anything |
 | `lib/render/*` | `lib/tokens`, `FailureReason`, StackDoc type | `lib/github`, `lib/cache` |
+| `lib/serve-card` | everything, **client injected** | — |
 | `app/**/route.ts` | everything | — |
 
-The rule in one sentence: **only route handlers know that a network exists.**
+The rule in one sentence: **only route handlers construct a network client.**
+
+`lib/serve-card` composes cache, resolve and render for one request, and takes its
+`GitHubClient` injected exactly as `lib/resolve` does. That keeps the whole card path —
+every row of the failure table included — testable from committed fixtures with no network
+in the test run, while the route stays the only code that builds a real client or reads an
+environment variable.
 
 `lib/failure` sits above the render boundary on purpose. It turns a `ResolveError` into the
 `FailureReason` both the card route and `/api/resolve` show, and it imports the error types
@@ -153,7 +161,6 @@ type StackDoc = {
   language: string | null;
   stars: number;
   layers: StackLayer[]; // <= 4, empty layers omitted
-  asOf: string;         // ISO date, see below
   unmapped: string[];   // logged, never rendered
 };
 ```
@@ -174,18 +181,17 @@ Normalization uses it twice:
 - Entries marked `runtimeOnly` (databases and brokers, which their drivers imply) ignore
   dev signals entirely. A library testing against `pg` doesn't run PostgreSQL.
 
-### `asOf`, and why it isn't "now"
+### There is no date on the card
 
-The footer date must not be the current time, because that would make the render
-non-deterministic and break I2. It is set **once**, the first time a given `stackHash` is
-written to KV, and travels with the document thereafter.
+The footer used to read *"stack as of 2026-03-14"*, from an `asOf` field assigned on first
+write to KV. It was removed in ADR-0025: it recorded when **Stackshot** first saw a stack,
+not when the repo changed one, so it was wrong on the day a card was first generated and
+reset silently whenever the 30-day `stack:` entry expired.
 
-The consequence is honest and actually more useful than a generation timestamp: the card
-reads *"stack as of 2026-03-14"*, meaning **the date this project's stack last changed**.
-A repo that hasn't touched its dependencies in eight months says so.
-
-`asOf` is excluded from the hash input. Hashing it would make every resolve produce a new
-key and defeat the cache entirely.
+The consequence worth carrying is that **the whole pipeline is now stateless**. Nothing in
+the cache is assigned rather than stored, so there is no first-write path, no `SET NX`, and
+no question about what a TTL expiry means for a value meant to be permanent. Every key is
+either content-addressed or a short-lived pointer.
 
 ---
 
@@ -283,8 +289,7 @@ RawSignal[]
    │
    └─ slice to 6, record overflow count
 
-`lib/normalize.ts` returns `StackContent`, meaning everything but `asOf`, which the cache
-assigns on first write. `lib/resolve.ts` runs the whole chain for one repo with an injected
+`lib/normalize.ts` returns a `StackDoc`. `lib/resolve.ts` runs the whole chain for one repo with an injected
 client: two API calls, manifests in parallel, then detect and normalize. Any manifest
 failure other than a 404 fails the resolve rather than yielding a partial stack, because a
 partial doc cached under its content hash would be served for 30 days.
@@ -303,18 +308,46 @@ Three layers, each with a different job.
 | Layer | Key | TTL | Purpose | Adds staleness? |
 |---|---|---|---|---|
 | KV repo pointer | `repo:{owner}/{repo}`, **the request lowercased** | 1h | Skip the two API calls | **yes, 1h** |
-| KV stack doc | `stack:{stackHash}` | 30d | Skip detection, hold `asOf` | no — content-keyed |
+| KV stack doc | `stack:{stackHash}` | 30d | Skip detection | no — content-keyed |
 | KV rendered png | `png:{stackHash}:{theme}` | 30d | Skip the render | no — content-keyed |
 | CDN (Vercel edge) | the URL | `s-maxage=86400`, `swr=7d` | Skip the function entirely | **yes, and it dominates** |
-| Fastly + Camo | the URL | **our `max-age`** | Honours the header we send · ADR-0013 | yes, our value |
+| Fastly + Camo | the URL | **our `max-age=3600`** | Honours the header we send · ADR-0013 | yes, our value |
 | Browser | the URL | our `max-age` | — | yes, our value |
 
-**End-to-end staleness is the maximum over this chain, and the dominant term is ours, not
-Camo's.** The content-hash keys (ADR-0005) mean the KV render caches never serve stale
-content — a changed stack produces a different key. The edge does: it is keyed by URL, and
-a repo's stack changing involves no deploy of ours to invalidate it. Tuning Camo's
-`max-age` while leaving `s-maxage=86400` in place buys refetch traffic and nothing else.
-Milestone 2 sets the chain as a whole.
+**End-to-end staleness is the sum along this chain, not the maximum** — each cache can
+have fetched just before the one above it expired — **and the dominant term is ours, not
+Camo's.** Worst case is **25 hours** for a success (24h edge + 1h downstream) and **15
+minutes** for an error (10m + 5m). The content-hash keys (ADR-0005) mean the KV render
+caches never serve stale content: a changed stack produces a different key. The edge does,
+because it is keyed by URL and a repo's stack changing involves no deploy of ours to
+invalidate it. Tuning the downstream value while leaving `s-maxage=86400` in place buys
+refetch traffic and nothing else.
+
+**Every response carries an explicit `max-age`.** Vercel consumes `s-maxage` and forwards
+the rest, so a bare `public` reaches Fastly and Camo with no freshness directive and both
+fall back to heuristic freshness — a value we neither set nor control, failing quietly.
+The full chain and its numbers are ADR-0026.
+
+### Storage, and what M4 watches
+
+PNGs are ~99% of what we store, and Upstash holds text, so they ride as base64 at 4/3 their
+bytes. Measured across the nine fixture cards: **103 KB average, 163 KB worst**, per theme.
+
+| | Per stack (2 themes) | Stacks in 256 MB |
+|---|---|---|
+| Average card | ~275 KB base64 | ~950 |
+| Worst-case card | ~435 KB base64 | ~600 |
+
+So the free tier's 256 MB holds roughly **600–950 distinct stacks** at a 30-day TTL, and
+the `stack:` and `repo:` spaces are rounding error beside that (~2 KB and ~0.2 KB each).
+Command count is the looser constraint: a warm request is 3 commands and a cold resolve
+about 7, against 500K/month, and the CDN absorbs most requests before they reach the
+function at all.
+
+**M4 monitors bytes, not keys, and the mitigation is ordered:** if storage runs out, drop
+the `png:` space before anything else. Re-rendering costs ~1.2s of function time and zero
+API budget; re-resolving costs the budget, which is the scarce thing. Shortening the PNG
+TTL is the same lever with a smaller blast radius.
 
 The render key is the **content hash, not the commit SHA**. A README typo produces a new
 SHA but an identical `stackHash`, so it costs one cheap API call and zero renders. See

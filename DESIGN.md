@@ -321,7 +321,7 @@ look like a rotation bug rather than a spacing one.
 │  │ R  ↑ │  pnpm    Vitest    ESLint    +4 more             │   │
 │  │      │                                                  │   │
 │  └──────┴──────────────────────────────────────────────────┘   │
-│  stackshot.ilerioluwa.com            stack as of 2026-03-14     │  footer 56u
+│  stackshot.ilerioluwa.com                                      │  footer 56u
 └────────────────────────────────────────────────────────────────┘  3u ink border, r2
 ```
 
@@ -342,8 +342,10 @@ Rules:
 - **Items are name plus version inline**, version in `ink-muted`. Major version only:
   `Next.js 15`, never `Next.js ^15.1.0`. See ADR-0008.
 - **No descriptions on the card.** They live on the site beneath the preview. See ADR-0009.
-- The footer's date is `StackDoc.asOf` — the first time this exact stack shape was seen,
-  not the current time. This keeps the render a pure function. See ARCHITECTURE.md.
+- **The footer carries the domain and nothing else.** It used to carry `stack as of
+  <date>`; that date said when Stackshot first saw the stack rather than when the repo
+  changed it, so it was wrong on the day a card was generated. Removed in ADR-0025. The
+  right side of the footer is empty on both cards.
 
 ### The error card is 1200 × 518
 
@@ -374,8 +376,7 @@ every type size keeps the display ratios measured above**; only the height chang
   silent way, so the fit assertion covers it.
 - **The message is top-aligned in its band**, so the space below reads as a document's
   margin rather than as a notice centred in a void.
-- **The footer carries no date.** An error card has no `asOf`, and the clock is not
-  available to a pure render.
+- **The footer matches a real card's**: the domain, nothing on the right.
 - **Consequence for the embed:** one URL now serves two aspect ratios, 1200×800 and
   1200×518, depending on whether the repo resolves. The `<picture>` snippet the site
   hands out must not pin `width` or `height` on the `img`, or a failing repo's card

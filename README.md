@@ -99,8 +99,10 @@ Full version, with invariants, in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
   those disagree, you'll see the card that matches your OS. There is no fix for this.
 - **Curated map, not exhaustive.** Roughly 120 technologies. Anything unrecognized is
   dropped rather than guessed at. Unmapped names are logged and become the backlog.
-- **Embedded cards update slowly.** Camo's cache TTL is not ours to control.
-  [Measured value in GOTCHAS.md](./GOTCHAS.md).
+- **Embedded cards update slowly, on a schedule we set.** Camo has no TTL of its own — it
+  honours the `cache-control` we send. A changed stack takes up to about 25 hours to be
+  certain to reach every reader, and most of that is our own CDN. [The chain and its
+  numbers are ADR-0026](./DECISIONS/0026-cache-chain.md).
 - **Large repos may be sampled.** The Trees API truncates; we fall back to a root listing
   and mark the result partial.
 - **Docker and CI signals are regex-matched, not parsed.** They rank below declared

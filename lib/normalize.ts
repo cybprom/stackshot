@@ -1,8 +1,8 @@
-import type { Category, MapEntry, RawSignal, StackContent, StackItem, StackLayer } from "@/lib/stack-map/types";
+import type { Category, MapEntry, RawSignal, StackDoc, StackItem, StackLayer } from "@/lib/stack-map/types";
 import { isDenied, lookup, matchesAlias } from "@/lib/stack-map";
 import { mergeVersions } from "@/lib/version";
 
-export type RepoMeta = Pick<StackContent, "owner" | "repo" | "language" | "stars">;
+export type RepoMeta = Pick<StackDoc, "owner" | "repo" | "language" | "stars">;
 
 // I4.
 export const MAX_ITEMS_PER_LAYER = 6;
@@ -13,8 +13,8 @@ type Candidate = { entry: MapEntry; signals: RawSignal[] };
 // itemsPerLayer lets the step-5 harness see what overflow hides.
 export type NormalizeOptions = { itemsPerLayer?: number };
 
-/** RawSignal[] → StackContent: deny, map, suppress, version, rank, slice. */
-export function normalize(signals: RawSignal[], meta: RepoMeta, options: NormalizeOptions = {}): StackContent {
+/** RawSignal[] → StackDoc: deny, map, suppress, version, rank, slice. */
+export function normalize(signals: RawSignal[], meta: RepoMeta, options: NormalizeOptions = {}): StackDoc {
   const unmapped = new Set<string>();
   const byEntry = new Map<string, Candidate>();
 

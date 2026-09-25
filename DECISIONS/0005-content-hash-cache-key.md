@@ -34,7 +34,8 @@ content-hashing is the reason purity is worth enforcing.
 - Two identical stacks in different repos share a rendered card only if owner, repo name,
   stars and language also match — those fields are in the `StackDoc`, so in practice
   sharing never happens. The win is temporal, not cross-repo.
-- `asOf` cannot be part of the hash input, or every resolve produces a new key. It is
+- ~~`asOf` cannot be part of the hash input, or every resolve produces a new key. It is~~
+  **(ADR-0025 removed `asOf` entirely; the note below is kept for the record.)** It is
   therefore assigned once, on first write of a hash, and means "when this stack last
   changed" rather than "when this image was made". This turns out to be more useful.
 - The repo pointer needs its own short TTL (1h) so a real stack change is picked up

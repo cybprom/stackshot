@@ -53,7 +53,7 @@ export function Card({ doc, theme }: { doc: StackDoc; theme: Theme }) {
   const meta = [doc.language, stars(doc.stars)].filter((line): line is string => line !== null);
 
   return (
-    <CardShell c={c} footerRight={`stack as of ${doc.asOf}`}>
+    <CardShell c={c}>
       <div
         style={{
           display: "flex",

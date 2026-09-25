@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { StackContent } from "@/lib/stack-map/types";
+import type { StackDoc } from "@/lib/stack-map/types";
 import { API_BUDGET, createGitHubClient } from "@/lib/github/client";
 import { resolve } from "@/lib/resolve";
 import { fixtureFetch, loadResponses } from "@/tests/helpers/fixture-fetch";
@@ -26,7 +26,7 @@ async function resolveFixture(fixture: string, [owner = "", repo = ""] = fixture
 }
 
 // What the card would say, one line per layer. Descriptions are site-only and left out.
-function card(doc: StackContent): string[] {
+function card(doc: StackDoc): string[] {
   return [
     `${doc.owner}/${doc.repo} · ${doc.language ?? "no language"} · ${doc.stars} stars`,
     ...doc.layers.map((l) => {

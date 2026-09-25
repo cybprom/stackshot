@@ -145,20 +145,28 @@ lib/
     deny.ts                      known noise, namespaced globs, never logged
     index.ts                     assembled map + lookup (exact alias, then longest prefix)
     types.ts
-  normalize.ts                   RawSignal[] -> StackContent (StackDoc minus asOf)
+  normalize.ts                   RawSignal[] -> StackDoc
   version.ts                     version specs -> display version (ADR-0017, 0018)
   resolve.ts                     the full chain for one repo, client injected
+  serve-card.ts                  cache + resolve + render for one request, client injected
+  failure.ts                     ResolveError -> FailureReason, for both routes
+  repo-ref.ts                    owner/repo name gate, ahead of any API call
   hash.ts                        stable stringify + sha256
-  cache.ts                       Upstash wrapper, typed
+  cache.ts                       Upstash wrapper, typed; no-op when unconfigured
+  counters.ts                    failure-by-reason and the separate bug counter
+  env.ts                         lazy reads, never throws — see scripts/check-env.ts
   render/
     card.tsx                     the Satori element tree
-    error-card.tsx
+    chrome.tsx                   shell, header, gutter label — shared by both cards
+    error-card.tsx               five reasons, 1200x518
     fonts.ts                     read at module scope
     render.ts                    (StackDoc, theme) -> PNG bytes
   tokens.ts                      design tokens, single source
   result.ts                      Result<T, E>, types only
 scripts/
+  check-env.ts                   runs before `next build`; missing config fails the deploy
   record-github.ts               records GitHub responses into tests/fixtures/github/
+  render-cards.ts                every fixture card and error card to PNG, for looking at
   resolve.ts                     pnpm tsx scripts/resolve.ts owner/repo -> StackDoc JSON
 tests/
   fixtures/                      recorded GitHub responses, committed

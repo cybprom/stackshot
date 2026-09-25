@@ -1,5 +1,5 @@
 import type { Result } from "@/lib/result";
-import type { StackContent } from "@/lib/stack-map/types";
+import type { StackDoc } from "@/lib/stack-map/types";
 import type { GitHubClient, GitHubError } from "@/lib/github/client";
 import { fetchManifest } from "@/lib/github/raw";
 import { fetchRepoHead } from "@/lib/github/repo";
@@ -8,7 +8,7 @@ import { detect, type ManifestFile } from "@/lib/detect";
 import { normalize } from "@/lib/normalize";
 
 export type Resolved = {
-  doc: StackContent;
+  doc: StackDoc;
   // For the KV repo pointer: { sha, stackHash }.
   commitOid: string;
   // The tree was truncated and topped up from the root listing. GOTCHAS 006.

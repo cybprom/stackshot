@@ -57,9 +57,18 @@ that renders twice and compares bytes. Then the payoff: because it's pure, the c
 keyed on a hash of the extracted stack rather than the commit SHA, so most pushes cost
 zero renders.
 
-The `asOf` detail belongs here — a generation timestamp would have broken determinism, so
-the date on the card means "when this stack last changed" instead. A constraint producing
-a better feature than the thing it blocked. Good beat, don't overplay it.
+The `asOf` detail belongs here, but **as the failure it turned out to be, not the clever
+save it looked like.** The story as first drafted: a generation timestamp would have broken
+determinism, so the date meant "when this stack last changed" instead — a constraint
+producing a better feature than the thing it blocked. It was wrong. The date recorded when
+*Stackshot* first saw a stack, so it read as today's date on the day a card was generated,
+and it silently reset whenever the 30-day cache entry expired. The field shipped into
+ARCHITECTURE as a justification and stood there through several sessions before anyone
+asked what it said on day one. ADR-0025 removed it.
+
+Better beat than the original: a constraint produced a plausible-sounding feature, the
+plausibility is what kept it alive, and the check that would have killed it was one
+question. Don't overplay this either — it is one paragraph, not a confession.
 
 ### 5. Designing for 390 pixels · ~350 words
 
