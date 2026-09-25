@@ -993,6 +993,34 @@ incomplete list shows noise instead of dropping a layer — and the peer-depende
 this analysis was dropped entirely, since unflagged UI frameworks already cover zustand's
 React, and optional peers would make a Drizzle-shaped library list every database.
 
+## 037 — The no-network test guard blocked satori itself
+**Date:** 2026-09-25 · **Cost:** ~0.2h · **Status:** resolved
+**Writeup material:** yes — a guard that was right about the rule and wrong about the mechanism
+
+`tests/setup.ts` replaced `globalThis.fetch` with a throw, so no test could reach the
+network. The first render test failed on all 23 cases with "Network access in tests" —
+from inside satori. **yoga-layout loads its WASM by fetching a `data:` URI**, so a blanket
+fetch guard blocks layout entirely. The guard now allows `data:` and throws on everything
+else, and its message includes the URL so the next failure names itself.
+
+Worth knowing for Milestone 2: the renderer really does touch `fetch` at import time, so
+any future no-network assertion has to be about hosts, not about the function.
+
+## 038 — A one-layer card is mostly empty space
+**Date:** 2026-09-25 · **Cost:** — · **Status:** open, a design question for M2
+**Writeup material:** maybe
+
+Rendering all nine fixtures turned up a shape the spike never had: `github/gitignore`
+resolves to a single INFRA layer holding `GitHub Actions`. DESIGN.md says empty layers are
+omitted and the remaining bands expand, so one layer expands to the full 1200×800 card with
+one item floating in the middle of it. It is not broken — the type, rules and gutter label
+all read correctly — but it reads as an unfinished card rather than a sparse one.
+
+Options, none applied: cap band growth and leave the remainder as deliberate whitespace;
+render a "not much to show" line; or treat a one-layer resolve as a near-empty result and
+let M2's error-card path handle it. The fixture is committed, so any of them can be tried
+against it.
+
 ---
 
 *New entries go above this line as they happen.*

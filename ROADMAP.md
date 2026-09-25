@@ -7,20 +7,18 @@ it is the only thing that survives one.*
 
 ```
 Milestone:  1 — resolver and stack map (Milestone 0 complete, tagged m0-spike)
-Last done:  MILESTONE 1 COMPLETE. lib/github, lib/detect, lib/stack-map (223
-            entries), lib/normalize + lib/version + lib/resolve, 9 recorded
-            fixtures, 479 tests, no network in the run. DoD verified:
-            `pnpm tsx scripts/resolve.ts vercel/next.js` prints a clean
-            StackDoc in 2 API calls; snapshots, map integrity and the budget
-            test all green. Judgement pass done by the author over all nine
-            cards; it found four real bugs, each now an ADR: versionFrom
-            (0018), floors (0019), bounded ranges (0020), the repo-level dev
-            guard (0021, reverted by 0022, replaced by 0023). ADRs 0014-0023,
-            GOTCHAS 023-036.
-Next:       Milestone 2 step 1 — port the spike card into lib/render/card.tsx,
-            driven by a real StackDoc. lib/spike-doc*.ts and
-            scripts/assert-fits.tsx can go once the route has a StackDoc
-            source and an error card (ADR-0011's teardown section).
+Last done:  M2 STEP 1 — the card renders every fixture repo. card.tsx already
+            took a StackDoc, so the step was driving it from real resolver
+            output: tests/render.test.ts covers all 9 repos in both themes
+            plus the shapes the spike never had (one layer, versionless
+            items, overflow everywhere, byte-identical reruns).
+            scripts/render-cards.ts writes the PNGs for looking at: ~1s and
+            64-167KB each. The suite now takes ~35s because of rendering.
+            GOTCHAS 037 (the fetch guard blocked satori's yoga wasm) and 038
+            (a one-layer card is mostly empty space — design question).
+Next:       Milestone 2 step 2 — lib/render/error-card.tsx for every failure
+            path in ARCHITECTURE's table, then step 3 wires the route to
+            resolve + cache, which is what finally retires lib/spike-doc*.ts.
 Open:       dropWhenDevOnly (ADR-0023) flags 44 entries where a dev-only
             declaration means a test fixture; default is keep, so an
             incomplete list shows noise instead of losing a layer. The list is
