@@ -32,6 +32,13 @@ export const CARD = {
   headerBand: 140,
   footer: 56,
   bandMinHeight: 120,
+  // The error card's one band. Sized by the longest rotated state label rather than by
+  // its content — NOTHING MAPPED needs ~196u, well past bandMinHeight. Step 7's
+  // gutter-fit test is what holds this.
+  errorBand: 240,
+  // Measure for running text on a card. Commit Mono advances at 0.609em, so this is
+  // ~71 characters of card/version, against DESIGN's cap of 68.
+  measure: 960,
   // Decreasing downward, floor of 3. Hierarchy comes from weight, not color.
   separators: [8, 5, 3, 3],
   radius: 2,
@@ -48,8 +55,23 @@ export const TYPE = {
   meta: { size: 16, family: "Commit Mono", weight: 400, lineHeight: 1.2, tracking: 0.04 },
 } as const;
 
-// Steps down past ~22 and ~30 characters. Never truncates.
+// Derived, never chosen: the error card is exactly as tall as the one shape it can hold.
+// Every term is a part of the card, so changing any of them moves the height with it.
+// Width stays 1200, so type sizes and their display ratios are untouched.
+export const ERROR_CARD_HEIGHT =
+  2 * CARD.border +
+  CARD.accentBar +
+  2 * CARD.padding +
+  CARD.headerBand +
+  CARD.separators[0] +
+  CARD.errorBand +
+  CARD.footer;
+
+// Steps down past ~22, ~30 and ~48 characters. The counts are a proxy for rendered width
+// against a proportional face; the real limit is two lines in the header band, which the
+// header enforces by measure. GitHub allows 100 characters and 36 is what fits them.
 export function displaySize(repo: string): number {
+  if (repo.length > 48) return 36;
   if (repo.length > 30) return 40;
   if (repo.length > 22) return 48;
   return TYPE.display.size;

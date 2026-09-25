@@ -4,11 +4,14 @@ import { Resvg } from "@resvg/resvg-js";
 import { CARD } from "@/lib/tokens";
 import { FONTS } from "@/lib/render/fonts";
 
-/** Rasterizes a Satori element tree to PNG bytes. Pure: same input, same bytes (I2). */
-export async function renderToPng(element: ReactNode): Promise<Buffer> {
+/**
+ * Rasterizes a Satori element tree to PNG bytes. Pure: same input, same bytes (I2), and
+ * height is part of that input — the error card is shorter than a real card.
+ */
+export async function renderToPng(element: ReactNode, height: number = CARD.height): Promise<Buffer> {
   const svg = await satori(element, {
     width: CARD.width,
-    height: CARD.height,
+    height,
     fonts: FONTS,
   });
 

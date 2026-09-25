@@ -1029,6 +1029,103 @@ committed screenshot assume 1200×800, and a per-doc height becomes part of the 
 input, so the determinism test (I2) has to pin height as well as bytes. **Deferred, not
 rejected.**
 
+**The error card went fixed-short instead (2026-09-25, M2 step 2).** Reviewing the ten
+error-card renders raised the same complaint on a second surface, and there it was cheap:
+an error card's content shape never varies, so it takes a fixed 1200 × 518 —
+`ERROR_CARD_HEIGHT`, derived from the chrome and band tokens — and none of the hard parts
+above apply. `renderToPng` now takes height as a parameter, which is the mechanism a
+variable-height success card would use too. **The success card is the next candidate and
+should be its own step, with renders.** Three facts for whoever picks it up, measured
+rather than assumed:
+
+- **Satori can derive height itself.** `SatoriOptions` is `{width, height} | {width} |
+  {height}`, and width-only returns a content-sized SVG. We do not have to compute the
+  height from the band rules by hand.
+- **The numbers it returns today are not yet trustworthy, and that is our tree's fault.**
+  Width-only on the current `Card` gives 390 units for `github/gitignore` (1 layer) and
+  750 for both `pmndrs/zustand` and `mastodon/mastodon` (4 layers). 750 is not
+  `130 chrome + 140 header + 19 separators + 4 × 120 minHeight` = 769, and two cards of
+  very different density landing on the same number says the bands are not measuring their
+  content. The likely cause is the root's `height: "100%"` resolving against nothing,
+  plus `flexBasis: 0` on the bands. **The step starts by making the root `auto` and
+  re-deriving — not by trusting 390 and 750.**
+- **`onNodeDetected` gives measured geometry per node** (`left/top/width/height`, plus
+  `textContent`) from satori's own layout pass. That is the two-pass route — measure, then
+  render at the derived height — and it is also what M2 step 7's gutter-fit test should
+  use instead of the 0.609em advance constant the error-card test assumes today.
+
+Two consequences that do not go away: height becomes part of the render input, so I2's
+determinism test has to pin it; and per-repo dimensions mean the embed snippet must not
+pin `width`/`height` on the `img`. The error card already forces that second one, because
+one URL now serves 1200 × 800 or 1200 × 518 depending on whether the repo resolves.
+
+## 039 — The repo-name ladder never had a bottom, and the error card found it first
+**Date:** 2026-09-25 · **Cost:** ~45m · **Status:** fixed
+**Writeup material:** yes
+
+The error card echoes a name that came from the URL rather than from a resolve, so it was
+the first thing to ask what a 100-character repo name does. It turned out not to be an
+error-card question at all. Both cards were broken, in two different ways, and neither
+failure is one an overflow check would have caught.
+
+A 97-character hyphenated name at DESIGN's floor of 40 units wraps to **three** lines,
+which is 148.8 units in a 140-unit header band. It overflows downward, sits on top of the
+8-unit rule, and paints into the first layer band. Same silent class as GOTCHAS 004: the
+layout is "correct", it just draws in the wrong place.
+
+The second one is worse and was not on anyone's list. Repo names have no spaces, so a name
+with no hyphens or dots has **no break opportunity** and does not wrap at all — 100 `a`s
+ran off the right edge of the canvas, past the border, and the header's flex row silently
+shortened the rule beside it. `wordBreak: "break-word"` is load-bearing here, not a
+nicety.
+
+The fix is a fourth step at 36, `wordBreak`, and a two-line clamp. **`lineClamp` is the
+part that cost the time:** satori supports it, but `ac()` in `satori/dist/index.js` gates
+it on `display === "block"`, and every element in this codebase is `display: flex` because
+that is what satori's own docs push you toward. Setting `lineClamp: 2` on a flex container
+does nothing, silently, and the name still renders three lines. Reading the bundled source
+was faster than reading the docs.
+
+Two things worth carrying:
+
+- **DESIGN's "never truncate" was written without a worst case in hand.** It is a good rule
+  for a 30-character name and an impossible one for a 100-character name. The revised rule
+  keeps the spirit and admits the exception; see DESIGN.md's TYPE section.
+- **This is the fifth bug in this project found by rendering something and looking at it,
+  against zero found by a test.** The probe that found it took four minutes to write.
+
+## 040 — GitHub names are case-insensitive, and our cache keys are not
+**Date:** 2026-09-25 · **Cost:** — · **Status:** open, must be closed in M2 step 3
+**Writeup material:** maybe
+
+`Vercel/Next.js`, `vercel/next.js` and `VERCEL/NEXT.JS` are the same repo. GitHub resolves
+all three, redirects the web UI to the canonical spelling, and the API answers every one of
+them. Nothing about that reaches our cache: `repo:{owner}/{repo}` keyed on the URL's
+spelling gives each variant its own pointer, so one repo becomes N cold resolves, N stack
+hashes and N renders. It also multiplies the abuse surface — the same repo can be asked
+for under unlimited spellings, each one a cache miss against a budget the rate-limit guard
+assumes is per-repo.
+
+`lib/repo-ref.ts` already accepts every spelling, correctly: rejecting a mixed-case name
+would refuse a link a person legitimately copied.
+
+**The fix belongs to step 3, and the key and the display are two different things.** The
+temptation is to key everything on the canonical name GraphQL returns, and that is exactly
+backwards: **the pointer lookup runs before any API call**, so at lookup time there is no
+canonical name to key on. Keyed on canonical, a request for `Vercel/Next.js` misses, calls
+GitHub, and spends the budget this entry exists to save.
+
+- **Lookup key: the lowercased request.** `repo:{owner}/{repo}` from the path segments,
+  lowercased, and nothing else. Every spelling of a repo hashes to one pointer on the
+  first request, with no API call needed to get there.
+- **Display: the canonical owner and name from the GraphQL response.** A card reading
+  `VERCEL/NEXT.JS` because that is how someone typed the badge URL is wrong. The pointer's
+  value carries it, so a cache hit renders the canonical spelling without a call.
+- **Renames fall out of this rather than needing a rule.** The old name's lowercased key
+  points at the same `stackHash`, and the card shows the current name. Both correct, no
+  special case.
+- Only the very first request for a repo, in any spelling, pays a cold resolve.
+
 ---
 
 *New entries go above this line as they happen.*

@@ -44,3 +44,6 @@ next-env.d.ts
 .env*.local
 .claude/settings.local.json
 docs/spike/*.mp4
+
+# scripts/render-cards.ts output, for looking at rather than for keeping
+/cards

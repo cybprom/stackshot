@@ -7,21 +7,41 @@ it is the only thing that survives one.*
 
 ```
 Milestone:  2 — renderer and routes (Milestone 1 complete)
-Last done:  M2 STEP 1 — the card renders every fixture repo from real
-            resolver output. tests/render.test.ts covers all 9 repos in both
-            themes plus the shapes the spike never had: one layer, items with
-            no version, overflow in several layers, byte-identical reruns.
-            scripts/render-cards.ts writes the PNGs (~1s, 64-167KB each); the
-            suite is ~28s now because of rendering. Also this session:
-            ADR-0022 reverted the dev-only drop rule after it cost three cards
-            a real layer, ADR-0023 replaced it with the map flag
-            dropWhenDevOnly (44 entries, default keep), and paths.ts now reads
-            platform config files so a dev-declared CLI can't lose a platform.
-Next:       Milestone 2 step 2 — lib/render/error-card.tsx for every failure
-            path in ARCHITECTURE's table. Then step 3 wires the route to
-            resolve + cache, which is what retires lib/spike-doc*.ts and
+Last done:  M2 STEP 2 — lib/render/error-card.tsx, five reasons (not_found,
+            no_manifests, nothing_mapped, rate_limited, unavailable) x both
+            themes. ADR-0024 is why five and not one per failure-table row.
+            lib/failure.ts maps ResolveError -> FailureReason above the render
+            boundary, because M3's /api/resolve needs the same five.
+            lib/repo-ref.ts gates owner/repo at the route before any API call.
+            The header and outer chrome are now shared in lib/render/chrome.tsx
+            by both cards. GOTCHAS 039: rendering a 100-char name found the
+            repo-name ladder broken on BOTH cards — 3 lines overflowing the
+            header band, and unbroken names not wrapping at all. DESIGN's TYPE
+            section has the new rule (36 step, wordBreak, 2-line clamp,
+            ellipsis as the backstop). The error card is a fixed 1200x518
+            (ERROR_CARD_HEIGHT, derived from the chrome tokens); renderToPng
+            takes a height now. scripts/render-cards.ts writes the error cards
+            and the two long-name success cards too.
+Next:       Milestone 2 step 3 — app/[owner]/[repo]/[file]/route.ts: reserved
+            words, isRepoRef before any call, resolve + cache, failureReason
+            for the typed failures and BUG_REASON in the top-level catch on
+            its own bug counter. That is what retires lib/spike-doc*.ts and
             scripts/assert-fits.tsx (ADR-0011's teardown section).
-Open:       GOTCHAS 038: a one-layer card (github/gitignore) expands one band
+            GOTCHAS 040 is step 3's: GitHub names are case-insensitive, so the
+            repo pointer is keyed on the REQUEST lowercased (the lookup runs
+            before call 1, so a canonical key would miss and spend budget),
+            while the card DISPLAYS the canonical owner/name from the
+            response. Renames fall out of it: same key, current name.
+Open:       GOTCHAS 038 now has the success card's variable height as its next
+            candidate, as its own step: satori takes width-only and derives
+            height, but our tree returns 390/750/750 for 1/4/4 layers, which
+            does not match the band arithmetic — the root's height:100% has to
+            go to auto first. onNodeDetected is the measuring tool, for that
+            and for step 7's gutter-fit test.
+            rate_limited and unavailable carry the same detail line today.
+            Kept separate (different labels, one self-heals); merge to four if
+            they are still identical when M3's error states land. (ADR-0024)
+            GOTCHAS 038: a one-layer card (github/gitignore) expands one band
             to the whole card and reads as unfinished. Deferred. Four options
             recorded; the author's lean is variable card height with a
             minimum, which touches CARD.height, the <picture> block and I2.

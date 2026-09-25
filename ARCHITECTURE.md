@@ -103,10 +103,17 @@ one, no runtime theme detection, and no per-view telemetry.
 | `lib/normalize` | `lib/stack-map`, `lib/version`, detect types | `lib/github`, `lib/render` |
 | `lib/version` | nothing | anything |
 | `lib/resolve` | `lib/github`, `lib/detect`, `lib/normalize` | `lib/render`, `lib/cache` |
-| `lib/render/*` | `lib/tokens`, StackDoc type | `lib/github`, `lib/cache` |
+| `lib/failure` | `ResolveError` **as a type only** | anything at run time |
+| `lib/repo-ref` | nothing | anything |
+| `lib/render/*` | `lib/tokens`, `FailureReason`, StackDoc type | `lib/github`, `lib/cache` |
 | `app/**/route.ts` | everything | — |
 
 The rule in one sentence: **only route handlers know that a network exists.**
+
+`lib/failure` sits above the render boundary on purpose. It turns a `ResolveError` into the
+`FailureReason` both the card route and `/api/resolve` show, and it imports the error types
+only as types, so no import path from `lib/render/` reaches a network call and I8 still
+holds. Reasons are deliberately coarser than error kinds — see ADR-0024.
 
 This is what makes the whole parsing and rendering surface testable from committed
 fixtures with no network in the test run, and it is what makes the render cacheable by
@@ -295,7 +302,7 @@ Three layers, each with a different job.
 
 | Layer | Key | TTL | Purpose | Adds staleness? |
 |---|---|---|---|---|
-| KV repo pointer | `repo:{owner}/{repo}` | 1h | Skip the two API calls | **yes, 1h** |
+| KV repo pointer | `repo:{owner}/{repo}`, **the request lowercased** | 1h | Skip the two API calls | **yes, 1h** |
 | KV stack doc | `stack:{stackHash}` | 30d | Skip detection, hold `asOf` | no — content-keyed |
 | KV rendered png | `png:{stackHash}:{theme}` | 30d | Skip the render | no — content-keyed |
 | CDN (Vercel edge) | the URL | `s-maxage=86400`, `swr=7d` | Skip the function entirely | **yes, and it dominates** |
@@ -361,6 +368,7 @@ These hold at all times. A change that breaks one requires an ADR.
 
 | Failure | Detection | Response |
 |---|---|---|
+| Owner or repo is not a legal GitHub name | `lib/repo-ref` at the route, before any call | `not_found` card, **zero API calls**. Also keeps a glyph no shipped font covers out of the header, and `.`/`..` out of a raw path. It accepts any **case**, because GitHub does: the pointer is keyed on the request lowercased — the lookup precedes call 1, so a canonical key would miss and spend budget — while the card displays the canonical owner/name from the response. GOTCHAS 040 |
 | Repo not found / private | GraphQL **200** with `repository: null` + `NOT_FOUND` — read the body, not the status | Error card: "Repo not found or private" · negative cache 10m |
 | Empty repo | `defaultBranchRef: null` | `empty_repo` → the no-manifests error card |
 | Trees response `truncated: true` | Flag in response | Top up with the root entries from call 1 (no extra call); mark doc `partial` |

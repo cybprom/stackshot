@@ -119,10 +119,30 @@ Tracking tightens monotonically as size increases: 0.18 → 0.04 → 0.02 → 0.
 -0.02. That relationship is the rule; individual values are negotiable, the relationship
 is not.
 
-**Long repo names step down.** `card/display` is 64 up to ~22 characters, **48 past ~22**,
-**40 past ~30**. Never truncate. A clipped repo name is worse than a small one — the name
-is the string a reader has to be able to trust. The boundaries are character counts against
-a proportional face, so check them against rendered width rather than the number.
+**Long repo names step down, then wrap.** `card/display` is 64 up to ~22 characters, **48
+past ~22**, **40 past ~30**, **36 past ~48**. The boundaries are character counts against a
+proportional face, so check them against rendered width rather than the number.
+
+The step alone is not the rule, because GitHub allows 100 characters and no legible size
+fits 100 of them on one line. Three further constraints, all of them load-bearing:
+
+- **The name wraps, and the header has to let it.** Repo names contain no spaces, so a
+  name with no hyphens or dots has no break opportunity at all: without `wordBreak`, it
+  leaves the canvas entirely rather than wrapping. This is not a rare shape.
+- **Two lines is the limit, and it is a measure, not a count.** The 140-unit header band
+  holds the owner line plus two name lines at every step (28.8 + 72 = 100.8 at 36). A
+  third line overruns the 8-unit rule below it and paints into the first layer band, which
+  looks like a rendering bug rather than a long name.
+- **Past two lines the name truncates with an ellipsis.** This is a real exception to the
+  rule that held here before — "never truncate, a clipped name is worse than a small one"
+  — and the argument for the exception is that at ~100 characters the name is not legible
+  at thumbnail size at any size that fits, so the thing the old rule protected is already
+  gone. Truncation is unreachable for an ordinary lowercase-and-hyphen name of 100
+  characters; what reaches it is a name crafted to be wide. The site shows the full name
+  in HTML beside the card, so nothing is lost that a reader can act on.
+
+All four surfaces still apply: 36 units is 10.4px in the GitHub apps, above `card/item`'s
+8.75px, so the name never becomes the least legible thing on the card. See GOTCHAS 039.
 
 **`card/item` and `card/version` are the same weight**, so name-versus-version rests
 entirely on `ink` against `ink-muted`. That is contrast rather than stroke, and contrast is
@@ -324,6 +344,42 @@ Rules:
 - **No descriptions on the card.** They live on the site beneath the preview. See ADR-0009.
 - The footer's date is `StackDoc.asOf` — the first time this exact stack shape was seen,
   not the current time. This keeps the render a pure function. See ARCHITECTURE.md.
+
+### The error card is 1200 × 518
+
+Same width, same chrome, same palette, one band instead of four. **Width is held at 1200 so
+every type size keeps the display ratios measured above**; only the height changes.
+
+```
+┌════════════════════════════════════════════════════════════════┐  4u accent bar
+│  ┌──────┬──────────────────────────────────────────────────┐   │
+│  │      │  octocat/                                        │   │  header band
+│  │      │  hello-world                                     │   │  140u
+│  │ N    ├══════════════════════════════════════════════════┤   │  8u ink rule
+│  │ O    │                                                  │   │
+│  │   ↑  │  Stackshot found no manifest files here.         │   │  message band
+│  │ M    │  It reads package.json, pyproject.toml, …        │   │  240u
+│  │ A    │                                                  │   │
+│  └──────┴──────────────────────────────────────────────────┘   │
+│  stackshot.ilerioluwa.com                                      │  footer 56u
+└────────────────────────────────────────────────────────────────┘  3u ink border, r2
+```
+
+- **518 is derived, never chosen**: `2×3 border + 4 accent + 2×32 padding + 140 header +
+  8 rule + 240 band + 56 footer`. `ERROR_CARD_HEIGHT` computes it from those tokens, so a
+  change to any of them moves the height rather than leaving a gap.
+- **The 240-unit band is sized by the gutter label, not by the text.** `NOTHING MAPPED`
+  is ~199 units rotated, well past the 120-unit band floor a layer band uses. The message
+  itself needs less. This is the same constraint as the layer bands and it fails the same
+  silent way, so the fit assertion covers it.
+- **The message is top-aligned in its band**, so the space below reads as a document's
+  margin rather than as a notice centred in a void.
+- **The footer carries no date.** An error card has no `asOf`, and the clock is not
+  available to a pure render.
+- **Consequence for the embed:** one URL now serves two aspect ratios, 1200×800 and
+  1200×518, depending on whether the repo resolves. The `<picture>` snippet the site
+  hands out must not pin `width` or `height` on the `img`, or a failing repo's card
+  renders distorted in a README that was copied while the repo still worked.
 
 ---
 

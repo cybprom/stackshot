@@ -23,7 +23,10 @@ const LANGUAGE_MANIFESTS = [
   "Gemfile",
   "composer.json",
 ];
-const NESTED_MANIFESTS = new Set(["package.json", ...LANGUAGE_MANIFESTS]);
+// The no-manifests error card names these, so the sentence and this list are tested
+// against each other.
+export const ROOT_MANIFESTS = ["package.json", ...LANGUAGE_MANIFESTS];
+const NESTED_MANIFESTS = new Set(ROOT_MANIFESTS);
 // Compose's own lookup order; only the first present is read. fastapi uses compose.yml.
 const COMPOSE_FILES = ["compose.yaml", "compose.yml", "docker-compose.yaml", "docker-compose.yml"];
 const WORKFLOW = /^\.github\/workflows\/[^/]+\.ya?ml$/;
