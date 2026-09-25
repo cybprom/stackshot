@@ -94,6 +94,12 @@ describe("normalize", () => {
       expect(card(run(["npm:swr@^2 [dev]", "npm:swr@^2"]))).toEqual(["frontend: SWR 2"]);
     });
 
+    it("keeps a platform whose CLI is a devDependency, on the strength of its config file", () => {
+      // wrangler is conventionally a devDependency, like an ORM's CLI. ADR-0023.
+      expect(card(run(["npm:wrangler@^4 [dev]"]))).toEqual([]);
+      expect(card(run(["npm:wrangler@^4 [dev]", "tool:cloudflare"]))).toEqual(["infra: Cloudflare"]);
+    });
+
     it("never drops CI or Docker signals, which are inferred, not declared", () => {
       const doc = run(["npm:react@^19", "tool:github-actions [dev]", "docker:postgres@16"]);
       expect(card(doc)).toEqual(["frontend: React 19", "backend: PostgreSQL 16", "infra: GitHub Actions"]);

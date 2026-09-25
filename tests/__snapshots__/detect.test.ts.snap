@@ -1144,5 +1144,6 @@ exports[`detect over each fixture repo > vercel__next.js 1`] = `
   "tool:pnpm@10.33.0 [dev]",
   "tool:rust",
   "tool:turborepo [dev]",
+  "tool:vercel",
 ]
 `;

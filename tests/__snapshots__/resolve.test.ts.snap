@@ -90,7 +90,7 @@ exports[`resolve against each fixture repo > vercel__next.js 1`] = `
   "vercel/next.js · JavaScript · 142397 stars",
   "FRONTEND Next.js 16, Radix UI, SWR 2, Lucide, Tailwind 4, Sass 1",
   "BACKEND  Node, Tokio 1, napi-rs 3, clap 4, Rust, Serde 1",
-  "INFRA    GitHub Actions",
+  "INFRA    Vercel, GitHub Actions",
   "TOOLING  Turborepo 2, pnpm workspaces, Lerna 9, Jest 29, Playwright 1, webpack 5  +5 more",
   "unmapped: 236",
 ]

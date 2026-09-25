@@ -79,6 +79,15 @@ devDependencies beside a runtime client.
 - next.js's SWR survives despite being flagged, because `apps/bundle-analyzer` declares it
   at runtime. That is the rule working: the flag only decides what a *dev-only* declaration
   means.
+- **Platform CLIs are conventionally devDependencies, exactly like an ORM's CLI**, so
+  flagging the platforms would have cost a Cloudflare Workers repo its Cloudflare entry for
+  declaring only `wrangler`. The platforms stay flagged, and `lib/detect/paths.ts` now
+  reads their root config files — `wrangler.toml`/`.jsonc`/`.json`, `vercel.json`,
+  `netlify.toml`, `firebase.json`, `supabase/config.toml` — as **inferred** signals
+  (confidence 1), which this rule can never drop. The config file says the project deploys
+  there regardless of how its CLI is declared. On the fixtures this returns Vercel to
+  next.js's card, on the strength of its root `vercel.json` rather than its `@vercel/*`
+  devDependencies.
 
 ## What would make us revisit
 

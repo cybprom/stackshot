@@ -267,6 +267,27 @@ describe("parseImageRef", () => {
 });
 
 describe("detectPaths", () => {
+  it("reads a platform's config file, wherever its CLI is declared", () => {
+    // A Workers repo with only `wrangler` in devDependencies still deploys to Cloudflare.
+    expect(tags(detectPaths(["wrangler.toml", "package.json"]))).toEqual(["tool:cloudflare"]);
+    expect(detectPaths(["wrangler.toml"])[0]).toMatchObject({ scope: "runtime", confidence: 1 });
+  });
+
+  it.each([
+    ["wrangler.toml", "tool:cloudflare"],
+    ["wrangler.jsonc", "tool:cloudflare"],
+    ["vercel.json", "tool:vercel"],
+    ["netlify.toml", "tool:netlify"],
+    ["firebase.json", "tool:firebase"],
+    ["supabase/config.toml", "tool:supabase"],
+  ])("%s → %s", (path, id) => {
+    expect(tags(detectPaths([path]))).toEqual([id]);
+  });
+
+  it("ignores a platform config nested anywhere else", () => {
+    expect(detectPaths(["examples/worker/wrangler.toml", "packages/app/vercel.json"])).toEqual([]);
+  });
+
   it("reads monorepo configs and lockfiles at the root only", () => {
     const paths = ["pnpm-lock.yaml", "turbo.json", "examples/a/yarn.lock", "examples/b/bun.lockb", "README.md"];
     expect(tags(detectPaths(paths))).toEqual(["tool:pnpm", "tool:turborepo"]);
