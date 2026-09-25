@@ -6,36 +6,43 @@
 it is the only thing that survives one.*
 
 ```
-Milestone:  1 — resolver and stack map (Milestone 0 complete, tagged m0-spike)
-Last done:  M2 STEP 1 — the card renders every fixture repo. card.tsx already
-            took a StackDoc, so the step was driving it from real resolver
-            output: tests/render.test.ts covers all 9 repos in both themes
-            plus the shapes the spike never had (one layer, versionless
-            items, overflow everywhere, byte-identical reruns).
-            scripts/render-cards.ts writes the PNGs for looking at: ~1s and
-            64-167KB each. The suite now takes ~35s because of rendering.
-            GOTCHAS 037 (the fetch guard blocked satori's yoga wasm) and 038
-            (a one-layer card is mostly empty space — design question).
+Milestone:  2 — renderer and routes (Milestone 1 complete)
+Last done:  M2 STEP 1 — the card renders every fixture repo from real
+            resolver output. tests/render.test.ts covers all 9 repos in both
+            themes plus the shapes the spike never had: one layer, items with
+            no version, overflow in several layers, byte-identical reruns.
+            scripts/render-cards.ts writes the PNGs (~1s, 64-167KB each); the
+            suite is ~28s now because of rendering. Also this session:
+            ADR-0022 reverted the dev-only drop rule after it cost three cards
+            a real layer, ADR-0023 replaced it with the map flag
+            dropWhenDevOnly (44 entries, default keep), and paths.ts now reads
+            platform config files so a dev-declared CLI can't lose a platform.
 Next:       Milestone 2 step 2 — lib/render/error-card.tsx for every failure
-            path in ARCHITECTURE's table, then step 3 wires the route to
-            resolve + cache, which is what finally retires lib/spike-doc*.ts.
-Open:       dropWhenDevOnly (ADR-0023) flags 44 entries where a dev-only
-            declaration means a test fixture; default is keep, so an
-            incomplete list shows noise instead of losing a layer. The list is
-            a convention claim, pinned in tests/stack-map.test.ts. Watch for
-            a real card losing something real: unflag, one line.
+            path in ARCHITECTURE's table. Then step 3 wires the route to
+            resolve + cache, which is what retires lib/spike-doc*.ts and
+            scripts/assert-fits.tsx (ADR-0011's teardown section).
+Open:       GOTCHAS 038: a one-layer card (github/gitignore) expands one band
+            to the whole card and reads as unfinished. Deferred. Four options
+            recorded; the author's lean is variable card height with a
+            minimum, which touches CARD.height, the <picture> block and I2.
             GOTCHAS 024: nested-pool ordering. All four candidates give
             identical cards on all 9 fixtures, so nothing favours a change;
             today's depth-then-path stands by default, not by evidence.
             Should a repo's own product appear on its card? zustand's doesn't
             say Zustand, spyde's doesn't say spyde. No ordering fixes it: a
             package's own name is never its own dependency.
-            GOTCHAS 027: 4s deadline failed locally on next.js/mastodon trees;
-            measure from Vercel in M2 before trusting it.
+            GOTCHAS 027: the 4s resolve deadline failed locally on next.js and
+            mastodon; measure it from a deployed function in M2 before
+            trusting it. Options there include two deadlines, one per route.
+            M2 step 3's route needs the top-level catch that logs a thrown
+            BudgetExceededError on its own bug counter, separate from the
+            failure-by-reason counts, then renders an error card (I5).
+            dropWhenDevOnly is a convention claim, pinned in
+            tests/stack-map.test.ts. Watch for a real card losing something
+            real: unflag it, one line.
             GraphQL is its own 5000-point bucket; cold resolve = 1 core + 1
             GraphQL. /rate_limit body lies (reported 0 used) — M4 guard must read
             response headers (GOTCHAS 025).
-            M2 route needs the top-level catch + bug counter (M2 step 3).
             Rule ladder still compresses on phones: 5u and 3u land at 1.46/0.88px.
             Accepted, not solved. No ladder on 1200 units fixes it. (022)
             Accent bar / header / footer / padding are coupled to the gutter label:

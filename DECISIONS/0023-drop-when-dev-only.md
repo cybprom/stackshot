@@ -87,7 +87,9 @@ devDependencies beside a runtime client.
   (confidence 1), which this rule can never drop. The config file says the project deploys
   there regardless of how its CLI is declared. On the fixtures this returns Vercel to
   next.js's card, on the strength of its root `vercel.json` rather than its `@vercel/*`
-  devDependencies.
+  devDependencies. **Accepted on review, 2026-09-25:** a root `vercel.json` is real
+  evidence that the repo deploys to Vercel, and suppressing it would be tuning the rule for
+  one card.
 
 ## What would make us revisit
 

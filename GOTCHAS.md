@@ -1021,6 +1021,14 @@ render a "not much to show" line; or treat a one-layer resolve as a near-empty r
 let M2's error-card path handle it. The fixture is committed, so any of them can be tried
 against it.
 
+**Fourth option, and the author's lean rather than a decision (2026-09-25):** let the
+card's height follow its content, with a minimum, so a sparse repo gets a shorter card
+instead of one item floating in a tall one. It is the largest of the four: `CARD.height` is
+fixed at 800 and `renderToPng` hands it to satori, the `<picture>` block and every
+committed screenshot assume 1200×800, and a per-doc height becomes part of the render's
+input, so the determinism test (I2) has to pin height as well as bytes. **Deferred, not
+rejected.**
+
 ---
 
 *New entries go above this line as they happen.*
