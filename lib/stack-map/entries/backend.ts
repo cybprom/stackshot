@@ -1,6 +1,9 @@
 import type { MapEntry } from "@/lib/stack-map/types";
 
 // Backend here means application logic that isn't UI, so CLI frameworks live here too.
+// dropWhenDevOnly is set on HTTP servers, CLI frameworks, HTTP clients and service SDKs.
+// Frameworks (Rails, Laravel, Django, FastAPI) and ORMs are unflagged: a dev-declared
+// framework usually means the repo is a plugin for it, and ORM CLIs ship as devDependencies.
 export const BACKEND: MapEntry[] = [
   {
     id: "node",
@@ -78,6 +81,7 @@ export const BACKEND: MapEntry[] = [
     weight: 80,
     description: "Minimal Node web framework.",
     aliases: ["npm:express"],
+    dropWhenDevOnly: true,
   },
   {
     id: "fastify",
@@ -86,6 +90,7 @@ export const BACKEND: MapEntry[] = [
     weight: 82,
     description: "Fast, schema-driven Node web framework.",
     aliases: ["npm:fastify"],
+    dropWhenDevOnly: true,
   },
   {
     id: "koa",
@@ -94,6 +99,7 @@ export const BACKEND: MapEntry[] = [
     weight: 76,
     description: "Middleware-first Node web framework.",
     aliases: ["npm:koa"],
+    dropWhenDevOnly: true,
   },
   {
     id: "hono",
@@ -102,6 +108,7 @@ export const BACKEND: MapEntry[] = [
     weight: 82,
     description: "Small web framework for any JavaScript runtime.",
     aliases: ["npm:hono"],
+    dropWhenDevOnly: true,
   },
   {
     id: "nestjs",
@@ -136,6 +143,7 @@ export const BACKEND: MapEntry[] = [
     description: "GraphQL server for Node.",
     aliases: ["npm:@apollo/server", "npm:apollo-server"],
     suppresses: ["graphql"],
+    dropWhenDevOnly: true,
   },
   {
     id: "socket-io",
@@ -144,6 +152,7 @@ export const BACKEND: MapEntry[] = [
     weight: 60,
     description: "Realtime bidirectional events.",
     aliases: ["npm:socket.io", "npm:socket.io-client"],
+    dropWhenDevOnly: true,
   },
   {
     id: "grpc",
@@ -435,6 +444,7 @@ export const BACKEND: MapEntry[] = [
     weight: 42,
     description: "ASGI server.",
     aliases: ["pypi:uvicorn"],
+    dropWhenDevOnly: true,
   },
   {
     id: "gunicorn",
@@ -443,6 +453,7 @@ export const BACKEND: MapEntry[] = [
     weight: 40,
     description: "WSGI HTTP server.",
     aliases: ["pypi:gunicorn"],
+    dropWhenDevOnly: true,
   },
   {
     id: "numpy",
@@ -491,6 +502,7 @@ export const BACKEND: MapEntry[] = [
     weight: 34,
     description: "Async-capable HTTP client for Python.",
     aliases: ["pypi:httpx"],
+    dropWhenDevOnly: true,
   },
   {
     id: "requests",
@@ -499,6 +511,7 @@ export const BACKEND: MapEntry[] = [
     weight: 32,
     description: "HTTP client for Python.",
     aliases: ["pypi:requests"],
+    dropWhenDevOnly: true,
   },
   {
     id: "typer",
@@ -508,6 +521,7 @@ export const BACKEND: MapEntry[] = [
     description: "CLI apps from Python type hints.",
     aliases: ["pypi:typer"],
     suppresses: ["click"],
+    dropWhenDevOnly: true,
   },
   {
     id: "click",
@@ -516,6 +530,7 @@ export const BACKEND: MapEntry[] = [
     weight: 46,
     description: "Composable Python CLIs.",
     aliases: ["pypi:click"],
+    dropWhenDevOnly: true,
   },
   {
     id: "gin",
@@ -564,6 +579,7 @@ export const BACKEND: MapEntry[] = [
     weight: 56,
     description: "Go CLI framework.",
     aliases: ["go:github.com/spf13/cobra"],
+    dropWhenDevOnly: true,
   },
   {
     id: "tokio",
@@ -629,6 +645,7 @@ export const BACKEND: MapEntry[] = [
     weight: 50,
     description: "Rust command-line argument parser.",
     aliases: ["cargo:clap"],
+    dropWhenDevOnly: true,
   },
   {
     // napi-rs is how a Rust core ships as a Node package (next.js's SWC bindings).
@@ -711,6 +728,7 @@ export const BACKEND: MapEntry[] = [
     description: "Client for the OpenAI API.",
     aliases: ["npm:openai", "pypi:openai"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "anthropic",
@@ -720,6 +738,7 @@ export const BACKEND: MapEntry[] = [
     description: "Client for the Claude API.",
     aliases: ["npm:@anthropic-ai/sdk", "pypi:anthropic"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "ai-sdk",
@@ -729,6 +748,7 @@ export const BACKEND: MapEntry[] = [
     description: "Vercel's TypeScript toolkit for LLM apps.",
     aliases: ["npm:ai", "npm:@ai-sdk/*"],
     versionFrom: ["npm:ai"],
+    dropWhenDevOnly: true,
   },
   {
     id: "langchain",
@@ -738,6 +758,7 @@ export const BACKEND: MapEntry[] = [
     description: "Framework for LLM applications.",
     aliases: ["npm:langchain", "npm:@langchain/*", "pypi:langchain", "pypi:langchain-*"],
     versionFrom: ["npm:langchain", "pypi:langchain"],
+    dropWhenDevOnly: true,
   },
   {
     id: "auth-js",
@@ -781,6 +802,7 @@ export const BACKEND: MapEntry[] = [
     description: "Payments API client.",
     aliases: ["npm:stripe", "npm:@stripe/*", "pypi:stripe", "gem:stripe", "composer:stripe/stripe-php"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "pdfkit",
@@ -806,5 +828,6 @@ export const BACKEND: MapEntry[] = [
     weight: 30,
     description: "Promise-based HTTP client.",
     aliases: ["npm:axios"],
+    dropWhenDevOnly: true,
   },
 ];

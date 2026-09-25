@@ -15,16 +15,17 @@ Last done:  MILESTONE 1 COMPLETE. lib/github, lib/detect, lib/stack-map (223
             test all green. Judgement pass done by the author over all nine
             cards; it found four real bugs, each now an ADR: versionFrom
             (0018), floors (0019), bounded ranges (0020), the repo-level dev
-            guard (0021, since reverted by 0022). ADRs 0014-0022, GOTCHAS 023-036.
+            guard (0021, reverted by 0022, replaced by 0023). ADRs 0014-0023,
+            GOTCHAS 023-036.
 Next:       Milestone 2 step 1 — port the spike card into lib/render/card.tsx,
             driven by a real StackDoc. lib/spike-doc*.ts and
             scripts/assert-fits.tsx can go once the route has a StackDoc
             source and an error card (ADR-0011's teardown section).
-Open:       Dev-only noise stays on next.js (Firebase, Datadog, OpenTelemetry):
-            ADR-0022 reverted the drop rule after it cost spyde, laravel and
-            uv a correct layer. GOTCHAS 036 has the analysis over all nine
-            fixtures — a map field for conventionally-dev technologies plus
-            reading peerDependencies for the library case. Neither built.
+Open:       dropWhenDevOnly (ADR-0023) flags 44 entries where a dev-only
+            declaration means a test fixture; default is keep, so an
+            incomplete list shows noise instead of losing a layer. The list is
+            a convention claim, pinned in tests/stack-map.test.ts. Watch for
+            a real card losing something real: unflag, one line.
             GOTCHAS 024: nested-pool ordering. All four candidates give
             identical cards on all 9 fixtures, so nothing favours a change;
             today's depth-then-path stands by default, not by evidence.

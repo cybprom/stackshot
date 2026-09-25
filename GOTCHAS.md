@@ -948,7 +948,7 @@ was rejected too: it would have restored them by refusing to empty a layer, not 
 understanding what they are. See 036 for what the fixtures say actually separates them.
 
 ## 036 — What actually separates Tailwind-on-laravel from Firebase-on-next.js
-**Date:** 2026-09-25 · **Cost:** ~0.4h · **Status:** open — analysis only, nothing built
+**Date:** 2026-09-25 · **Cost:** ~0.4h · **Status:** resolved by ADR-0023, with the default inverted
 **Writeup material:** yes — the answer was a property of the technology, not of the manifest
 
 After ADR-0022 reverted the drop rule, the question was what distinguishes a dev-declared
@@ -986,6 +986,12 @@ devDependencies while genuinely being a project's frontend. No fixture contains 
 pocketbase's UI has no Svelte at all, only leaflet and vite — so the convention list has to
 be written from knowledge of each ecosystem, not from this fixture set, and it will be
 wrong somewhere until real repos test it.
+
+**How ADR-0023 resolved it:** the list went in pointed the other way. Flagging
+"normally runtime, so dev-only means test fixture" makes the default *keep*, so the
+incomplete list shows noise instead of dropping a layer — and the peer-dependency part of
+this analysis was dropped entirely, since unflagged UI frameworks already cover zustand's
+React, and optional peers would make a Drizzle-shaped library list every database.
 
 ---
 

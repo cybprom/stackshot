@@ -72,6 +72,32 @@ describe("map integrity", () => {
     }
   });
 
+  // The flag list is a claim about ecosystem convention that no code can check, so it is
+  // written out here: changing it means editing this test. ADR-0023.
+  it("flags exactly the technologies whose dev-only declaration means a test fixture", () => {
+    expect(STACK_MAP.filter((e) => e.dropWhenDevOnly).map((e) => e.id).sort()).toEqual([
+      "ai-sdk", "anthropic", "apollo-client", "apollo-server", "aws", "axios", "azure",
+      "clap", "click", "cloudflare", "cobra", "datadog", "emotion", "express", "fastify",
+      "firebase", "gcp", "gunicorn", "hono", "httpx", "jotai", "koa", "langchain", "mobx",
+      "neon", "netlify", "openai", "opentelemetry", "pinia", "prometheus", "redux",
+      "requests", "sentry", "socket-io", "stripe", "styled-components", "supabase", "swr",
+      "tanstack-query", "typer", "upstash", "uvicorn", "vercel", "zustand",
+    ]);
+  });
+
+  it("never flags tooling, where dev scope is the norm, and never both flags and runtimeOnly", () => {
+    for (const entry of STACK_MAP.filter((e) => e.dropWhenDevOnly)) {
+      expect(entry.category, entry.id).not.toBe("tooling");
+      expect(entry.runtimeOnly, entry.id).toBeFalsy();
+    }
+  });
+
+  it("leaves UI frameworks, build-time CSS and docs generators unflagged", () => {
+    for (const id of ["react", "vue", "svelte", "sveltekit", "angular", "tailwindcss", "sass", "vitepress", "mkdocs", "docusaurus"]) {
+      expect(entryById(id)?.dropWhenDevOnly, id).toBeFalsy();
+    }
+  });
+
   it("uses runtimeOnly only outside tooling, where dev scope is the norm", () => {
     for (const entry of STACK_MAP.filter((e) => e.runtimeOnly)) expect(entry.category, entry.id).not.toBe("tooling");
   });

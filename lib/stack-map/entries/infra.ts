@@ -1,5 +1,7 @@
 import type { MapEntry } from "@/lib/stack-map/types";
 
+// Every hosted service and observability SDK here carries dropWhenDevOnly: in
+// devDependencies they are integration-test fixtures, not what the project runs on.
 export const INFRA: MapEntry[] = [
   {
     id: "docker",
@@ -34,6 +36,7 @@ export const INFRA: MapEntry[] = [
     description: "Deployment platform.",
     aliases: ["npm:vercel", "npm:@vercel/analytics", "npm:@vercel/speed-insights", "npm:@vercel/blob", "npm:@vercel/kv", "npm:@vercel/postgres", "action:amondnet/vercel-action"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "netlify",
@@ -43,6 +46,7 @@ export const INFRA: MapEntry[] = [
     description: "Deployment platform.",
     aliases: ["npm:netlify-cli", "npm:@netlify/*"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "cloudflare",
@@ -52,6 +56,7 @@ export const INFRA: MapEntry[] = [
     description: "Workers, Pages and edge platform.",
     aliases: ["npm:wrangler", "npm:@cloudflare/*", "action:cloudflare/wrangler-action", "action:cloudflare/pages-action"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "aws",
@@ -71,6 +76,7 @@ export const INFRA: MapEntry[] = [
       "action:aws-actions/*",
     ],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "gcp",
@@ -80,6 +86,7 @@ export const INFRA: MapEntry[] = [
     description: "Google Cloud Platform.",
     aliases: ["npm:@google-cloud/*", "pypi:google-cloud-*", "go:cloud.google.com/go*", "action:google-github-actions/*"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "azure",
@@ -89,6 +96,7 @@ export const INFRA: MapEntry[] = [
     description: "Microsoft Azure.",
     aliases: ["npm:@azure/*", "pypi:azure-*", "action:azure/*"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "supabase",
@@ -98,6 +106,7 @@ export const INFRA: MapEntry[] = [
     description: "Postgres platform with auth, storage and APIs.",
     aliases: ["npm:@supabase/*", "npm:supabase", "pypi:supabase", "action:supabase/setup-cli", "docker:supabase/*"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "firebase",
@@ -107,6 +116,7 @@ export const INFRA: MapEntry[] = [
     description: "Google's app backend platform.",
     aliases: ["npm:firebase", "npm:firebase-admin", "npm:firebase-tools", "pypi:firebase-admin"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "neon",
@@ -116,6 +126,7 @@ export const INFRA: MapEntry[] = [
     description: "Serverless Postgres.",
     aliases: ["npm:@neondatabase/serverless"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "upstash",
@@ -125,6 +136,7 @@ export const INFRA: MapEntry[] = [
     description: "Serverless Redis and queues.",
     aliases: ["npm:@upstash/*"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "fly",
@@ -167,6 +179,7 @@ export const INFRA: MapEntry[] = [
     description: "Error tracking and performance monitoring.",
     aliases: ["npm:@sentry/*", "pypi:sentry-sdk", "gem:sentry-ruby", "gem:sentry-rails", "go:github.com/getsentry/sentry-go", "cargo:sentry"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "opentelemetry",
@@ -176,6 +189,7 @@ export const INFRA: MapEntry[] = [
     description: "Vendor-neutral traces, metrics and logs.",
     aliases: ["npm:@opentelemetry/*", "pypi:opentelemetry-*", "gem:opentelemetry-*", "go:go.opentelemetry.io/otel*"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "datadog",
@@ -185,6 +199,7 @@ export const INFRA: MapEntry[] = [
     description: "Monitoring and APM.",
     aliases: ["npm:dd-trace", "pypi:ddtrace", "gem:datadog", "gem:ddtrace"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
   {
     id: "prometheus",
@@ -194,5 +209,6 @@ export const INFRA: MapEntry[] = [
     description: "Metrics collection.",
     aliases: ["npm:prom-client", "gem:prometheus_exporter", "go:github.com/prometheus/client_golang", "docker:prom/prometheus"],
     versionFrom: [],
+    dropWhenDevOnly: true,
   },
 ];

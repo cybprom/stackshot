@@ -1,5 +1,8 @@
 import type { MapEntry } from "@/lib/stack-map/types";
 
+// dropWhenDevOnly is set on CSS-in-JS runtimes and state/data libraries only. UI
+// frameworks stay unflagged: dev-declared React or Svelte usually means the project is
+// about them, and build-time CSS and docs generators live in devDependencies by convention.
 export const FRONTEND: MapEntry[] = [
   {
     id: "next",
@@ -253,6 +256,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 62,
     description: "CSS-in-JS with tagged template literals.",
     aliases: ["npm:styled-components"],
+    dropWhenDevOnly: true,
   },
   {
     id: "emotion",
@@ -261,6 +265,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 60,
     description: "CSS-in-JS library.",
     aliases: ["npm:@emotion/*"],
+    dropWhenDevOnly: true,
   },
   {
     id: "bootstrap",
@@ -345,6 +350,7 @@ export const FRONTEND: MapEntry[] = [
     description: "Predictable state container.",
     aliases: ["npm:redux", "npm:@reduxjs/toolkit", "npm:react-redux"],
     versionFrom: ["npm:redux", "npm:@reduxjs/toolkit"],
+    dropWhenDevOnly: true,
   },
   {
     id: "zustand",
@@ -353,6 +359,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 62,
     description: "Small hook-based state store.",
     aliases: ["npm:zustand"],
+    dropWhenDevOnly: true,
   },
   {
     id: "jotai",
@@ -361,6 +368,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 58,
     description: "Atomic state for React.",
     aliases: ["npm:jotai"],
+    dropWhenDevOnly: true,
   },
   {
     id: "mobx",
@@ -369,6 +377,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 58,
     description: "Observable state management.",
     aliases: ["npm:mobx"],
+    dropWhenDevOnly: true,
   },
   {
     id: "pinia",
@@ -377,6 +386,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 60,
     description: "State store for Vue.",
     aliases: ["npm:pinia"],
+    dropWhenDevOnly: true,
   },
   {
     id: "tanstack-query",
@@ -391,6 +401,7 @@ export const FRONTEND: MapEntry[] = [
       "npm:@tanstack/solid-query",
       "npm:@tanstack/query-core",
     ],
+    dropWhenDevOnly: true,
   },
   {
     id: "swr",
@@ -399,6 +410,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 58,
     description: "Stale-while-revalidate data fetching hooks.",
     aliases: ["npm:swr"],
+    dropWhenDevOnly: true,
   },
   {
     id: "apollo-client",
@@ -407,6 +419,7 @@ export const FRONTEND: MapEntry[] = [
     weight: 62,
     description: "GraphQL client with a normalized cache.",
     aliases: ["npm:@apollo/client"],
+    dropWhenDevOnly: true,
   },
   {
     id: "react-hook-form",

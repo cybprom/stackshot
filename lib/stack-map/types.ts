@@ -25,6 +25,10 @@ export type MapEntry = {
   // Dev-scope signals don't count at all: a library testing against pg doesn't run
   // PostgreSQL. Databases and brokers, whose drivers imply them.
   runtimeOnly?: boolean;
+  // Normally a runtime dependency, so a dev-only declaration means a test fixture and the
+  // entry is dropped. Default is to keep: an incomplete list then shows noise rather than
+  // losing a real layer. ADR-0023.
+  dropWhenDevOnly?: boolean;
 };
 
 // "runtime": part of what ships or runs. "dev": declared only for development, test or CI.

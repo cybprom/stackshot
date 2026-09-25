@@ -36,10 +36,12 @@ export function normalize(signals: RawSignal[], meta: RepoMeta, options: Normali
   const suppressed = new Set([...byEntry.values()].flatMap((c) => c.entry.suppresses ?? []));
   const survivors = [...byEntry.values()].filter((c) => !suppressed.has(c.entry.id));
 
-  // Dev-only entries rank last but are never dropped: ADR-0022 reverted the guard that
-  // dropped them, because it cost three fixtures a correct layer.
+  // Only entries the map flags are dropped when dev-only, so an unflagged technology
+  // keeps its place. ADR-0022 for the guard that failed, ADR-0023 for this rule.
+  const kept = survivors.filter((c) => !(c.entry.dropWhenDevOnly && c.entry.category !== "tooling" && manifestDevOnly(c)));
+
   const layers = LAYER_ORDER.flatMap((category): StackLayer[] => {
-    const ranked = survivors.filter((c) => c.entry.category === category).sort(byRank);
+    const ranked = kept.filter((c) => c.entry.category === category).sort(byRank);
     if (ranked.length === 0) return [];
     return [
       {
@@ -66,6 +68,12 @@ function byRank(a: Candidate, b: Candidate): number {
 
 function shipped(c: Candidate): boolean {
   return c.entry.category === "tooling" || c.signals.some((s) => s.scope === "runtime");
+}
+
+// Declared only as a manifest devDependency. Inferred signals (confidence 1, from CI,
+// Docker or the tree) never make an entry droppable.
+function manifestDevOnly(c: Candidate): boolean {
+  return c.signals.every((s) => s.scope === "dev" && s.confidence === 2);
 }
 
 function confidence(c: Candidate): number {

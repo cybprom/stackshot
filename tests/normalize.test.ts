@@ -71,16 +71,27 @@ describe("normalize", () => {
   });
 
   describe("scope", () => {
-    it("ranks dev-only entries last but never drops them (ADR-0022)", () => {
-      // Firebase (78) outweighs Sentry (64), but it is only a devDependency here.
-      const doc = run(["npm:firebase@^10 [dev]", "npm:@sentry/nextjs@^8"]);
-      expect(card(doc)).toEqual(["infra: Sentry, Firebase"]);
+    it("drops a flagged entry that is only a devDependency (ADR-0023)", () => {
+      // A hosted service in devDependencies is an integration-test fixture.
+      expect(card(run(["npm:firebase@^10 [dev]", "npm:@sentry/nextjs@^8"]))).toEqual(["infra: Sentry"]);
     });
 
-    it("keeps a library's dev-declared frontend", () => {
-      // zustand: React and Redux are devDependencies, and there is nothing else.
+    it("keeps an unflagged entry that is only a devDependency", () => {
+      // Docs generators and build-time CSS live in devDependencies by convention.
+      expect(card(run(["npm:vitepress@^1 [dev]", "npm:tailwindcss@^4 [dev]"]))).toEqual([
+        "frontend: Tailwind 4, VitePress 1",
+      ]);
+    });
+
+    it("keeps a library's dev-declared UI framework but not its test fixtures", () => {
+      // zustand: React and Redux are both devDependencies, and Redux is there to test
+      // the redux middleware. React is unflagged, Redux is flagged.
       const doc = run(["npm:react@^19 [dev]", "npm:redux@^5 [dev]", "tool:node@>=12.20.0"]);
-      expect(card(doc)).toEqual(["frontend: React 19, Redux 5", "backend: Node"]);
+      expect(card(doc)).toEqual(["frontend: React 19", "backend: Node"]);
+    });
+
+    it("keeps a flagged entry that has any runtime signal", () => {
+      expect(card(run(["npm:swr@^2 [dev]", "npm:swr@^2"]))).toEqual(["frontend: SWR 2"]);
     });
 
     it("never drops CI or Docker signals, which are inferred, not declared", () => {

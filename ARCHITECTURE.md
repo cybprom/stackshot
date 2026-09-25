@@ -255,6 +255,10 @@ RawSignal[]
    │
    ├─ drop: dev-scope signals for runtimeOnly entries (databases: a dev pg ≠ PostgreSQL)
    │
+   ├─ drop: dev-only entries the map flags as dropWhenDevOnly, outside tooling
+   │         (hosted services, HTTP servers, CSS-in-JS, state libraries…) — an
+   │         unflagged technology always keeps its place (ADR-0023)
+   │
    ├─ suppress: from the set as it stood, remove every id in entry.suppresses
    │            next        suppresses  react
    │            nuxt        suppresses  vue
