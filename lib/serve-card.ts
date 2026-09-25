@@ -1,5 +1,5 @@
 import type { Cache } from "@/lib/cache";
-import { countBug, countFailure, countUnmapped } from "@/lib/counters";
+import { countBug, countFailure, countResolve, countUnmapped } from "@/lib/counters";
 import { BUG_REASON, failureReason, type FailureReason } from "@/lib/failure";
 import type { GitHubClient } from "@/lib/github/client";
 import { stackHash } from "@/lib/hash";
@@ -18,8 +18,16 @@ import type { Theme } from "@/lib/tokens";
  */
 export type CardDeps = {
   cache: Cache;
-  // Absent means no GITHUB_TOKEN: a misconfiguration that shipped, not a repo problem.
-  client: GitHubClient | undefined;
+  /**
+   * A factory, not a client. `createGitHubClient` starts the 4s resolve deadline the
+   * moment it is constructed, so building one up front puts every cache round-trip
+   * inside the resolve's own budget — which is enough to time out a repo that resolves
+   * comfortably without a cache. Built here, immediately before the resolve that needs
+   * it, and never at all on a cache hit. GOTCHAS 042.
+   *
+   * Absent means no GITHUB_TOKEN: a misconfiguration that shipped, not a repo problem.
+   */
+  createClient: (() => GitHubClient) | undefined;
 };
 
 export type CardResult = { bytes: Buffer; reason?: FailureReason };
@@ -36,7 +44,7 @@ export async function serveCard(deps: CardDeps, owner: string, repo: string, the
 }
 
 async function run(deps: CardDeps, owner: string, repo: string, theme: Theme): Promise<CardResult> {
-  const { cache, client } = deps;
+  const { cache, createClient } = deps;
 
   if (!isRepoRef(owner, repo)) {
     countFailure("not_found", { owner, repo, gate: "repo-ref" });
@@ -52,12 +60,15 @@ async function run(deps: CardDeps, owner: string, repo: string, theme: Theme): P
     if (doc) return { bytes: await cardBytes(cache, doc, pointer.stackHash, theme) };
   }
 
-  if (!client) {
+  if (!createClient) {
     countBug("github_token_missing", new Error("GITHUB_TOKEN missing"), { owner, repo });
     return errorCard("unavailable", owner, repo, theme);
   }
 
+  // Constructed here and nowhere earlier: this call starts the resolve deadline.
+  const client = createClient();
   const result = await resolve(client, owner, repo);
+  countResolve(owner, repo, client.calls());
   if (!result.ok) {
     const reason = failureReason(result.error);
     countFailure(reason, { owner, repo, error: result.error.kind });

@@ -97,6 +97,18 @@ FRONTEND  102.4u      BACKEND  88.6u
 TOOLING    94.3u      INFRA    65.9u        band floor: 120u
 ```
 
+**Corrected 2026-09-25.** These are 5–8% low. Re-measured from satori's own layout pass —
+the engine that lays out the real card, rather than the separate script used here:
+
+```
+FRONTEND  110.0u      BACKEND  96.0u
+TOOLING    96.0u      INFRA    67.0u        band floor: 120u
+```
+
+So FRONTEND clears the 120 floor by **10.0 units, not 17.6**. The conclusion below is
+unchanged and the margin is thinner than it read. `tests/fit.test.ts` asserts this now
+instead of leaving it written down. See ADR-0011's evidence-correction note.
+
 So the band `minHeight` of 120 is now constrained by **two** independent things: two wrapped
 lines of `card/item`, and the longest gutter label. FRONTEND clears it by 17.6 units. If a
 later redesign shrinks bands — DESIGN.md's own "3 layers × 4 items" fallback would — the
@@ -583,7 +595,7 @@ pushing the footer off the canvas.
 
 **Which means overflow is the wrong thing to guard.** Adding chrome does not overflow; it
 compresses bands. Empirically the accent bar renders fine at 8, 16 and even 60 units. The
-real constraint is GOTCHAS 004's: the rotated FRONTEND label needs ~103 units of band
+real constraint is GOTCHAS 004's: the rotated FRONTEND label needs 110 units of band
 height, and bands are 127.75 at four layers.
 
 ```
@@ -1126,36 +1138,67 @@ GitHub, and spends the budget this entry exists to save.
   special case.
 - Only the very first request for a repo, in any spelling, pays a cold resolve.
 
-## 041 — The spike's fit check was measuring its own frame
+## 041 — The fix for 021 took four days to land, and 021 said exactly where
 **Date:** 2026-09-25 · **Cost:** ~20m · **Status:** fixed
+**Writeup material:** yes — but as a follow-through failure, not a discovery
+
+Retiring `assert-fits.tsx` at teardown, I printed its numbers rather than its verdict and
+found every card scoring `maxY=797` of 800 — a one-item card and the densest fixture
+alike, because the lowest ink is always the frame's inner edge.
+
+**This was not a discovery. GOTCHAS 021 recorded it on 2026-09-21**, correctly, in more
+detail, with the same 659-unit minimum canvas I then measured again from scratch. It ends
+with: *"That is the thing to assert against, and `assert-fits.tsx` does not currently do
+it."* Four days and a milestone later, it still did not, and I rediscovered the entry only
+after writing this one up as news.
+
+What is actually new here is small: the check now lives in `tests/fit.test.ts`, uses
+satori's `onNodeDetected` — absolute geometry per node, from the same layout pass that
+draws the card — and is paired with a test that it detects a real overflow, because the
+densest fixture on a 600-unit canvas reports 659. The gutter-fit assertion 021 asked for
+also exists now, measuring each rotated label and comparing it to its band.
+
+Measuring the labels properly turned up the one genuinely new fact, and it invalidates a
+number three documents repeat: **`FRONTEND` is 110.0 units rotated, not ~103.** See the
+evidence-correction note in ADR-0011 — the accent-bar coupling conclusion survives, and
+is only consistent with the corrected figure.
+
+**Two lessons, and the second is the writeup one.** A guard whose output is a boolean will
+report success for years without anyone noticing it stopped measuring; thirty seconds of
+printing the intermediate value found it. And an open item written down as prose at the
+end of an entry is not a task — 021 named the exact fix, in the file it belonged in, and
+that was not enough to make it happen or to stop the same ground being covered twice. The
+things this project actually acts on are the ones in `ROADMAP.md`'s Next block.
+
+## 042 — The resolve deadline was already running before the cache was read
+**Date:** 2026-09-25 · **Cost:** ~30m · **Status:** fixed, and it exposed a worse one
 **Writeup material:** yes
 
-ADR-0011 kept `scripts/assert-fits.tsx` through Milestone 1 on the grounds that it was
-"the only automated guard on the layout at all". Moving it into the suite at teardown, the
-first thing worth doing was printing the numbers it produced rather than just its verdict:
+`createGitHubClient` starts the 4s resolve deadline with `AbortSignal.timeout` **at
+construction**, not at first use. The route built the client while assembling its
+dependencies, before `serve-card` had read anything, so all three Upstash round-trips —
+pointer, doc, png — ran inside the resolve's own budget. On a laptop talking to a remote
+Redis that is easily several hundred milliseconds of a four-second allowance, spent before
+the first GitHub request is even sent.
 
-```
-worst            797.0 / 800
-vercel__next.js  797.0 / 800
-github__gitignore 797.0 / 800
-```
+Fixed by passing a factory rather than a client, so the clock starts immediately before
+the resolve that needs it, and never starts at all on a cache hit. The general shape is
+worth remembering: **a timeout that begins at construction couples a deadline to
+dependency wiring**, which is exactly the code most likely to be rearranged later.
 
-Every card, from a one-item card to the densest fixture, scored **exactly 797**. The
-script scraped the rendered SVG for the lowest drawn `y`, and the lowest thing on every
-card is the card's own frame rect, which is the canvas less the border. The content it was
-supposed to be watching never entered the number. It would still have caught text drawn
-below the canvas, so it was not worthless — but it passed identically whether the layout
-had 3 units of headroom or 300, which is not what anyone reading "fits, 3.0 spare" would
-believe.
+**The fix did not fix the symptom, which is the useful part.** With the deadline correctly
+scoped, `pmndrs/zustand` still times out from this network, and so does `vercel/next.js`.
+Both resolve fine against fixtures and `zustand` resolved live in ~3.2s earlier in the
+same session. So GOTCHAS 027's open question is not a measurement artefact and is not
+about cache overhead: **the 4s deadline is genuinely too tight for a real repo on a real
+connection**, and the per-fetch 2.5s limit on up to six parallel raw fetches is the more
+likely binding constraint. Measuring from a deployed function is M2 step 5 and this is now
+evidence for it rather than a hypothesis.
 
-The replacement uses `onNodeDetected`, satori's own layout pass, which reports absolute
-`top`/`height` per node. Checked against a deliberate failure — the densest fixture on a
-600-unit canvas reports 659 — and that check is now a test of its own, because a
-green suite built on a metric that never moves is worse than no suite.
-
-**The lesson is not about satori.** A guard whose output is a boolean will report success
-for years without anyone noticing it stopped measuring. The thirty seconds that found this
-was printing the intermediate value.
+One consequence to weigh there: a timeout is transient, but the route caches it as a
+`failed` pointer for ten minutes, so a slow repo is unavailable for ten minutes after one
+bad request. The short negative TTL is doing its job, but timeouts may deserve a shorter
+one than a genuine 404.
 
 ---
 

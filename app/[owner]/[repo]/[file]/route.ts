@@ -47,7 +47,7 @@ export async function GET(
 
   const token = githubToken();
   const { bytes, reason } = await serveCard(
-    { cache: createCache(), client: token ? createGitHubClient({ token }) : undefined },
+    { cache: createCache(), createClient: token ? () => createGitHubClient({ token }) : undefined },
     owner,
     repo,
     theme,

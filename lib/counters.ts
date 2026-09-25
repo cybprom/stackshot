@@ -19,6 +19,14 @@ export function countBug(kind: string, error: unknown, context: Record<string, u
   console.error(`stackshot.bug ${kind}`, detail, context);
 }
 
+/**
+ * A cold resolve, with the API calls it cost. Logged only when one happens, so its
+ * absence is the evidence that a request was served from cache. I6 caps `calls` at 2.
+ */
+export function countResolve(owner: string, repo: string, calls: number): void {
+  console.info(`stackshot.resolve ${owner}/${repo} calls=${calls}`);
+}
+
 /** The product backlog and the abuse signal at once. ARCHITECTURE, rate limiting. */
 export function countUnmapped(ids: string[]): void {
   if (ids.length > 0) console.info(`stackshot.unmapped`, ids);

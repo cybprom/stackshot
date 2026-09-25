@@ -27,16 +27,27 @@ Last done:  M2 STEP 3 — the card route is real. app/[owner]/[repo]/[file]
             Spike teardown done per ADR-0011: spike-doc*, spike-card,
             assert-fits deleted. Both things ADR-0011 wanted kept were kept —
             worstCaseDoc() is regenerated from STACK_MAP, and the fit check
-            moved into tests/fit.test.ts, where GOTCHAS 041 found it had been
-            measuring the card's own frame (797/800 for every card, dense or
-            empty). It uses onNodeDetected now, with a test that it detects a
-            real overflow.
-Next:       Milestone 2 step 4 — app/api/resolve/route.ts. Then step 5's
-            deployed latency measurement (GOTCHAS 027), step 6 determinism,
-            step 7 gutter-fit.
-            NOT YET DONE and needed before any deploy: Upstash credentials in
-            .env.local and Vercel, and serverExternalPackages for satori AND
-            resvg (GOTCHAS 016).
+            moved into tests/fit.test.ts. It had been measuring the card's
+            own frame (797/800 for every card) — which GOTCHAS 021 already
+            said on 09-21 and nobody acted on; 041 is that follow-through
+            failure, not a discovery. It uses onNodeDetected now, with a test
+            that it detects a real overflow, and step 7's gutter-fit
+            assertion landed with it. Measuring the labels properly corrected
+            FRONTEND from ~103 to 110.0 units in three documents; ADR-0011 has
+            an evidence-correction note and its 71-unit coupling claim
+            survives (it was only ever consistent with 110).
+Next:       Milestone 2 step 4 — app/api/resolve/route.ts. Step 7's gutter-fit
+            test is already done (tests/fit.test.ts).
+            STEP 5 IS NOW URGENT, not routine: GOTCHAS 042. With the deadline
+            correctly scoped, pmndrs/zustand AND vercel/next.js both time out
+            live from this network at 4s, though zustand resolved in ~3.2s
+            earlier the same session. The 2.5s per-fetch limit on up to six
+            parallel raw fetches is the likelier binding constraint. Measure
+            from a deployed function before changing any number. Also decide
+            whether a timeout deserves a shorter negative TTL than a 404 — one
+            slow request currently makes a repo unavailable for 10 minutes.
+            Upstash credentials are in .env.local and verified working;
+            they still need adding to Vercel before deploy.
 Open:       GOTCHAS 038 now has the success card's variable height as its next
             candidate, as its own step: satori takes width-only and derives
             height, but our tree returns 390/750/750 for 1/4/4 layers, which

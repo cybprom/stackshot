@@ -40,8 +40,12 @@ function fixtureClient(fixture: string): GitHubClient {
   return createGitHubClient({ token: "fixture", fetch: fixtureFetch(loadResponses(fixture)) });
 }
 
-const serve = (deps: { cache: Cache; client: GitHubClient | undefined }, owner: string, repo: string, theme: Theme = "light") =>
-  serveCard(deps, owner, repo, theme);
+const serve = (
+  deps: { cache: Cache; client: GitHubClient | undefined },
+  owner: string,
+  repo: string,
+  theme: Theme = "light",
+) => serveCard({ cache: deps.cache, createClient: deps.client ? () => deps.client as GitHubClient : undefined }, owner, repo, theme);
 
 beforeEach(() => {
   vi.spyOn(console, "warn").mockImplementation(() => {});

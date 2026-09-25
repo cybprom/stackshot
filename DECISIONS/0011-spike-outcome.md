@@ -114,7 +114,47 @@ rebuilt from memory:
 - `WORST_CASE_DOC` lives on in `tests/fit.test.ts` as `worstCaseDoc()`, generated from the
   real `STACK_MAP` — every layer full of the longest display names its category actually
   has — which is a better worst case than the hand-written one it replaces.
-- `assert-fits.tsx`'s check moved into the same file, and turned out to have been
-  measuring the card's own frame rather than its content. See GOTCHAS 041.
+- `assert-fits.tsx`'s check moved into the same file. See GOTCHAS 041.
+
+## Evidence correction (2026-09-25) — the decision above is unchanged
+
+Two numbers this ADR reasoned from were wrong. Neither changes the verdict, and one of
+them was already corrected elsewhere before this note was written.
+
+**The overflow assertion never reported headroom.** `assert-fits.tsx` returned
+`maxY=797` on an 800-unit canvas for every card, dense or empty, because the card's root
+is `height: 100%` and the lowest ink is always the frame's inner edge. It answered "does
+this overflow", never "by how much does it clear". **GOTCHAS 021 caught and corrected this
+on 2026-09-21**, four days before the teardown; GOTCHAS 041 records only that the
+replacement check finally landed and is now verified able to fail. Measured properly, by
+shrinking the canvas until ink spills, across all nine real fixtures rather than the two
+spike docs:
+
+```
+minimum viable canvas, 4-layer cards   659 units     true slack at 800   141 units
+minimum viable canvas, 1-layer card    299 units     true slack at 800   501 units
+```
+
+**The rotated `FRONTEND` label is 110.0 units, not the ~103 stated above.** Measured from
+satori's own layout pass, which is the engine that lays out the real card:
+
+```
+FRONTEND 110.0    TOOLING 96.0    BACKEND 96.0    INFRA 67.0
+```
+
+GOTCHAS 004's table (102.4 / 94.3 / 88.6 / 65.9) came from a separate script and reads
+5–8% low across the board.
+
+**The accent-bar coupling claim survives intact, and is in fact only consistent with the
+corrected figure.** At four layers a band is `(800 − 130 chrome − 140 header − 19 rules)/4
+= 127.75`, so FRONTEND clears its band by 17.75 units and four bands absorb `17.75 × 4 =
+71` units of extra chrome before the label binds — exactly the "roughly 71 units" above.
+With the ~103 figure the arithmetic would have given 99, so the conclusion was right and
+its stated input was not.
+
+What did change is the margin against the *other* constraint: FRONTEND clears the 120-unit
+band `minHeight` by **10.0 units, not 17.6**. The `minHeight` binds first anyway — 31 units
+of chrome, against 71 for the label — so the warning this ADR gives still points at the
+right thing, and `tests/fit.test.ts` now asserts both rather than recording them in prose.
 
 `docs/spike/` is the durable record and stays.

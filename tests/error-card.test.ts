@@ -59,14 +59,6 @@ describe("the error card is exactly as tall as its content", () => {
     expect(chrome + content).toBe(ERROR_CARD_HEIGHT);
   });
 
-  it("holds every rotated gutter label inside the message band", () => {
-    // Commit Mono advances at 0.609em, measured off a render. M2 step 7 replaces this
-    // constant with satori's own onNodeDetected measurement for both cards.
-    const advance = TYPE.gutter.size * (0.609 + TYPE.gutter.tracking);
-    for (const { label } of Object.values(ERROR_COPY)) {
-      expect(label.length * advance).toBeLessThan(CARD.errorBand);
-    }
-  });
 });
 
 describe("the copy", () => {

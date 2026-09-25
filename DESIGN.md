@@ -286,8 +286,9 @@ its **own centre**, which is what keeps the band height out of the problem. The 
 `whiteSpace: nowrap` and `flexShrink: 0` or it wraps inside the 72-unit gutter before it is
 ever rotated. See GOTCHAS 004.
 
-**Band height is constrained by the longest label, not only by content.** FRONTEND is 102.4
-units rotated, against a band floor of 120. Any redesign that shrinks bands below ~110 —
+**Band height is constrained by the longest label, not only by content.** FRONTEND is 110.0
+units rotated — measured from satori's layout pass, correcting an earlier 102.4 — against a
+band floor of 120, so it clears by 10. Any redesign that shrinks bands below ~110 —
 including this doc's own "3 layers × 4 items" fallback — breaks the gutter, and it will
 look like a rotation bug rather than a spacing one.
 
@@ -333,7 +334,7 @@ Rules:
   library with no backend shows two bands, not two bands and two blanks.
 - **Band `minHeight` is 120, and it is load-bearing for two independent reasons.** It holds
   two wrapped lines of `card/item` plus 24/24 padding (114, rounded up), *and* it clears the
-  longest rotated gutter label — FRONTEND needs ~103 units, measured, leaving 17 to spare.
+  longest rotated gutter label — FRONTEND needs 110 units, measured, leaving 10 to spare.
   Shrinking bands below ~110 breaks the gutter, and the failure presents as a rotation bug
   rather than a spacing one. Anything that reduces this number has to satisfy both
   constraints, not the one that prompted the change. See GOTCHAS 004.
@@ -371,7 +372,7 @@ every type size keeps the display ratios measured above**; only the height chang
   8 rule + 240 band + 56 footer`. `ERROR_CARD_HEIGHT` computes it from those tokens, so a
   change to any of them moves the height rather than leaving a gap.
 - **The 240-unit band is sized by the gutter label, not by the text.** `NOTHING MAPPED`
-  is ~199 units rotated, well past the 120-unit band floor a layer band uses. The message
+  is 191 units rotated, well past the 120-unit band floor a layer band uses. The message
   itself needs less. This is the same constraint as the layer bands and it fails the same
   silent way, so the fit assertion covers it.
 - **The message is top-aligned in its band**, so the space below reads as a document's
