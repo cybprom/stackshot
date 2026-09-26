@@ -2,13 +2,17 @@ import { Redis } from "@upstash/redis";
 import { z } from "zod";
 import { countBug } from "@/lib/counters";
 import { isProduction, upstashConfig } from "@/lib/env";
-import { FAILURE_REASONS } from "@/lib/failure";
+import { FAILURE_REASONS, isTransient } from "@/lib/failure";
 import type { StackDoc } from "@/lib/stack-map/types";
 import type { Theme } from "@/lib/tokens";
 
 export const POINTER_TTL_S = 3600;
 // A deleted repo's badge would otherwise re-run detection on every cold CDN request.
 export const NEGATIVE_TTL_S = 600;
+// A timeout or a rate limit is a fact about a moment, not about the repo. Long enough to
+// stop a stampede re-running a slow resolve, short enough that recovery is not our
+// problem to notice. ADR-0027.
+export const TRANSIENT_TTL_S = 60;
 export const CONTENT_TTL_S = 30 * 24 * 3600;
 // Well inside the 4s resolve deadline: a slow cache must never cost more than the work
 // it was there to skip.
@@ -52,6 +56,12 @@ const PointerSchema = z.discriminatedUnion("kind", [
 ]);
 
 export type Pointer = z.infer<typeof PointerSchema>;
+
+/** How long a pointer is allowed to stand. Exported so the split is testable. */
+export function pointerTtlSeconds(pointer: Pointer): number {
+  if (pointer.kind === "ok") return POINTER_TTL_S;
+  return isTransient(pointer.reason) ? TRANSIENT_TTL_S : NEGATIVE_TTL_S;
+}
 
 export type Cache = {
   getPointer(owner: string, repo: string): Promise<Pointer | undefined>;
@@ -125,7 +135,7 @@ export function upstashCache(redis: Redis): Cache {
     getPointer: (owner, repo) => read(pointerKey(owner, repo), PointerSchema),
 
     async setPointer(owner, repo, pointer) {
-      const ex = pointer.kind === "ok" ? POINTER_TTL_S : NEGATIVE_TTL_S;
+      const ex = pointerTtlSeconds(pointer);
       await guard("setPointer", () => redis.set(pointerKey(owner, repo), pointer, { ex }));
     },
 

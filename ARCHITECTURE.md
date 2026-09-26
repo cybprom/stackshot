@@ -353,9 +353,14 @@ The render key is the **content hash, not the commit SHA**. A README typo produc
 SHA but an identical `stackHash`, so it costs one cheap API call and zero renders. See
 ADR-0005.
 
-**Negative caching.** A 404 repo or a repo with no manifests is cached for 10 minutes under
-the same scheme. Without this, a badge pointing at a deleted repo re-runs full detection on
-every cold CDN request.
+**Negative caching splits on whether the failure fixes itself** (ADR-0027). A 404 repo, a
+repo with no manifests and a repo with nothing mapped are facts about the repo, cached 10
+minutes in the pointer and at the edge. A timeout or a rate limit is a fact about a moment,
+cached **60 seconds in both** — pointer and `s-maxage` have to move together, or the edge
+serves the error card for ten minutes whatever the pointer says. Without any negative
+caching, a badge pointing at a deleted repo would re-run full detection on every cold CDN
+request; with one flat value, one slow request would take a healthy repo off the air for
+ten minutes.
 
 **Camo's TTL was measured in Milestone 0 and there isn't one.** Camo honours the origin's
 `cache-control` and passes it through to the reader, so propagation delay is the remaining
@@ -409,7 +414,7 @@ These hold at all times. A change that breaks one requires an ADR.
 | Every signal unmapped | Empty `StackDoc.layers` | Error card; log all ids — this is the backlog |
 | GitHub rate limit exhausted | 403/429 + `x-ratelimit-remaining: 0`, or GraphQL `RATE_LIMITED` | Serve last-known card from KV if present, else error card · alert |
 | Secondary rate limit | 403/429 + `retry-after` | Same as above; `resetAt` from `retry-after` |
-| GitHub or raw hangs | Per-fetch 2.5s / resolve 4s deadline | `timeout` → error card, well inside the 8s estimate |
+| GitHub or raw hangs | Per-fetch 2.5s / resolve 4s deadline | `timeout` → error card, well inside the 8s estimate · **transient**: 60s negative cache, not 10m (ADR-0027) · phase timings are logged so the failing limit is identifiable (GOTCHAS 042) |
 | A code path exceeds the call budget | `BudgetExceededError` **thrown** — a bug, not a GitHub failure | Passes through `lib/` untouched; the route's top-level catch logs it on a separate bug counter (not the failure-by-reason counts) and renders an error card, so I5 holds |
 | Satori throws on a glyph | Exception in render | Error card; log the package name and the glyph |
 | `raw.githubusercontent.com` throttles | Non-200 (not 404) or timeout on raw fetch | Fall back to `/git/blobs` (costs API budget, raises that request's ceiling to 8); skipped once the deadline has passed |

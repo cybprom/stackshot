@@ -1,13 +1,13 @@
 import type { Cache } from "@/lib/cache";
 import { countBug, countFailure, countResolve, countUnmapped } from "@/lib/counters";
-import { BUG_REASON, failureReason, type FailureReason } from "@/lib/failure";
+import { BUG_REASON, failureReason, isTransient, type FailureReason } from "@/lib/failure";
 import type { GitHubClient } from "@/lib/github/client";
 import { stackHash } from "@/lib/hash";
 import { Card } from "@/lib/render/card";
 import { renderErrorCard } from "@/lib/render/error-card";
 import { renderToPng } from "@/lib/render/render";
 import { isRepoRef } from "@/lib/repo-ref";
-import { resolve } from "@/lib/resolve";
+import { resolve, type Phase } from "@/lib/resolve";
 import type { StackDoc } from "@/lib/stack-map/types";
 import type { Theme } from "@/lib/tokens";
 
@@ -30,7 +30,20 @@ export type CardDeps = {
   createClient: (() => GitHubClient) | undefined;
 };
 
-export type CardResult = { bytes: Buffer; reason?: FailureReason };
+export type CardResult = { bytes: Buffer; reason?: FailureReason; cacheControl: string };
+
+// ADR-0026 for the success chain, ADR-0027 for the two error cases. The edge is keyed by
+// URL and holds whatever it is given, so a transient failure needs a short s-maxage as
+// much as it needs a short pointer TTL: otherwise the CDN serves the error card for ten
+// minutes whatever the pointer does.
+export const CACHE_OK = "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800";
+export const CACHE_ERROR_DETERMINISTIC = "public, max-age=300, s-maxage=600";
+export const CACHE_ERROR_TRANSIENT = "public, max-age=60, s-maxage=60";
+
+export function cacheControlFor(reason: FailureReason | undefined): string {
+  if (!reason) return CACHE_OK;
+  return isTransient(reason) ? CACHE_ERROR_TRANSIENT : CACHE_ERROR_DETERMINISTIC;
+}
 
 export async function serveCard(deps: CardDeps, owner: string, repo: string, theme: Theme): Promise<CardResult> {
   try {
@@ -57,7 +70,7 @@ async function run(deps: CardDeps, owner: string, repo: string, theme: Theme): P
   if (pointer?.kind === "ok") {
     const doc = await cache.getDoc(pointer.stackHash);
     // A pointer whose doc has expired is a miss, not a failure: fall through and resolve.
-    if (doc) return { bytes: await cardBytes(cache, doc, pointer.stackHash, theme) };
+    if (doc) return { bytes: await cardBytes(cache, doc, pointer.stackHash, theme), cacheControl: CACHE_OK };
   }
 
   if (!createClient) {
@@ -67,8 +80,9 @@ async function run(deps: CardDeps, owner: string, repo: string, theme: Theme): P
 
   // Constructed here and nowhere earlier: this call starts the resolve deadline.
   const client = createClient();
-  const result = await resolve(client, owner, repo);
-  countResolve(owner, repo, client.calls());
+  const phases: Phase[] = [];
+  const result = await resolve(client, owner, repo, phases);
+  countResolve(owner, repo, client.calls(), phases, result.ok ? "ok" : result.error.kind);
   if (!result.ok) {
     const reason = failureReason(result.error);
     countFailure(reason, { owner, repo, error: result.error.kind });
@@ -91,7 +105,7 @@ async function run(deps: CardDeps, owner: string, repo: string, theme: Theme): P
     stackHash: hash,
   });
 
-  return { bytes: await cardBytes(cache, doc, hash, theme) };
+  return { bytes: await cardBytes(cache, doc, hash, theme), cacheControl: CACHE_OK };
 }
 
 async function cardBytes(cache: Cache, doc: StackDoc, hash: string, theme: Theme): Promise<Buffer> {
@@ -104,11 +118,15 @@ async function cardBytes(cache: Cache, doc: StackDoc, hash: string, theme: Theme
 
 async function errorCard(reason: FailureReason, owner: string, repo: string, theme: Theme): Promise<CardResult> {
   try {
-    return { bytes: await renderErrorCard({ reason, owner, repo, theme }), reason };
+    return { bytes: await renderErrorCard({ reason, owner, repo, theme }), reason, cacheControl: cacheControlFor(reason) };
   } catch (error) {
     // The card that explains the failure has itself failed. Render one with nothing
     // interpolated — this is the floor under I5, not a path we expect to reach.
     countBug("error_card_render", error, { reason, owner, repo });
-    return { bytes: await renderErrorCard({ reason: "unavailable", owner: "", repo: "", theme }), reason };
+    return {
+      bytes: await renderErrorCard({ reason: "unavailable", owner: "", repo: "", theme }),
+      reason,
+      cacheControl: cacheControlFor(reason),
+    };
   }
 }

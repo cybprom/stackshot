@@ -1,7 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { noopCache, pointerKey, upstashCache, type Cache, type Pointer } from "@/lib/cache";
+import {
+  NEGATIVE_TTL_S,
+  POINTER_TTL_S,
+  TRANSIENT_TTL_S,
+  noopCache,
+  pointerKey,
+  pointerTtlSeconds,
+  upstashCache,
+  type Cache,
+  type Pointer,
+} from "@/lib/cache";
 import { BudgetExceededError, createGitHubClient, type GitHubClient } from "@/lib/github/client";
-import { serveCard } from "@/lib/serve-card";
+import {
+  CACHE_ERROR_DETERMINISTIC,
+  CACHE_ERROR_TRANSIENT,
+  CACHE_OK,
+  serveCard,
+} from "@/lib/serve-card";
+import { FAILURE_REASONS, isTransient } from "@/lib/failure";
 import type { Theme } from "@/lib/tokens";
 import { fixtureFetch, loadResponses } from "@/tests/helpers/fixture-fetch";
 
@@ -188,5 +204,68 @@ describe("the upstash wrapper", () => {
     const bytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0xff]);
     await cache.setPng("abc", "light", bytes);
     expect((await cache.getPng("abc", "light"))?.equals(bytes)).toBe(true);
+  });
+});
+
+describe("a failure is cached for as long as it stays true (ADR-0027)", () => {
+  it("holds a deterministic failure for ten minutes", () => {
+    for (const reason of FAILURE_REASONS.filter((r) => !isTransient(r))) {
+      expect(pointerTtlSeconds({ kind: "failed", reason })).toBe(NEGATIVE_TTL_S);
+    }
+    expect(NEGATIVE_TTL_S).toBe(600);
+  });
+
+  it("holds a transient failure for one minute", () => {
+    for (const reason of FAILURE_REASONS.filter(isTransient)) {
+      expect(pointerTtlSeconds({ kind: "failed", reason })).toBe(TRANSIENT_TTL_S);
+    }
+    expect(TRANSIENT_TTL_S).toBe(60);
+  });
+
+  it("holds a success for an hour", () => {
+    expect(pointerTtlSeconds({ kind: "ok", owner: "o", repo: "r", sha: "s", stackHash: "h" })).toBe(POINTER_TTL_S);
+  });
+
+  it("classifies every reason, and the two groups are disjoint and complete", () => {
+    expect(FAILURE_REASONS.filter(isTransient)).toEqual(["rate_limited", "unavailable"]);
+    expect(FAILURE_REASONS.filter((r) => !isTransient(r))).toEqual([
+      "not_found",
+      "no_manifests",
+      "nothing_mapped",
+    ]);
+  });
+
+  it("gives a deterministic failure a ten-minute edge TTL", async () => {
+    const result = await serve({ cache: noopCache(), client: undefined }, "þorn", "repo");
+    expect(result.reason).toBe("not_found");
+    expect(result.cacheControl).toBe(CACHE_ERROR_DETERMINISTIC);
+    expect(result.cacheControl).toContain("s-maxage=600");
+  });
+
+  it("gives a transient failure a one-minute edge TTL, or the CDN outlives the pointer", async () => {
+    // No token is the cheapest way to reach `unavailable` without a network.
+    const result = await serve({ cache: noopCache(), client: undefined }, "octocat", "hello-world");
+    expect(result.reason).toBe("unavailable");
+    expect(result.cacheControl).toBe(CACHE_ERROR_TRANSIENT);
+    expect(result.cacheControl).toContain("s-maxage=60");
+  });
+
+  it("caches a timeout only briefly, end to end", async () => {
+    const cache = memoryCache();
+    const timingOut = new Proxy({} as GitHubClient, {
+      get: (_t, prop) =>
+        prop === "calls" ? () => 1 : async () => ({ ok: false, error: { kind: "timeout" } }),
+    });
+    const result = await serve({ cache, client: timingOut }, "slow", "repo");
+    expect(result.reason).toBe("unavailable");
+    const pointer = await cache.getPointer("slow", "repo");
+    expect(pointer).toEqual({ kind: "failed", reason: "unavailable" });
+    expect(pointerTtlSeconds(pointer!)).toBe(TRANSIENT_TTL_S);
+  });
+
+  it("still gives a success the full day at the edge", async () => {
+    const result = await serve({ cache: memoryCache(), client: fixtureClient("Grandbusta__spyde") }, "Grandbusta", "spyde");
+    expect(result.reason).toBeUndefined();
+    expect(result.cacheControl).toBe(CACHE_OK);
   });
 });

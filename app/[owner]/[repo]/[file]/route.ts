@@ -7,11 +7,6 @@ import type { Theme } from "@/lib/tokens";
 // @resvg/resvg-js is a native binary. ADR-0004.
 export const runtime = "nodejs";
 
-// Explicit max-age, or Fastly and Camo fall back to heuristic freshness on a bare
-// `public` — Vercel consumes s-maxage and forwards the rest. ADR-0026.
-const CACHE_OK = "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800";
-const CACHE_ERROR = "public, max-age=300, s-maxage=600";
-
 // `owner` is a root-level dynamic segment, so it collides with any future site route.
 // `spike` is here because ADR-0011's teardown needs it whether or not the throwaway repo
 // was ever deleted.
@@ -46,7 +41,7 @@ export async function GET(
   if (RESERVED_OWNERS.has(owner.toLowerCase())) return new Response("Not found", { status: 404 });
 
   const token = githubToken();
-  const { bytes, reason } = await serveCard(
+  const { bytes, reason, cacheControl } = await serveCard(
     { cache: createCache(), createClient: token ? () => createGitHubClient({ token }) : undefined },
     owner,
     repo,
@@ -57,7 +52,9 @@ export async function GET(
     status: 200,
     headers: {
       "content-type": "image/png",
-      "cache-control": reason ? CACHE_ERROR : CACHE_OK,
+      // Chosen in lib/serve-card, where it is tested: the value depends on whether the
+      // failure fixes itself. ADR-0026, ADR-0027.
+      "cache-control": cacheControl,
       // ADR-0007 prefers a header over a status code: the status is always 200, so this
       // is how monitoring tells an error card from a real one.
       ...(reason ? { "x-stackshot-error": reason } : {}),
