@@ -799,6 +799,37 @@ Separately, `res.clone()` failed on the 12.7 MB tree body with "Body has already
 read". The recorder now reads the body once and rebuilds the Response. `lib/github` never
 clones, so it isn't affected.
 
+**Instrumented baseline, 2026-09-26, still from Lagos** — `scripts/measure-resolve.ts`,
+three runs each with the limits lifted, so the true duration is visible rather than
+clipped. This is the same measurement the deployed function now logs per request, so the
+two are directly comparable.
+
+```
+repo                                   total med / max     long pole
+Grandbusta/spyde                        1385 /  2449       graphql  997
+pmndrs/zustand                          1341 /  1425       graphql  678
+fastapi/full-stack-fastapi-template     1590 /  1811       graphql  881
+vercel/next.js                          3096 /  3600       tree    2275
+```
+
+Two things this settles and one it does not.
+
+**It settles what the long pole is.** For every small repo it is the GraphQL call
+(527–1092ms). For next.js it is the recursive tree call, which is the only phase anywhere
+near a limit. Raw fetches are cheap and genuinely parallel: six files come back in ~250ms
+of wall clock, so the manifest budget is not the problem and never was.
+
+**It settles why the timeouts are intermittent rather than consistent.** next.js sits at
+**90% of the 4s deadline and 91% of the 2.5s per-fetch limit** at the same time. There is
+no margin on either, so ordinary variance crosses one or the other, and nothing more exotic
+is needed to explain it. Note today's tree max of 2275ms against the 4.03s recorded above
+on 09-22 — the same call on the same machine, nearly half. The variance between sessions is
+larger than the gap to the limit.
+
+**It does not settle the numbers.** Vercel runs in US East, next to both GitHub and (now)
+Upstash; these are Lagos numbers over a residential link. Deployed measurement is still the
+input the deadline values get chosen from.
+
 ## 028 — Real Dockerfiles hide the image behind ARGs, and name stages after images
 **Date:** 2026-09-22 · **Cost:** ~0.2h · **Status:** resolved
 **Writeup material:** yes — the textbook `FROM node:22` never appeared in the fixture set
