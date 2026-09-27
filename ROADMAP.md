@@ -6,96 +6,57 @@
 it is the only thing that survives one.*
 
 ```
-Milestone:  2 — renderer and routes (Milestone 1 complete)
-Deployed:   PRODUCTION IS LIVE at https://stackshot-one.vercel.app (project
-            "stackshot", org cybproms-projects, region iad1). The custom
-            domain is NOT set up yet. vercel link connected the GitHub repo,
-            so PUSHES TO MAIN AUTO-DEPLOY PRODUCTION — nothing is pushed yet,
-            and a deploy resets the CDN and functions, so don't push while
-            measuring. M2's "connect Git" item is done.
+Milestone:  2 — renderer and routes. Steps 1-7 all DONE except step 6.
+            M2 is NOT closed: see "M2 audit" below.
+Deployed:   LIVE at https://stackshot-one.vercel.app (project "stackshot",
+            org cybproms-projects, region iad1, plan hobby, fluid compute,
+            platform function timeout 300s; both routes pin maxDuration 30).
+            Custom domain NOT set up. Git is connected, so PUSHES TO MAIN
+            AUTO-DEPLOY PRODUCTION; nothing has ever been pushed, all deploys
+            so far were `vercel --prod` from this machine.
             Measure against the stable alias, never the per-deployment URL:
             that one 302s under Deployment Protection (the spike's trap).
-            vercel link also wrote VERCEL_OIDC_TOKEN into .env.local; covered
-            by the deny rule and gitignored.
-Last done:  M2 STEP 5 — deployed latency measured; ADR-0028 keeps 2500/4000
-            with 1.82x/1.67x margin on next.js, GOTCHAS 027 resolved.
-            Upstash confirmed US East BY MEASUREMENT: 4ms floor from iad1,
-            15-50ms for a warm request's whole cache path.
-            M2 STEP 3 — the card route is real. app/[owner]/[repo]/[file]
-            resolves, caches and renders; lib/serve-card.ts composes it with
-            the client injected, so every row of the failure table is tested
-            from fixtures with no network. lib/cache.ts (3 key spaces, Zod on
-            read, negative caching, no-op when unconfigured, every failure a
-            miss), lib/hash.ts, lib/counters.ts (failure-by-reason + a
-            SEPARATE bug counter), lib/env.ts (lazy, NEVER throws) with
-            scripts/check-env.ts wired into `pnpm build` so missing config
-            fails the deploy instead of every README at once.
-            ADR-0025 removed asOf: it recorded when Stackshot first saw a
-            stack, not when the repo changed one, so it was wrong on day one
-            and reset on the 30d TTL. The pipeline is now stateless and
-            StackContent is gone. Footer right is empty on both cards.
-            ADR-0026 sets the whole cache chain with an explicit max-age
-            (bare `public` = heuristic freshness at Fastly/Camo): success
-            3600/86400/swr 7d, error 300/600. Worst-case staleness 25h and
-            15m, and the dominant term is our own edge.
-            Spike teardown done per ADR-0011: spike-doc*, spike-card,
-            assert-fits deleted. Both things ADR-0011 wanted kept were kept —
-            worstCaseDoc() is regenerated from STACK_MAP, and the fit check
-            moved into tests/fit.test.ts. It had been measuring the card's
-            own frame (797/800 for every card) — which GOTCHAS 021 already
-            said on 09-21 and nobody acted on; 041 is that follow-through
-            failure, not a discovery. It uses onNodeDetected now, with a test
-            that it detects a real overflow, and step 7's gutter-fit
-            assertion landed with it. Measuring the labels properly corrected
-            FRONTEND from ~103 to 110.0 units in three documents; ADR-0011 has
-            an evidence-correction note and its 71-unit coupling claim
-            survives (it was only ever consistent with 110).
-Next:       Milestone 2 step 4 — app/api/resolve/route.ts. Steps 5 and 7 are
-            done; step 6 (determinism snapshot) remains.
-            Step 4 carries ADR-0028's option C: /api/resolve gets its own
-            longer deadline (~10s) because a human is waiting, and its
-            successful resolve warms the KV the card route reads, which makes
-            pre-warming the normal path. The card route stays at 4s.
-            ADR-0028 settled the limits at 2500/4000 (unchanged). What
-            reopens them is `timeout` in M4's failure-by-reason counts, not
-            another local measurement.
-            When step 4 lands, ADR-0012 also needs its amendment line for the
-            bug counter (M4).
-Open:       GOTCHAS 038 now has the success card's variable height as its next
-            candidate, as its own step: satori takes width-only and derives
-            height, but our tree returns 390/750/750 for 1/4/4 layers, which
-            does not match the band arithmetic — the root's height:100% has to
-            go to auto first. onNodeDetected is the measuring tool, for that
-            and for step 7's gutter-fit test.
-            rate_limited and unavailable carry the same detail line today.
-            Kept separate (different labels, one self-heals); merge to four if
-            they are still identical when M3's error states land. (ADR-0024)
-            GOTCHAS 038: a one-layer card (github/gitignore) expands one band
-            to the whole card and reads as unfinished. Deferred. Four options
-            recorded; the author's lean is variable card height with a
-            minimum, which touches CARD.height, the <picture> block and I2.
-            GOTCHAS 024: nested-pool ordering. All four candidates give
-            identical cards on all 9 fixtures, so nothing favours a change;
-            today's depth-then-path stands by default, not by evidence.
-            Should a repo's own product appear on its card? zustand's doesn't
-            say Zustand, spyde's doesn't say spyde. No ordering fixes it: a
-            package's own name is never its own dependency.
-            GOTCHAS 027: the 4s resolve deadline failed locally on next.js and
-            mastodon; measure it from a deployed function in M2 before
-            trusting it. Options there include two deadlines, one per route.
-            dropWhenDevOnly is a convention claim, pinned in
-            tests/stack-map.test.ts. Watch for a real card losing something
-            real: unflag it, one line.
-            GraphQL is its own 5000-point bucket; cold resolve = 1 core + 1
-            GraphQL. /rate_limit body lies (reported 0 used) — M4 guard must read
-            response headers (GOTCHAS 025).
-            Rule ladder still compresses on phones: 5u and 3u land at 1.46/0.88px.
-            Accepted, not solved. No ladder on 1200 units fixes it. (022)
-            Accent bar / header / footer / padding are coupled to the gutter label:
-            ~71u of chrome headroom before FRONTEND overlaps, silently. M2 step 7
-            is the test that enforces it. (021, 004)
-            Commit Mono release OTFs crash satori; use the TTFs (015).
-            serverExternalPackages needed for satori AND resvg (016).
+            .env.local holds GITHUB_TOKEN, the two Upstash vars and a
+            VERCEL_OIDC_TOKEN that `vercel link` wrote; it is gitignored and
+            covered by a deny rule, so read it only via process.env.
+Last done:  M2 STEP 4 — POST /api/resolve (16a290e). Correct status codes
+            (404/422/429/503) from the same five FailureReasons the card
+            renders. lib/resolve-cached.ts is now shared by both routes, so
+            case-insensitive keying and ADR-0027's negative-cache split are
+            true of both by construction. ADR-0028 option C: the site route
+            gets SITE_RESOLVE_DEADLINE_MS=10s because a human waits, and its
+            resolve warms the KV the card route reads.
+            Rate limiting counts RESOLVES, not requests — the gate fires only
+            where budget is spent, so a cache hit costs nobody quota. IP comes
+            from x-vercel-forwarded-for / x-real-ip, never x-forwarded-for.
+            VERIFIED LIVE: a request with spoofed x-forwarded-for AND
+            x-real-ip still keyed on the real IP. Upstash unreachable fails
+            open + bug counter, same rule as the cache. unmapped is logged,
+            never returned.
+M2 audit:   DONE: step 1 card (3f41164), step 2 error card (f252cfb), step 3
+            card route + top-level catch + bug counter (fff0ddb), step 4 JSON
+            route (16a290e), step 5 cache + deployed latency (fff0ddb,
+            ADR-0028), step 7 gutter-fit (cd3e758, tests/fit.test.ts).
+            NOT DONE, the only code gap: STEP 6's committed-hash half. Both
+            card kinds assert byte-identical RERUNS within one process
+            (tests/render.test.ts "is byte-identical for the same doc and
+            theme", tests/error-card.test.ts "...same reason and theme").
+            Neither asserts a sha256 against a COMMITTED snapshot, which is
+            what CLAUDE.md asks for and what actually guards I2 across builds:
+            a font, satori/resvg or token change would silently alter every
+            card and no test would notice. It also underwrites ADR-0005 —
+            if bytes drift without the StackDoc changing, cached PNGs and
+            fresh renders disagree.
+            OPEN DECISION: the DoD item "your own repo's badge works in your
+            own README". The footer reads stackshot.ilerioluwa.com and that
+            domain does not serve. Recommend MOVING IT TO M4, where step 4 is
+            already "Deploy to stackshot.ilerioluwa.com, badge in own README"
+            — the item is duplicated, and it cannot be closed honestly while
+            the card advertises a domain that answers nothing.
+Next:       Your call on what closes M2 (step 6's committed hash; the badge
+            item's home). Then M3 — the one page.
+            When counters land in M4, ADR-0012 needs its amendment line for
+            the separate bug counter.
 ```
 
 ---
