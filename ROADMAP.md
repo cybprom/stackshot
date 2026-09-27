@@ -6,57 +6,50 @@
 it is the only thing that survives one.*
 
 ```
-Milestone:  2 — renderer and routes. Steps 1-7 all DONE except step 6.
-            M2 is NOT closed: see "M2 audit" below.
+Milestone:  2 COMPLETE — renderer and routes. All 7 steps and every
+            definition-of-done item are met. Next is Milestone 3.
 Deployed:   LIVE at https://stackshot-one.vercel.app (project "stackshot",
             org cybproms-projects, region iad1, plan hobby, fluid compute,
             platform function timeout 300s; both routes pin maxDuration 30).
             Custom domain NOT set up. Git is connected, so PUSHES TO MAIN
-            AUTO-DEPLOY PRODUCTION; nothing has ever been pushed, all deploys
-            so far were `vercel --prod` from this machine.
+            AUTO-DEPLOY PRODUCTION; nothing has ever been pushed, every deploy
+            so far was `vercel --prod` from this machine.
             Measure against the stable alias, never the per-deployment URL:
             that one 302s under Deployment Protection (the spike's trap).
             .env.local holds GITHUB_TOKEN, the two Upstash vars and a
-            VERCEL_OIDC_TOKEN that `vercel link` wrote; it is gitignored and
-            covered by a deny rule, so read it only via process.env.
-Last done:  M2 STEP 4 — POST /api/resolve (16a290e). Correct status codes
-            (404/422/429/503) from the same five FailureReasons the card
-            renders. lib/resolve-cached.ts is now shared by both routes, so
-            case-insensitive keying and ADR-0027's negative-cache split are
-            true of both by construction. ADR-0028 option C: the site route
-            gets SITE_RESOLVE_DEADLINE_MS=10s because a human waits, and its
-            resolve warms the KV the card route reads.
-            Rate limiting counts RESOLVES, not requests — the gate fires only
-            where budget is spent, so a cache hit costs nobody quota. IP comes
-            from x-vercel-forwarded-for / x-real-ip, never x-forwarded-for.
-            VERIFIED LIVE: a request with spoofed x-forwarded-for AND
-            x-real-ip still keyed on the real IP. Upstash unreachable fails
-            open + bug counter, same rule as the cache. unmapped is logged,
-            never returned.
-M2 audit:   DONE: step 1 card (3f41164), step 2 error card (f252cfb), step 3
-            card route + top-level catch + bug counter (fff0ddb), step 4 JSON
-            route (16a290e), step 5 cache + deployed latency (fff0ddb,
-            ADR-0028), step 7 gutter-fit (cd3e758, tests/fit.test.ts).
-            NOT DONE, the only code gap: STEP 6's committed-hash half. Both
-            card kinds assert byte-identical RERUNS within one process
-            (tests/render.test.ts "is byte-identical for the same doc and
-            theme", tests/error-card.test.ts "...same reason and theme").
-            Neither asserts a sha256 against a COMMITTED snapshot, which is
-            what CLAUDE.md asks for and what actually guards I2 across builds:
-            a font, satori/resvg or token change would silently alter every
-            card and no test would notice. It also underwrites ADR-0005 —
-            if bytes drift without the StackDoc changing, cached PNGs and
-            fresh renders disagree.
-            OPEN DECISION: the DoD item "your own repo's badge works in your
-            own README". The footer reads stackshot.ilerioluwa.com and that
-            domain does not serve. Recommend MOVING IT TO M4, where step 4 is
-            already "Deploy to stackshot.ilerioluwa.com, badge in own README"
-            — the item is duplicated, and it cannot be closed honestly while
-            the card advertises a domain that answers nothing.
-Next:       Your call on what closes M2 (step 6's committed hash; the badge
-            item's home). Then M3 — the one page.
-            When counters land in M4, ADR-0012 needs its amendment line for
-            the separate bug counter.
+            VERCEL_OIDC_TOKEN that `vercel link` wrote. It is gitignored and
+            covered by a deny rule — read it only via process.env.
+CACHE KEYS: every Upstash key is `{VERCEL_ENV}:...`, so a local `next dev`
+            writes `local:*` and cannot be served to strangers. This was a
+            real incident, not a precaution (GOTCHAS 043). png: also carries
+            `v{RENDER_VERSION}`. If you change what a card looks like, bump
+            RENDER_VERSION in lib/tokens.ts and regenerate
+            tests/fixtures/render-hashes.json IN THE SAME COMMIT — the test
+            fails and tells you, ADR-0005's amendment says why.
+Last done:  M2 STEP 6 (1513fdf) — committed-hash determinism. Rendered bytes
+            are pinned per card in tests/fixtures/render-hashes.json and
+            checked by tests/render-hash.test.ts; verified able to fail on a
+            one-digit colour change. Rendered output is byte-identical across
+            linux-x64 and darwin-arm64 (measured), so the hashes need no
+            authority machine.
+            Before it: M2 STEP 4 (16a290e) POST /api/resolve, rate limited by
+            RESOLVE rather than request, IP from x-vercel-forwarded-for only
+            (spoofing verified ineffective live), unmapped logged not
+            returned.
+Next:       MILESTONE 3 — the one page. Input, generate, preview, download,
+            copy the <picture> snippet, descriptions beneath, empty state,
+            three error states, keyboard focus, reduced motion, 360px.
+            The site's three error states come from the SAME five
+            FailureReasons the card uses (lib/failure.ts), so they cannot
+            drift from the card's copy.
+            THE PREVIEW PRE-WARMS FOR FREE, but only if the preview <img> and
+            the copied snippet are byte-identical URLs — CDN entries are
+            per-URL. Build both from the CANONICAL owner/repo in the
+            /api/resolve response, never from what the user typed.
+            M4 carries: the badge in your own README (moved from M2, waits on
+            stackshot.ilerioluwa.com), the global budget guard, ADR-0012's
+            amendment line for the separate bug counter, and monitoring KV
+            bytes (~600-950 stacks fit the 256MB free tier).
 ```
 
 ---
