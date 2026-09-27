@@ -10,7 +10,12 @@ export const API_BUDGET = 2;
 export const BLOB_FALLBACK_BUDGET = 8;
 export const PER_FETCH_MS = 2500;
 // Leaves room for a ~2.4s cold render under our 8s working estimate for Camo. ADR-0014.
+// Measured at 1.67x margin on the largest realistic repo from iad1; ADR-0028 keeps it.
 export const RESOLVE_DEADLINE_MS = 4000;
+// The site's JSON route, where a human is waiting rather than Camo, so it can afford far
+// more. Its successful resolve writes the same KV the card route reads, which makes
+// pre-warming the normal path. ADR-0028 option C. Well under the route's maxDuration.
+export const SITE_RESOLVE_DEADLINE_MS = 10_000;
 
 export type GitHubError =
   | { kind: "not_found" }

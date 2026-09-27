@@ -7,6 +7,11 @@ import type { Theme } from "@/lib/tokens";
 // @resvg/resvg-js is a native binary. ADR-0004.
 export const runtime = "nodejs";
 
+// A deliberate ceiling well above the 4s resolve deadline plus a ~1s render, rather than
+// the project's 300s default. A request that somehow outlives this is killed by the
+// platform and Camo sees nothing, so it must never be reachable in normal operation.
+export const maxDuration = 30;
+
 // `owner` is a root-level dynamic segment, so it collides with any future site route.
 // `spike` is here because ADR-0011's teardown needs it whether or not the throwaway repo
 // was ever deleted.

@@ -308,6 +308,15 @@ estimate. Two things are worth carrying forward:
 ### Steps
 
 1. Input, generate, preview, download PNG, copy `<picture>` markdown.
+
+   **The preview pre-warms for free, but only if it uses the same URL as the snippet.**
+   Loading the two card URLs into the preview warms the PNG cache *and* the CDN entry, so
+   by the time anyone pastes the snippet into a README the first Camo fetch is already a
+   CDN hit. CDN entries are keyed per URL, so this only works if the preview and the
+   copied snippet are byte-identical URLs. **Build both from the canonical `owner`/`repo`
+   in the resolve response, never from what the user typed** — `Vercel/Next.js` and
+   `vercel/next.js` are one repo to us and to GitHub, but two entries to the CDN, and
+   warming one while handing out the other warms nothing.
 2. Descriptions listed beneath the preview as HTML (this is where ADR-0009's content
    lands).
 3. Empty state: a real card for a well-known repo, captioned.
