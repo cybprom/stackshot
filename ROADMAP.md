@@ -7,7 +7,19 @@ it is the only thing that survives one.*
 
 ```
 Milestone:  2 — renderer and routes (Milestone 1 complete)
-Last done:  M2 STEP 3 — the card route is real. app/[owner]/[repo]/[file]
+Deployed:   PRODUCTION IS LIVE at https://stackshot-one.vercel.app (project
+            "stackshot", org cybproms-projects, region iad1). The custom
+            domain is NOT set up yet. vercel link connected the GitHub repo,
+            so PUSHES TO MAIN AUTO-DEPLOY PRODUCTION — nothing is pushed yet,
+            and a deploy resets the CDN and functions, so don't push while
+            measuring. M2's "connect Git" item is done.
+            Measure against the stable alias, never the per-deployment URL:
+            that one 302s under Deployment Protection (the spike's trap).
+            vercel link also wrote VERCEL_OIDC_TOKEN into .env.local; covered
+            by the deny rule and gitignored.
+Last done:  M2 STEP 5 — deployed latency measured, GOTCHAS 027 has the
+            numbers, the margins and three options. See Next.
+            M2 STEP 3 — the card route is real. app/[owner]/[repo]/[file]
             resolves, caches and renders; lib/serve-card.ts composes it with
             the client injected, so every row of the failure table is tested
             from fixtures with no network. lib/cache.ts (3 key spaces, Zod on
@@ -36,18 +48,17 @@ Last done:  M2 STEP 3 — the card route is real. app/[owner]/[repo]/[file]
             FRONTEND from ~103 to 110.0 units in three documents; ADR-0011 has
             an evidence-correction note and its 71-unit coupling claim
             survives (it was only ever consistent with 110).
-Next:       Milestone 2 step 4 — app/api/resolve/route.ts. Step 7's gutter-fit
-            test is already done (tests/fit.test.ts).
-            STEP 5 IS NOW URGENT, not routine: GOTCHAS 042. With the deadline
-            correctly scoped, pmndrs/zustand AND vercel/next.js both time out
-            live from this network at 4s, though zustand resolved in ~3.2s
-            earlier the same session. The 2.5s per-fetch limit on up to six
-            parallel raw fetches is the likelier binding constraint. Measure
-            from a deployed function before changing any number. Also decide
-            whether a timeout deserves a shorter negative TTL than a 404 — one
-            slow request currently makes a repo unavailable for 10 minutes.
-            Upstash credentials are in .env.local and verified working;
-            they still need adding to Vercel before deploy.
+Next:       Milestone 2 step 4 — app/api/resolve/route.ts. Steps 5 and 7 are
+            done; step 6 (determinism snapshot) remains.
+            AWAITING YOUR DECISION: deadline values. Deployed from iad1,
+            NOTHING timed out over 7 consecutive cold resolves of next.js.
+            Current 2500/4000 leave 1.82x on the tree call and 1.67x on the
+            total. Recommendation is keep them (option A in GOTCHAS 027) and
+            split by route at step 4 (option C: card 4s, /api/resolve 10s,
+            which makes pre-warming the normal path). Do NOT widen on the
+            strength of the Lagos numbers — those were a client artefact.
+            When step 4 lands, ADR-0012 also needs its amendment line for the
+            bug counter (M4).
 Open:       GOTCHAS 038 now has the success card's variable height as its next
             candidate, as its own step: satori takes width-only and derives
             height, but our tree returns 390/750/750 for 1/4/4 layers, which

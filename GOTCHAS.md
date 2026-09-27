@@ -761,7 +761,7 @@ There's a table case shaped like that repo in `tests/tree.test.ts`. The fairness
 shared pool is 024's open question.
 
 ## 027 — The 4s resolve deadline fails on the repos people will try first, at least from here
-**Date:** 2026-09-22 · **Cost:** ~0.3h · **Status:** open — measure from Vercel in M2
+**Date:** 2026-09-22 · **Cost:** ~0.3h · **Status:** measured on Vercel 09-27; values proposed, awaiting a decision
 **Writeup material:** yes, if the Vercel numbers tell the same story
 
 Recording fixtures under the production timeouts (2.5s per fetch, 4s deadline) failed on
@@ -829,6 +829,89 @@ larger than the gap to the limit.
 **It does not settle the numbers.** Vercel runs in US East, next to both GitHub and (now)
 Upstash; these are Lagos numbers over a residential link. Deployed measurement is still the
 input the deadline values get chosen from.
+
+---
+
+### Deployed measurement, 2026-09-27 — `stackshot-one.vercel.app`, region `iad1`
+
+Measured against the **stable production alias**, never the per-deployment URL: that one
+302s under Deployment Protection, which is the same trap the spike hit. Every request
+carries a unique query string the route ignores, so the CDN cannot answer it and each one
+reaches the function (`x-vercel-cache: MISS` throughout).
+
+**Server-side resolve, cold cache** — from the route's own phase log, so these are function
+time with no client network in them:
+
+```
+repo                                  graphql        tree          raw(wall)   total
+Grandbusta/spyde                      321–345      145–207          24–151     493–708
+pmndrs/zustand                          303          175             284         763
+fastapi/full-stack-fastapi-template     377          161             200         745
+vercel/next.js    (n=7)   min           435         1140             107        1754
+                          median        557         1287             162        2051
+                          max           798         1370             401        2394
+```
+
+**Phase by phase against the Lagos baseline above**, which is the comparison that matters:
+
+```
+vercel/next.js        Lagos median    iad1 median    Lagos max    iad1 max
+graphql                    821            557           1092         798
+tree                      1753           1287           2275        1370
+total                     3096           2051           3600        2394
+```
+
+The whole resolve is ~1.5× faster from `iad1`, and **the tree call's worst case improves
+1.7×** — the phase that was at 91% of its limit. GraphQL improves least, which says its
+latency is mostly GitHub thinking rather than distance, so moving closer buys less there
+than the naive model predicted.
+
+**Two kinds of cold, and they are not the same number.** Client-observed from Lagos, so
+each includes roughly a second of my own round trip plus a 97–138 KB download:
+
+```
+cold function + cold cache   vercel/next.js, fresh deploy, KV cleared     4322 ms
+cold function + warm cache   Grandbusta/spyde, fresh deploy, KV warm      2286 ms
+warm function + warm cache   same repo, subsequent requests            1149–1664 ms
+```
+
+So **cold start costs about 900 ms** and is independent of the resolve. The worst case is
+both together, and it is the first number, not the second. The deadline is only about the
+cold *cache* column: a cold function with a warm cache never resolves at all.
+
+### Margins against the current limits, and what to set
+
+The current values are `PER_FETCH_MS = 2500` and `RESOLVE_DEADLINE_MS = 4000`.
+
+```
+limit                  binds on              worst measured    margin     headroom
+PER_FETCH_MS 2500      next.js tree call          1370 ms      1.82×      1130 ms
+RESOLVE_DEADLINE 4000  next.js total              2394 ms      1.67×      1606 ms
+```
+
+**The Lagos failures were a client-side artefact and must not drive production values.**
+Nothing timed out in any deployed run, including seven consecutive cold resolves of the
+largest repo in the fixture set.
+
+Three options, with the margin each leaves on `vercel/next.js`:
+
+| | per-fetch / deadline | margin on tree / total | cost |
+|---|---|---|---|
+| **A — keep** | 2500 / 4000 | 1.82× / 1.67× | none; already proven over 7 cold runs |
+| **B — widen** | 3000 / 5000 | 2.19× / 2.09× | a genuinely hung resolve holds the function 1s longer; worst-case function time becomes ~6.8s (5s + ~0.9s render + ~0.9s cold start) against the 8s Camo estimate |
+| **C — split by route** | card 4000, `/api/resolve` 10000 | as A for the card | more surface; needs step 4 to exist |
+
+**Recommendation: A now, C at step 4, not B.** The data does not justify widening — 1.67×
+on the largest realistic repo, measured seven times without a failure, is a real margin,
+and raising a timeout because a *different network* was slow is how a limit stops meaning
+anything. C is worth doing when `/api/resolve` lands for the reason this entry's original
+options list gives: the site has a human waiting and can afford ten seconds, and a resolve
+there writes the same KV the card route reads, so pre-warming becomes the normal path
+rather than the fallback.
+
+**What would change this:** a repo materially larger than next.js (12.7 MB tree, 32,826
+entries) becoming a common target, or the `iad1` numbers drifting — the tree call is the
+only phase anywhere near a limit, so it is the one to watch.
 
 ## 028 — Real Dockerfiles hide the image behind ARGs, and name stages after images
 **Date:** 2026-09-22 · **Cost:** ~0.2h · **Status:** resolved
