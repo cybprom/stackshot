@@ -761,7 +761,7 @@ There's a table case shaped like that repo in `tests/tree.test.ts`. The fairness
 shared pool is 024's open question.
 
 ## 027 — The 4s resolve deadline fails on the repos people will try first, at least from here
-**Date:** 2026-09-22 · **Cost:** ~0.3h · **Status:** measured on Vercel 09-27; values proposed, awaiting a decision
+**Date:** 2026-09-22 · **Cost:** ~0.3h · **Status:** RESOLVED by ADR-0028 — limits unchanged at 2500/4000
 **Writeup material:** yes, if the Vercel numbers tell the same story
 
 Recording fixtures under the production timeouts (2.5s per fetch, 4s deadline) failed on
@@ -901,17 +901,18 @@ Three options, with the margin each leaves on `vercel/next.js`:
 | **B — widen** | 3000 / 5000 | 2.19× / 2.09× | a genuinely hung resolve holds the function 1s longer; worst-case function time becomes ~6.8s (5s + ~0.9s render + ~0.9s cold start) against the 8s Camo estimate |
 | **C — split by route** | card 4000, `/api/resolve` 10000 | as A for the card | more surface; needs step 4 to exist |
 
-**Recommendation: A now, C at step 4, not B.** The data does not justify widening — 1.67×
-on the largest realistic repo, measured seven times without a failure, is a real margin,
-and raising a timeout because a *different network* was slow is how a limit stops meaning
-anything. C is worth doing when `/api/resolve` lands for the reason this entry's original
-options list gives: the site has a human waiting and can afford ten seconds, and a resolve
-there writes the same KV the card route reads, so pre-warming becomes the normal path
-rather than the fallback.
+**Decided: A now, C at step 4, not B. See ADR-0028**, which carries the argument and the
+revisit trigger. The short version: the Lagos failures were a client-side artefact, and
+widening a production limit because a different network was slow is how a limit stops
+meaning anything. What reopens it is `timeout` showing up in M4's failure-by-reason
+counts — seven runs of one repo in one session is evidence, not proof, and GitHub's
+latency varies with its own load.
 
-**What would change this:** a repo materially larger than next.js (12.7 MB tree, 32,826
-entries) becoming a common target, or the `iad1` numbers drifting — the tree call is the
-only phase anywhere near a limit, so it is the one to watch.
+**Cache round trips are not part of this and should not be confused for it.** Measured
+from `iad1` on the warm path: Upstash reads run 4–106ms with a **4ms floor**, which is only
+possible same-region and confirms the US East placement. A warm request's entire
+server-side cache work is 15–50ms typical against a `CACHE_TIMEOUT_MS` of 500. They also
+sit outside the resolve deadline, since the client is constructed after them (GOTCHAS 042).
 
 ## 028 — Real Dockerfiles hide the image behind ARGs, and name stages after images
 **Date:** 2026-09-22 · **Cost:** ~0.2h · **Status:** resolved

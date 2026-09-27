@@ -17,8 +17,10 @@ Deployed:   PRODUCTION IS LIVE at https://stackshot-one.vercel.app (project
             that one 302s under Deployment Protection (the spike's trap).
             vercel link also wrote VERCEL_OIDC_TOKEN into .env.local; covered
             by the deny rule and gitignored.
-Last done:  M2 STEP 5 — deployed latency measured, GOTCHAS 027 has the
-            numbers, the margins and three options. See Next.
+Last done:  M2 STEP 5 — deployed latency measured; ADR-0028 keeps 2500/4000
+            with 1.82x/1.67x margin on next.js, GOTCHAS 027 resolved.
+            Upstash confirmed US East BY MEASUREMENT: 4ms floor from iad1,
+            15-50ms for a warm request's whole cache path.
             M2 STEP 3 — the card route is real. app/[owner]/[repo]/[file]
             resolves, caches and renders; lib/serve-card.ts composes it with
             the client injected, so every row of the failure table is tested
@@ -50,13 +52,13 @@ Last done:  M2 STEP 5 — deployed latency measured, GOTCHAS 027 has the
             survives (it was only ever consistent with 110).
 Next:       Milestone 2 step 4 — app/api/resolve/route.ts. Steps 5 and 7 are
             done; step 6 (determinism snapshot) remains.
-            AWAITING YOUR DECISION: deadline values. Deployed from iad1,
-            NOTHING timed out over 7 consecutive cold resolves of next.js.
-            Current 2500/4000 leave 1.82x on the tree call and 1.67x on the
-            total. Recommendation is keep them (option A in GOTCHAS 027) and
-            split by route at step 4 (option C: card 4s, /api/resolve 10s,
-            which makes pre-warming the normal path). Do NOT widen on the
-            strength of the Lagos numbers — those were a client artefact.
+            Step 4 carries ADR-0028's option C: /api/resolve gets its own
+            longer deadline (~10s) because a human is waiting, and its
+            successful resolve warms the KV the card route reads, which makes
+            pre-warming the normal path. The card route stays at 4s.
+            ADR-0028 settled the limits at 2500/4000 (unchanged). What
+            reopens them is `timeout` in M4's failure-by-reason counts, not
+            another local measurement.
             When step 4 lands, ADR-0012 also needs its amendment line for the
             bug counter (M4).
 Open:       GOTCHAS 038 now has the success card's variable height as its next

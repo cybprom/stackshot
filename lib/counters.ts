@@ -36,6 +36,15 @@ export function countResolve(
   console.info(`stackshot.resolve ${owner}/${repo} outcome=${outcome} calls=${calls} ${breakdown}`);
 }
 
+/**
+ * A request served from cache, and what the round trips cost. The deadline does not govern
+ * this path, but the distance from the function to Upstash does, and nothing else reports
+ * it. Three reads is the whole of a warm request's server work.
+ */
+export function countCacheHit(owner: string, repo: string, phases: { name: string; ms: number }[]): void {
+  console.info(`stackshot.cachehit ${owner}/${repo} ${phases.map((p) => `${p.name}=${p.ms}`).join(" ")}`);
+}
+
 /** The product backlog and the abuse signal at once. ARCHITECTURE, rate limiting. */
 export function countUnmapped(ids: string[]): void {
   if (ids.length > 0) console.info(`stackshot.unmapped`, ids);

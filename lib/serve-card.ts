@@ -1,5 +1,5 @@
 import type { Cache } from "@/lib/cache";
-import { countBug, countFailure, countResolve, countUnmapped } from "@/lib/counters";
+import { countBug, countCacheHit, countFailure, countResolve, countUnmapped } from "@/lib/counters";
 import { BUG_REASON, failureReason, isTransient, type FailureReason } from "@/lib/failure";
 import type { GitHubClient } from "@/lib/github/client";
 import { stackHash } from "@/lib/hash";
@@ -64,13 +64,30 @@ async function run(deps: CardDeps, owner: string, repo: string, theme: Theme): P
     return errorCard("not_found", owner, repo, theme);
   }
 
-  const pointer = await cache.getPointer(owner, repo);
+  const reads: Phase[] = [];
+  const read = async <T>(name: string, run: () => Promise<T>): Promise<T> => {
+    const started = performance.now();
+    try {
+      return await run();
+    } finally {
+      reads.push({ name, ms: Math.round(performance.now() - started) });
+    }
+  };
+
+  const pointer = await read("pointer", () => cache.getPointer(owner, repo));
   if (pointer?.kind === "failed") return errorCard(pointer.reason, owner, repo, theme);
 
   if (pointer?.kind === "ok") {
-    const doc = await cache.getDoc(pointer.stackHash);
+    const doc = await read("doc", () => cache.getDoc(pointer.stackHash));
     // A pointer whose doc has expired is a miss, not a failure: fall through and resolve.
-    if (doc) return { bytes: await cardBytes(cache, doc, pointer.stackHash, theme), cacheControl: CACHE_OK };
+    if (doc) {
+      const png = await read("png", () => cache.getPng(pointer.stackHash, theme));
+      countCacheHit(owner, repo, reads);
+      if (png) return { bytes: png, cacheControl: CACHE_OK };
+      const bytes = await renderToPng(Card({ doc, theme }));
+      await cache.setPng(pointer.stackHash, theme, bytes);
+      return { bytes, cacheControl: CACHE_OK };
+    }
   }
 
   if (!createClient) {
