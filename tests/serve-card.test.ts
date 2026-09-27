@@ -96,8 +96,10 @@ describe("a repo that resolves", () => {
       const result = await serve({ cache, client: forbidden }, owner, repo);
       expect(result.reason).toBeUndefined();
     }
+    // Derived, not a literal: the key is namespaced by deployment (GOTCHAS 043), and the
+    // claim under test is that every spelling collapses to one key, not what it spells.
     expect(new Set(cache.calls.filter((c) => c.startsWith("getPointer")))).toEqual(
-      new Set(["getPointer repo:vercel/next.js"]),
+      new Set([`getPointer ${pointerKey("vercel", "next.js")}`]),
     );
   });
 

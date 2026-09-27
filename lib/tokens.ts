@@ -1,5 +1,16 @@
 export type Theme = "light" | "dark";
 
+/**
+ * Bumped whenever rendered output changes on purpose — a token, the card tree, a font, or
+ * a satori/resvg upgrade. It is part of the `png:` cache key, so a bump retires every
+ * stored PNG at once instead of serving the old design for the rest of its 30-day TTL.
+ *
+ * `tests/render-hash.test.ts` is the mechanism that makes this happen: it fails when the
+ * bytes move, and its message says to bump this and update the committed hashes in the
+ * same commit. ADR-0005's amendment has the reasoning.
+ */
+export const RENDER_VERSION = 1;
+
 export const COLORS: Record<Theme, Record<string, string>> = {
   light: {
     surface: "#EDEEEA",

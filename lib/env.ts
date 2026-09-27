@@ -21,6 +21,17 @@ export function isProduction(): boolean {
   return process.env.NODE_ENV === "production";
 }
 
+/**
+ * Which deployment this is, for namespacing everything we write to Upstash. `.env.local`
+ * holds the **production** credentials, so without this a card rendered by `next dev` on
+ * a laptop lands under the key production serves — and a half-finished design experiment
+ * would go out to strangers for the 30-day TTL. Vercel sets VERCEL_ENV on every
+ * deployment; its absence means a local process. GOTCHAS 043.
+ */
+export function deployEnv(): string {
+  return process.env.VERCEL_ENV ?? "local";
+}
+
 // What scripts/check-env.ts refuses to build without. Names only: the script reports which
 // are missing, and must never print a value.
 export const REQUIRED_IN_PRODUCTION = [

@@ -1315,6 +1315,51 @@ One consequence to weigh there: a timeout is transient, but the route caches it 
 bad request. The short negative TTL is doing its job, but timeouts may deserve a shorter
 one than a genuine 404.
 
+## 043 — `.env.local` holds the production cache, so `next dev` wrote cards strangers would see
+**Date:** 2026-09-27 · **Cost:** ~1h including the platform check · **Status:** fixed
+**Writeup material:** yes
+
+`.env.local` holds the **production** Upstash credentials, because that is what makes
+local development exercise the real cache. The consequence nobody stated out loud: a card
+rendered by `next dev` on a laptop is written under the same key production reads. A
+half-finished design experiment — a colour being tried, a layout mid-edit — would be
+served to anyone whose README embedded that repo's badge, for the 30-day TTL, with no
+deploy involved and nothing in the deployment history to explain it.
+
+This was not hypothetical. This session ran `next dev` against these credentials on two
+ports while testing the route, and those runs rendered and cached PNGs for `spyde`,
+`zustand` and `next.js`.
+
+**The part worth keeping is that the damage was unattributable.** Auditing the ten keys in
+production KV, there was no way to tell which had come from a laptop and which from
+`iad1`: same key space, same format, no marker. The absence of namespacing does not just
+allow the mistake, it destroys the evidence of it. Every key is now prefixed with
+`VERCEL_ENV` (`production:`, `preview:`, or `local:` when the variable is absent), across
+all three cache spaces and the rate limiter, and the ten unscoped keys were deleted.
+
+Two smaller things fell out of the same hour.
+
+**`png:` needed a version, for the opposite reason.** The key is content-addressed on the
+`StackDoc`, and a design change alters none of it — so shipping a new colour would leave
+every cached repo serving the old card for 30 days while new repos got the new one. The
+key now carries `RENDER_VERSION`, and `tests/render-hash.test.ts` is what forces the bump:
+it fails on any byte change and says so in its message. ADR-0005's amendment.
+
+**Rendered output is byte-identical across platforms, which was worth checking rather than
+assuming.** `@resvg/resvg-js` ships a per-platform native binary, and font rasterization
+is exactly the kind of thing that differs between them. Clearing the `png:` keys and
+forcing a fresh render on the deployed Linux x64 function, then rendering the same
+`StackDoc` locally on macOS arm64:
+
+```
+deployed (linux x64)   99344 bytes  sha 5ec937606f6acbd4…
+local    (darwin arm64) 99344 bytes  sha 5ec937606f6acbd4…
+```
+
+Identical. So the committed hashes need no authority machine and no CI-on-ubuntu
+arrangement, and a developer on any platform gets the same verdict. If that ever changes,
+the fallback is recorded in ADR-0005.
+
 ---
 
 *New entries go above this line as they happen.*

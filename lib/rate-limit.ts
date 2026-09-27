@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
 import { countBug } from "@/lib/counters";
-import { isProduction, upstashConfig } from "@/lib/env";
+import { deployEnv, isProduction, upstashConfig } from "@/lib/env";
 
 // ARCHITECTURE: 20/hour per IP on the JSON route. The site is the only legitimate caller.
 export const RESOLVE_LIMIT = 20;
@@ -44,7 +44,8 @@ export function upstashLimiter(redis: Redis): RateLimiter {
         return ALLOWED;
       }
       try {
-        const key = `rl:resolve:${ip}`;
+        // Namespaced like every other key, so local runs cannot spend a real quota.
+        const key = `${deployEnv()}:rl:resolve:${ip}`;
         const count = await redis.incr(key);
         // Set on first use only, so the window is fixed from the first spend rather than
         // sliding forward on every one — otherwise a steady caller is never released.

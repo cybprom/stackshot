@@ -1,0 +1,16 @@
+{
+  "card:Grandbusta__spyde:light": "1fa49b8b95d244f456d435e4ed80ee73bbecc2330a285498f8ffcabcf830ed11",
+  "card:Grandbusta__spyde:dark": "04d04371efb17d710667f0d70aba9e068f5aef99ee991fa98f53bc4a7c3102c8",
+  "card:vercel__next.js:light": "2203f209f194c3922546676f3c8bbbce92a7cf3255da28ff0efefaaeca64422b",
+  "card:vercel__next.js:dark": "8ac2552ac92c4af09093c70cfd73e596a287e1ce9331402e4700fc0a2b6c2156",
+  "card:mastodon__mastodon:light": "a0f28f35fa7d409dbc44936fc1895f99c346b2a977c317a05a9f027b9cac0cd4",
+  "card:mastodon__mastodon:dark": "13669257b994c02f08482b9f0f8b0f4711d7a1d7631ee27b9ad8f9f78dc06224",
+  "card:github__gitignore:light": "061edf054cd127272637e88d4b2ea833c149d649d2c7b447e70037973ecef53b",
+  "card:github__gitignore:dark": "e511ffb70cf6f6ed957a791f707dd17038b2f2858c8e1f799b27b166736a3e8f",
+  "error:not_found:light": "f774daf94232be2d92157ec649bae5b14010373d6a62c802791cdbeea82ccc4b",
+  "error:no_manifests:light": "4f16fc97d327c1bf7c310c79f74e04dec7613af11cfbb483ccf602e19acc9d58",
+  "error:nothing_mapped:light": "c891bc3a639f9847084a9a646fc5ed6ca67135ae42f2be01c801dc08b0cb9d8f",
+  "error:rate_limited:light": "6e074435d5ac0b805774d6600aab5d0e2c6d5c40696be22841210130859dfab1",
+  "error:unavailable:light": "a1a1555302820e27399b406250e0fcd90ec7725e1007afc514b27432204a88e2",
+  "error:not_found:dark": "a409fe5c74547c243df9e7c4b5053969d247c15dbb37c7bf76699d0b9aa8bbd3"
+}

@@ -1,10 +1,10 @@
 import { Redis } from "@upstash/redis";
 import { z } from "zod";
 import { countBug } from "@/lib/counters";
-import { isProduction, upstashConfig } from "@/lib/env";
+import { deployEnv, isProduction, upstashConfig } from "@/lib/env";
 import { FAILURE_REASONS, isTransient } from "@/lib/failure";
 import type { StackDoc } from "@/lib/stack-map/types";
-import type { Theme } from "@/lib/tokens";
+import { RENDER_VERSION, type Theme } from "@/lib/tokens";
 
 export const POINTER_TTL_S = 3600;
 // A deleted repo's badge would otherwise re-run detection on every cold CDN request.
@@ -72,10 +72,29 @@ export type Cache = {
   setPng(stackHash: string, theme: Theme, png: Buffer): Promise<void>;
 };
 
+/**
+ * Every key is namespaced by deployment. `.env.local` holds the production credentials,
+ * so a local `next dev` would otherwise write pointers and PNGs that production serves.
+ * GOTCHAS 043.
+ */
+function scoped(key: string): string {
+  return `${deployEnv()}:${key}`;
+}
+
 // GitHub names are case-insensitive, so Vercel/Next.js and vercel/next.js are one repo and
 // must be one key. The lookup runs before call 1, so it cannot key on the canonical name.
 export function pointerKey(owner: string, repo: string): string {
-  return `repo:${owner.toLowerCase()}/${repo.toLowerCase()}`;
+  return scoped(`repo:${owner.toLowerCase()}/${repo.toLowerCase()}`);
+}
+
+export function docKey(stackHash: string): string {
+  return scoped(`stack:${stackHash}`);
+}
+
+// RENDER_VERSION is in the key so a deliberate design change retires every stored PNG at
+// once, rather than serving the old one for the rest of its 30-day TTL. ADR-0005.
+export function pngKey(stackHash: string, theme: Theme): string {
+  return scoped(`png:v${RENDER_VERSION}:${stackHash}:${theme}`);
 }
 
 /** A cache that stores nothing. Every read misses and every write is dropped. */
@@ -139,14 +158,14 @@ export function upstashCache(redis: Redis): Cache {
       await guard("setPointer", () => redis.set(pointerKey(owner, repo), pointer, { ex }));
     },
 
-    getDoc: (stackHash) => read(`stack:${stackHash}`, StackDocSchema),
+    getDoc: (stackHash) => read(docKey(stackHash), StackDocSchema),
 
     async setDoc(stackHash, doc) {
-      await guard("setDoc", () => redis.set(`stack:${stackHash}`, doc, { ex: CONTENT_TTL_S }));
+      await guard("setDoc", () => redis.set(docKey(stackHash), doc, { ex: CONTENT_TTL_S }));
     },
 
     async getPng(stackHash, theme) {
-      const base64 = await read(`png:${stackHash}:${theme}`, z.string());
+      const base64 = await read(pngKey(stackHash, theme), z.string());
       return base64 === undefined ? undefined : Buffer.from(base64, "base64");
     },
 
@@ -154,7 +173,7 @@ export function upstashCache(redis: Redis): Cache {
       // Upstash stores text, so PNGs ride as base64 and cost ~4/3 their bytes. See
       // ARCHITECTURE's note on storage.
       await guard("setPng", () =>
-        redis.set(`png:${stackHash}:${theme}`, png.toString("base64"), { ex: CONTENT_TTL_S }),
+        redis.set(pngKey(stackHash, theme), png.toString("base64"), { ex: CONTENT_TTL_S }),
       );
     },
   };

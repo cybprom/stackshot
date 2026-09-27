@@ -258,9 +258,13 @@ estimate. Two things are worth carrying forward:
 
 - Both themed PNGs served from the real URL shape and cached.
 - Every failure path from the ARCHITECTURE.md table returns 200 with an error card.
-- Determinism test green.
+- Determinism test green — **both halves**: a byte-identical rerun *and* a committed
+  sha256 per card. See `tests/render-hash.test.ts`.
 - Gutter-fit test green, including against the densest fixture.
-- Your own repo's badge works in your own README.
+- ~~Your own repo's badge works in your own README.~~ **Moved to Milestone 4**, where
+  step 4 already covers it. It was duplicated here, and it cannot be closed honestly
+  while the card's footer advertises `stackshot.ilerioluwa.com` and that domain answers
+  nothing. Camo end-to-end is already evidenced by Milestone 0 steps 4–7.
 
 ---
 
@@ -300,7 +304,9 @@ instructions. The page passes the quality floor in `DESIGN.md`. There is exactly
    unmapped-package frequency, the weekly embed-count script, Vercel Web Analytics, and
    `GET /api/stats` behind a secret. Budget: 1 hour. No dashboard.
 3. `README.md` finalised with real screenshots and real numbers.
-4. Deploy to `stackshot.ilerioluwa.com`, badge in own README.
+4. Deploy to `stackshot.ilerioluwa.com`, badge in own README. **This absorbs the
+   identical item that used to sit in Milestone 2's definition of done** — the duplicate
+   is resolved here, and the badge waits for the domain the card's footer names.
 5. `GOTCHAS.md` reviewed for writeup material.
 
 ### Definition of done
