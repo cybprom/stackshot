@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Direction B: tags</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Archivo,'Helvetica Neue',Arial,sans-serif;background:#E6E8E3}
+</style>
+</helmet>
+<div style="width: 2040px; height: 1100px; box-sizing: border-box; padding: 40px; display: flex; flex-direction: column; gap: 40px; background: #E6E8E3">
+<sc-for list="{{sections}}" as="s" hint-placeholder-count="2">
+<div style="padding: 40px; background: {{s.bg}}; border-radius: 4px; display: flex; gap: 40px; align-items: flex-start">
+<sc-for list="{{s.cards}}" as="c" hint-placeholder-count="3">
+<div style="width: 600px; flex-shrink: 0; box-sizing: border-box; background: {{c.surface}}; border: 1px solid {{c.rule}}; border-radius: 12px; padding: 20px 22px 16px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 16px">
+<div style="display: flex; align-items: baseline; gap: 6px; min-width: 0; flex-wrap: wrap">
+<span style="font-family: Archivo, sans-serif; font-size: 16px; color: {{c.muted}}">{{c.owner}} /</span>
+<span style="font-family: Archivo, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.015em; color: {{c.ink}}">{{c.repo}}</span>
+</div>
+<div style="display: flex; gap: 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: {{c.muted}}; white-space: nowrap">
+<sc-if value="{{c.hasLang}}" hint-placeholder-val="{{ true }}"><span>{{c.lang}}</span></sc-if>
+<span>{{c.stars}}</span>
+</div>
+</div>
+<div style="height: 1px; background: {{c.rule}}"></div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<sc-for list="{{c.layers}}" as="l" hint-placeholder-count="4">
+<div style="display: flex; gap: 14px; align-items: flex-start">
+<div style="width: 76px; flex-shrink: 0; padding-top: 5px; font-family: Archivo, sans-serif; font-weight: 500; font-size: 13px; color: {{l.muted}}">{{l.name}}</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px; min-width: 0">
+<sc-for list="{{l.items}}" as="it" hint-placeholder-count="3">
+<span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; border-radius: 999px; background: {{it.tint}}; white-space: nowrap">
+<span style="width: 7px; height: 7px; border-radius: 999px; background: {{it.color}}; display: inline-block"></span>
+<span style="font-family: Archivo, sans-serif; font-weight: 500; font-size: 13.5px; color: {{it.ink}}">{{it.n}}</span>
+<sc-if value="{{it.hasV}}" hint-placeholder-val="{{ true }}"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: {{it.muted}}">{{it.v}}</span></sc-if>
+</span>
+</sc-for>
+<sc-if value="{{l.hasMore}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; border: 1px dashed {{l.rule}}; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: {{l.muted}}; white-space: nowrap">{{l.more}}</span></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; color: {{c.muted}}">
+<span>stackshot.ilerioluwa.com</span>
+<span style="width: 18px; height: 3px; background: {{c.accent}}; display: inline-block"></span>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2040,"height":1100}}'>
+const REPOS = [
+  { owner: 'vercel', repo: 'next.js', lang: 'JavaScript', stars: '142k stars', layers: [
+    { k: 'frontend', name: 'Frontend', more: 0, items: [['Next.js', '16', 'Nx'], ['Radix UI', '', 'Rx'], ['SWR', '2', 'Sw'], ['Lucide', '', 'Lu'], ['Tailwind', '4', 'Tw'], ['Sass', '1', 'Sa']] },
+    { k: 'backend', name: 'Backend', more: 1, items: [['Node', '20', 'No'], ['Tokio', '1', 'Tk'], ['napi-rs', '3', 'Na'], ['clap', '4', 'Cl'], ['Rust', '', 'Rs'], ['Serde', '1', 'Sd']] },
+    { k: 'infra', name: 'Infra', more: 0, items: [['Vercel', '', 'Vc'], ['GitHub Actions', '', 'Ga']] },
+    { k: 'tooling', name: 'Tooling', more: 7, items: [['Turborepo', '2', 'Tb'], ['pnpm workspaces', '', 'Pn'], ['Lerna', '9', 'Le'], ['Jest', '29', 'Je'], ['Playwright', '1', 'Pl'], ['webpack', '5', 'Wp']] },
+  ] },
+  { owner: 'pmndrs', repo: 'zustand', lang: 'TypeScript', stars: '59k stars', layers: [
+    { k: 'frontend', name: 'Frontend', more: 0, items: [['React', '19', 'Re']] },
+    { k: 'backend', name: 'Backend', more: 0, items: [['Node', '', 'No']] },
+    { k: 'infra', name: 'Infra', more: 0, items: [['GitHub Actions', '', 'Ga']] },
+    { k: 'tooling', name: 'Tooling', more: 3, items: [['pnpm workspaces', '', 'Pn'], ['Vitest', '4', 'Vt'], ['TypeScript', '6', 'Ts'], ['esbuild', '0.28', 'Eb'], ['Rollup', '4', 'Ru'], ['ESLint', '9', 'El']] },
+  ] },
+  { owner: 'jwasham', repo: 'coding-interview-university', lang: '', stars: '362k stars', layers: [
+    { k: 'infra', name: 'Infra', more: 0, items: [['GitHub Actions', '', 'Ga']] },
+  ] },
+];
+const THEMES = [
+  { page: '#ffffff', surface: '#FFFFFF', ink: '#101615', muted: '#5A625E', rule: '#D8DCD4', accent: '#C8461E',
+    layer: { frontend: ['#2458C4', '#E4ECFA'], backend: ['#1B7F52', '#E0F1E7'], infra: ['#9A5F0E', '#F5EAD6'], tooling: ['#596068', '#EAECED'] } },
+  { page: '#0d1117', surface: '#12171C', ink: '#DDE2DD', muted: '#8B9490', rule: '#2A3136', accent: '#FF6B3D',
+    layer: { frontend: ['#7FAEFF', '#14223A'], backend: ['#5CC896', '#10291D'], infra: ['#E5AE58', '#2A2111'], tooling: ['#A8AEB5', '#1C2126'] } },
+];
+function card(t, r) {
+  return {
+    owner: r.owner, repo: r.repo, lang: r.lang, hasLang: !!r.lang, stars: r.stars,
+    surface: t.surface, ink: t.ink, muted: t.muted, rule: t.rule, accent: t.accent,
+    layers: r.layers.map((l) => ({
+      name: l.name, muted: t.muted, rule: t.rule,
+      hasMore: l.more > 0, more: '+' + l.more + ' more',
+      items: l.items.map((it) => ({ n: it[0], v: it[1], hasV: !!it[1], ink: t.ink, muted: t.muted, color: t.layer[l.k][0], tint: t.layer[l.k][1] })),
+    })),
+  };
+}
+class Component extends DCLogic {
+  renderVals() {
+    return { sections: THEMES.map((t) => ({ bg: t.page, cards: REPOS.map((r) => card(t, r)) })) };
+  }
+}
+</script>
+</body>
+</html>

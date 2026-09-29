@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Site direction C: Gallery wall</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Archivo,'Helvetica Neue',Arial,sans-serif;background:#0E1113}
+@keyframes tileIn{0%{opacity:0;transform:translateY(10px) scale(.9)}65%{opacity:1;transform:translateY(-1px) scale(1.03)}100%{opacity:1;transform:none}}
+@keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes scan{from{top:-48px}to{top:100%}}
+@keyframes drift{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+@keyframes panelIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.a-tile{animation:tileIn 460ms cubic-bezier(.2,0,0,1) both}
+.a-row{animation:rowIn 340ms cubic-bezier(.2,0,0,1) both}
+.cursor-in{animation:rowIn 200ms cubic-bezier(.2,0,0,1) both,blink 1s steps(1) infinite}
+.dimmed{opacity:.28;filter:saturate(.25);transition:opacity 240ms,filter 240ms}
+.shown{opacity:1;filter:none;transition:opacity 240ms,filter 240ms}
+.scan{position:absolute;left:0;right:0;height:48px;pointer-events:none;animation:scan 1.25s cubic-bezier(.45,0,.55,1) infinite}
+.col-up{animation:drift 44s linear infinite}
+.col-down{animation:drift 52s linear infinite reverse}
+.panel-in{animation:panelIn 520ms cubic-bezier(.2,0,0,1) 150ms both}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #C8461E;outline-offset:2px}
+@media (prefers-reduced-motion: reduce){.a-tile,.a-row,.cursor-in,.col-up,.col-down,.panel-in{animation:none}.scan{display:none}.dimmed,.shown{transition:none}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1760px; box-sizing: border-box; background: #F3F5F1; display: flex; flex-direction: column; color: #101615">
+
+<nav style="height: 72px; flex-shrink: 0; box-sizing: border-box; padding: 0 56px; display: flex; align-items: center; justify-content: space-between; background: #0E1113; color: #DDE2DD; border-bottom: 1px solid #1E2428">
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; width: 18px; height: 18px">
+<span style="background: #7FAEFF; border-radius: 2px"></span><span style="background: #5CC896; border-radius: 2px"></span>
+<span style="background: #E5AE58; border-radius: 2px"></span><span style="background: #A8AEB5; border-radius: 2px"></span>
+</div>
+<span style="font-weight: 800; font-size: 20px; letter-spacing: -0.03em">stackshot</span>
+</div>
+<a href="https://github.com/cybprom/stackshot" style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 999px; background: #1A2025; color: #DDE2DD; text-decoration: none; font-weight: 600; font-size: 14px">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E5AE58" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"></path></svg>
+<span>Star on GitHub</span><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; color: #9AA39E">[stars]</span>
+</a>
+</nav>
+
+<section style="position: relative; height: 760px; flex-shrink: 0; overflow: hidden; background: #0E1113">
+<div style="position: absolute; left: 0; right: 0; top: -40px; display: flex; gap: 22px; justify-content: center; opacity: 0.5" aria-hidden="true">
+<sc-for list="{{cols}}" as="col" hint-placeholder-count="4">
+<div class="{{col.cls}}" style="display: flex; flex-direction: column; gap: 22px; width: 300px">
+<sc-for list="{{col.cards}}" as="mc" hint-placeholder-count="4">
+<div style="box-sizing: border-box; width: 300px; background: {{mc.surface}}; border: 1px solid {{mc.rule}}; border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+<span style="font-weight: 700; font-size: 16px; letter-spacing: -0.02em; color: {{mc.ink}}; white-space: nowrap; overflow: hidden">{{mc.repo}}</span>
+<span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; color: {{mc.muted}}; white-space: nowrap">{{mc.stars}}</span>
+</div>
+<sc-if value="{{mc.isT}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-wrap: wrap; gap: 5px">
+<sc-for list="{{mc.tiles}}" as="mt" hint-placeholder-count="6">
+<div style="width: 48px; height: 44px; box-sizing: border-box; border-radius: 4px; background: {{mt.tint}}; border-top: 2px solid {{mt.color}}; padding: 5px 6px; font-weight: 800; font-size: 17px; letter-spacing: -0.03em; color: {{mt.color}}">{{mt.sym}}</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{mc.isX}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 3px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; line-height: 15px">
+<sc-for list="{{mc.rows}}" as="mr" hint-placeholder-count="4">
+<div style="white-space: nowrap; overflow: hidden"><span style="color: {{mc.muted}}">{{mr.glyph}}</span> <span style="font-weight: 600; color: {{mr.color}}">{{mr.key}}</span> <span style="color: {{mc.ink}}">{{mr.list}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+<div style="position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center">
+<div class="panel-in" style="width: 660px; box-sizing: border-box; padding: 42px 44px 36px; border-radius: 18px; background: #F6F7F4; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.75); display: flex; flex-direction: column; gap: 20px">
+<h1 style="margin: 0; font-weight: 800; font-size: 56px; line-height: 1; letter-spacing: -0.045em">What's it built with?</h1>
+<p style="margin: 0; font-size: 17.5px; line-height: 1.55; color: #4A524E">Paste any GitHub repo. Stackshot draws its stack as a card for the README, in light and dark.</p>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="c-url" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; color: #5A625E">GitHub repo</label>
+<div style="display: flex; gap: 10px">
+<input id="c-url" value="{{url}}" onChange="{{onUrl}}" style="flex-grow: 1; min-width: 0; height: 52px; box-sizing: border-box; padding: 0 16px; border: 1.5px solid #101615; border-radius: 10px; background: #FFFFFF; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14.5px; color: #101615">
+<button onClick="{{generate}}" disabled="{{busy}}" style="height: 52px; min-width: 156px; padding: 0 20px; border: 0; border-radius: 10px; background: #101615; color: #F6F7F4; font-weight: 700; font-size: 15px; cursor: pointer; white-space: nowrap">{{btnLabel}}</button>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; color: #5A625E">
+<span>Try</span>
+<sc-for list="{{tries}}" as="tr" hint-placeholder-count="3">
+<button onClick="{{tr.pick}}" style="height: 30px; padding: 0 11px; border: 1px solid #D0D5CC; border-radius: 999px; background: #FFFFFF; color: #101615; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; cursor: pointer">{{tr.label}}</button>
+</sc-for>
+</div>
+</div>
+</div>
+</section>
+
+<section style="padding: 64px 56px; display: flex; gap: 48px; align-items: flex-start">
+<div style="width: 780px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+<div style="display: flex; gap: 3px; padding: 4px; border-radius: 10px; background: #E4E7E1" aria-label="Card style">
+<sc-for list="{{styles}}" as="m" hint-placeholder-count="2">
+<button onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="height: 34px; padding: 0 16px; border: 0; border-radius: 7px; background: {{m.bg}}; color: {{m.fg}}; font-weight: 600; font-size: 14px; cursor: pointer">{{m.label}}</button>
+</sc-for>
+</div>
+<div style="display: flex; gap: 3px; padding: 4px; border-radius: 10px; background: #E4E7E1" aria-label="Preview theme">
+<sc-for list="{{modes}}" as="m" hint-placeholder-count="3">
+<button onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="height: 34px; padding: 0 14px; border: 0; border-radius: 7px; background: {{m.bg}}; color: {{m.fg}}; font-weight: 600; font-size: 14px; cursor: pointer">{{m.label}}</button>
+</sc-for>
+</div>
+</div>
+<div aria-live="polite" style="min-height: 18px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; color: #5A625E">{{status}}</div>
+<div style="position: relative; overflow: hidden; border-radius: 14px; background: {{pg}}; padding: 28px; min-height: 500px; box-sizing: border-box; border: 1px solid #D8DCD4">
+<div class="{{wrapCls}}">
+<sc-if value="{{isTiles}}" hint-placeholder-val="{{ true }}">
+<div style="box-sizing: border-box; background: {{tc.surface}}; border: 1px solid {{tc.rule}}; border-radius: 10px; padding: 22px; display: flex; flex-direction: column; gap: 18px">
+<div class="{{tc.headCls}}" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+<div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: {{tc.muted}}">{{tc.owner}} /</div>
+<div style="font-weight: 700; font-size: 28px; line-height: 1.05; letter-spacing: -0.025em; color: {{tc.ink}}">{{tc.repo}}</div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; color: {{tc.muted}}; white-space: nowrap"><sc-if value="{{tc.hasLang}}" hint-placeholder-val="{{ true }}"><div>{{tc.lang}}</div></sc-if><div>{{tc.stars}}</div></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 9px">
+<sc-for list="{{tc.tiles}}" as="tl" hint-placeholder-count="6">
+<sc-if value="{{tl.isItem}}" hint-placeholder-val="{{ true }}">
+<div class="{{tl.cls}}" style="animation-delay: {{tl.delay}}; width: 104px; height: 96px; box-sizing: border-box; border-radius: 6px; background: {{tl.tint}}; border-top: 3px solid {{tl.color}}; padding: 6px 9px 8px; display: flex; flex-direction: column; justify-content: space-between">
+<div style="display: flex; justify-content: flex-end; height: 11px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; line-height: 1; color: {{tl.muted}}">{{tl.v}}</div>
+<div style="font-weight: 700; font-size: 32px; line-height: 1; letter-spacing: -0.03em; color: {{tl.color}}">{{tl.sym}}</div>
+<div style="font-weight: 500; font-size: 11.5px; line-height: 13px; max-height: 26px; overflow: hidden; color: {{tl.ink}}">{{tl.n}}</div>
+</div>
+</sc-if>
+<sc-if value="{{tl.isMore}}" hint-placeholder-val="{{ false }}">
+<div class="{{tl.cls}}" style="animation-delay: {{tl.delay}}; width: 104px; height: 96px; box-sizing: border-box; border-radius: 6px; border: 1px dashed {{tl.color}}; padding: 8px 9px; display: flex; flex-direction: column; justify-content: center; gap: 2px">
+<div style="font-weight: 700; font-size: 26px; line-height: 1; color: {{tl.color}}">{{tl.more}}</div>
+<div style="font-weight: 500; font-size: 11.5px; color: {{tl.muted}}">more</div>
+</div>
+</sc-if>
+</sc-for>
+</div>
+<div class="{{tc.footCls}}" style="animation-delay: {{tc.footDelay}}; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap">
+<div style="display: flex; gap: 16px; flex-wrap: wrap">
+<sc-for list="{{tc.legend}}" as="lg" hint-placeholder-count="4"><span style="display: inline-flex; align-items: center; gap: 6px; font-weight: 500; font-size: 12px; color: {{lg.muted}}"><span style="width: 9px; height: 9px; border-radius: 2px; background: {{lg.color}}; display: inline-block"></span>{{lg.name}}</span></sc-for>
+</div>
+<span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; color: {{tc.muted}}">stackshot.ilerioluwa.com</span>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{isTerminal}}" hint-placeholder-val="{{ false }}">
+<div style="box-sizing: border-box; background: {{xc.term}}; border: 1px solid {{xc.rule}}; border-radius: 8px; padding: 16px 20px 14px; display: flex; flex-direction: column; gap: 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace">
+<div class="{{xc.headCls}}" style="font-size: 12px; color: {{xc.muted}}"><span style="color: {{xc.accent}}; font-weight: 600">$</span> stackshot {{xc.owner}}/{{xc.repo}}</div>
+<div class="{{xc.headCls}}" style="animation-delay: 90ms; display: flex; justify-content: space-between; align-items: baseline; gap: 16px">
+<span style="font-weight: 700; font-size: 18px; color: {{xc.ink}}; min-width: 0">{{xc.owner}}/{{xc.repo}}</span>
+<span style="display: flex; gap: 14px; font-size: 12px; color: {{xc.muted}}; white-space: nowrap"><sc-if value="{{xc.hasLang}}" hint-placeholder-val="{{ true }}"><span>{{xc.lang}}</span></sc-if><span>{{xc.stars}}</span></span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<sc-for list="{{xc.rows}}" as="l" hint-placeholder-count="4">
+<div class="{{l.cls}}" style="animation-delay: {{l.delay}}; display: flex; gap: 10px; align-items: flex-start">
+<div style="width: 122px; flex-shrink: 0; font-size: 13.5px; line-height: 19px; white-space: nowrap"><span style="color: {{l.muted}}">{{l.glyph}}</span> <span style="font-weight: 600; color: {{l.color}}">{{l.key}}</span></div>
+<div style="display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px; min-width: 0; font-size: 13.5px; line-height: 19px">
+<sc-for list="{{l.items}}" as="it" hint-placeholder-count="3"><span style="color: {{it.ink}}; white-space: nowrap">{{it.n}}<sc-if value="{{it.hasV}}" hint-placeholder-val="{{ true }}"><span style="color: {{it.muted}}; margin-left: 6px">{{it.v}}</span></sc-if></span></sc-for>
+<sc-if value="{{l.hasMore}}" hint-placeholder-val="{{ false }}"><span style="color: {{l.muted}}; white-space: nowrap">{{l.more}}</span></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: {{xc.muted}}">
+<span>stackshot.ilerioluwa.com</span>
+<sc-if value="{{xc.cursorOn}}" hint-placeholder-val="{{ true }}"><span class="cursor-in" style="animation-delay: {{xc.cursorDelay}}, {{xc.cursorDelay}}; display: inline-block; width: 8px; height: 14px; background: {{xc.accent}}"></span></sc-if>
+</div>
+</div>
+</sc-if>
+</div>
+<sc-if value="{{busy}}" hint-placeholder-val="{{ false }}">
+<div class="scan" style="background: linear-gradient(to bottom, transparent, {{wake}}); border-bottom: 2px solid {{scanAccent}}; box-shadow: 0 8px 18px -6px {{scanAccent}}"></div>
+</sc-if>
+</div>
+</div>
+
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding-top: 58px">
+<h2 style="margin: 0; font-weight: 800; font-size: 34px; line-height: 1.05; letter-spacing: -0.035em">Paste it into your README.</h2>
+<p style="margin: 0; font-size: 16.5px; line-height: 1.55; color: #4A524E">Readers on light GitHub get the light card, readers on dark get the dark one. It redraws itself when your stack changes.</p>
+<div style="box-sizing: border-box; border-radius: 12px; background: #101615; padding: 18px 20px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; line-height: 1.75; color: #C9D1CB; overflow: hidden">
+<div style="white-space: pre"><span style="color: #7FAEFF">&lt;picture&gt;</span></div>
+<div style="white-space: pre">  <span style="color: #7FAEFF">&lt;source</span> media="(prefers-color-scheme: dark)"</div>
+<div style="white-space: pre">    srcset="<span style="color: #E5AE58">{{snipDark}}</span>"<span style="color: #7FAEFF">&gt;</span></div>
+<div style="white-space: pre">  <span style="color: #7FAEFF">&lt;img</span> alt="{{snipAlt}}"</div>
+<div style="white-space: pre">    src="<span style="color: #E5AE58">{{snipLight}}</span>"<span style="color: #7FAEFF">&gt;</span></div>
+<div style="white-space: pre"><span style="color: #7FAEFF">&lt;/picture&gt;</span></div>
+</div>
+<div style="display: flex; gap: 10px; flex-wrap: wrap">
+<button onClick="{{copy}}" style="height: 46px; padding: 0 20px; border: 0; border-radius: 10px; background: {{copyBg}}; color: #FFFFFF; font-weight: 700; font-size: 15px; cursor: pointer">{{copyLabel}}</button>
+<button style="height: 46px; padding: 0 16px; border: 1.5px solid #101615; border-radius: 10px; background: transparent; color: #101615; font-weight: 600; font-size: 15px; cursor: pointer">Download PNGs</button>
+</div>
+</div>
+</section>
+
+<footer style="margin-top: auto; padding: 28px 56px 36px; border-top: 1px solid #D8DCD4; display: flex; justify-content: space-between; align-items: center; font-size: 14.5px; color: #4A524E">
+<span>Open source. Built by Ilerioluwa.</span>
+<div style="display: flex; gap: 24px; font-weight: 500">
+<a href="https://github.com/cybprom/stackshot" style="color: #101615">GitHub</a>
+<a href="https://github.com/cybprom/stackshot/issues" style="color: #101615">Suggest a technology</a>
+</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1760}}'>
+const REPOS = {
+  next: { owner: 'vercel', repo: 'next.js', lang: 'JavaScript', stars: '142k stars', layers: [
+    { k: 'frontend', name: 'Frontend', more: 0, items: [['Next.js', '16', 'Nx'], ['Radix UI', '', 'Rx'], ['SWR', '2', 'Sw'], ['Lucide', '', 'Lu'], ['Tailwind', '4', 'Tw'], ['Sass', '1', 'Sa']] },
+    { k: 'backend', name: 'Backend', more: 1, items: [['Node', '', 'No'], ['Tokio', '1', 'Tk'], ['napi-rs', '3', 'Na'], ['clap', '4', 'Cl'], ['Rust', '', 'Rs'], ['Serde', '1', 'Sd']] },
+    { k: 'infra', name: 'Infra', more: 0, items: [['Vercel', '', 'Vc'], ['GitHub Actions', '', 'Ga']] },
+    { k: 'tooling', name: 'Tooling', more: 7, items: [['Turborepo', '2', 'Tb'], ['pnpm workspaces', '', 'Pw'], ['Lerna', '9', 'Le'], ['Jest', '29', 'Je'], ['Playwright', '1', 'Pl'], ['webpack', '5', 'Wp']] },
+  ] },
+  zustand: { owner: 'pmndrs', repo: 'zustand', lang: 'TypeScript', stars: '59k stars', layers: [
+    { k: 'frontend', name: 'Frontend', more: 0, items: [['React', '19', 'Re']] },
+    { k: 'backend', name: 'Backend', more: 0, items: [['Node', '', 'No']] },
+    { k: 'infra', name: 'Infra', more: 0, items: [['GitHub Actions', '', 'Ga']] },
+    { k: 'tooling', name: 'Tooling', more: 3, items: [['Vitest', '4', 'Vt'], ['pnpm', '11', 'Pn'], ['TypeScript', '6', 'Ts'], ['esbuild', '0.28', 'Eb'], ['Rollup', '4', 'Ru'], ['ESLint', '9', 'El']] },
+  ] },
+  jwasham: { owner: 'jwasham', repo: 'coding-interview-university', lang: '', stars: '362k stars', layers: [
+    { k: 'infra', name: 'Infra', more: 0, items: [['GitHub Actions', '', 'Ga']] },
+  ] },
+  stackshot: { owner: 'cybprom', repo: 'stackshot', lang: 'TypeScript', stars: '[stars]', layers: [
+    { k: 'frontend', name: 'Frontend', more: 0, items: [['Next.js', '16', 'Nx'], ['Tailwind', '4', 'Tw'], ['Zod', '4', 'Zd']] },
+    { k: 'backend', name: 'Backend', more: 0, items: [['Node', '', 'No'], ['Satori', '', 'St'], ['resvg', '', 'Rv'], ['Upstash', '', 'Up']] },
+    { k: 'infra', name: 'Infra', more: 0, items: [['Vercel', '', 'Vc']] },
+    { k: 'tooling', name: 'Tooling', more: 0, items: [['pnpm', '10', 'Pn'], ['Vitest', '', 'Vt'], ['TypeScript', '', 'Ts'], ['ESLint', '', 'El']] },
+  ] },
+};
+const THEMES = {
+  light: { page: '#ffffff', surface: '#FFFFFF', term: '#FAFAF7', ink: '#101615', muted: '#5A625E', rule: '#D8DCD4', accent: '#C8461E', wake: '#C8461E22',
+    layer: { frontend: ['#2458C4', '#E4ECFA'], backend: ['#1B7F52', '#E0F1E7'], infra: ['#9A5F0E', '#F5EAD6'], tooling: ['#596068', '#EAECED'] } },
+  dark: { page: '#0d1117', surface: '#12171C', term: '#0A0D10', ink: '#DDE2DD', muted: '#8B9490', rule: '#2A3136', accent: '#FF6B3D', wake: '#FF6B3D26',
+    layer: { frontend: ['#7FAEFF', '#14223A'], backend: ['#5CC896', '#10291D'], infra: ['#E5AE58', '#2A2111'], tooling: ['#A8AEB5', '#1C2126'] } },
+};
+function tilesCard(t, r, on) {
+  const tiles = [];
+  r.layers.forEach((l) => {
+    const color = t.layer[l.k][0];
+    const tint = t.layer[l.k][1];
+    l.items.forEach((it) => tiles.push({ isItem: true, isMore: false, n: it[0], v: it[1], sym: it[2], color, tint, ink: t.ink, muted: t.muted }));
+    if (l.more > 0) tiles.push({ isItem: false, isMore: true, more: '+' + l.more, color, muted: t.muted });
+  });
+  tiles.forEach((tl, i) => { tl.cls = on ? 'a-tile' : ''; tl.delay = (120 + i * 45) + 'ms'; });
+  return {
+    owner: r.owner, repo: r.repo, lang: r.lang, hasLang: !!r.lang, stars: r.stars,
+    surface: t.surface, rule: t.rule, ink: t.ink, muted: t.muted,
+    headCls: on ? 'a-row' : '', footCls: on ? 'a-row' : '', footDelay: (160 + tiles.length * 45) + 'ms',
+    tiles, legend: r.layers.map((l) => ({ name: l.name, color: t.layer[l.k][0], muted: t.muted })),
+  };
+}
+function termCard(t, r, on) {
+  const last = r.layers.length - 1;
+  return {
+    owner: r.owner, repo: r.repo, lang: r.lang, hasLang: !!r.lang, stars: r.stars,
+    term: t.term, rule: t.rule, ink: t.ink, muted: t.muted, accent: t.accent,
+    headCls: on ? 'a-row' : '',
+    rows: r.layers.map((l, i) => ({
+      cls: on ? 'a-row' : '', delay: (200 + i * 150) + 'ms', glyph: i === last ? '└──' : '├──', key: l.k,
+      color: t.layer[l.k][0], muted: t.muted, hasMore: l.more > 0, more: '+' + l.more + ' more',
+      items: l.items.map((it) => ({ n: it[0], v: it[1], hasV: !!it[1], ink: t.ink, muted: t.muted })),
+    })),
+    cursorOn: on, cursorDelay: (200 + r.layers.length * 150) + 'ms',
+  };
+}
+function mini(key, style, themeKey) {
+  const t = THEMES[themeKey];
+  const r = REPOS[key];
+  const last = r.layers.length - 1;
+  const tiles = [];
+  r.layers.forEach((l) => l.items.forEach((it) => tiles.push({ sym: it[2], color: t.layer[l.k][0], tint: t.layer[l.k][1] })));
+  return {
+    isT: style === 'tiles', isX: style === 'terminal',
+    repo: r.repo, stars: r.stars, surface: style === 'terminal' ? t.term : t.surface, rule: t.rule, ink: t.ink, muted: t.muted,
+    tiles: tiles.slice(0, 10),
+    rows: r.layers.map((l, i) => ({ glyph: i === last ? '└─' : '├─', key: l.k, color: t.layer[l.k][0], list: l.items.map((it) => it[0]).join('  ') })),
+  };
+}
+const WALL = [
+  [['next', 'tiles', 'light'], ['zustand', 'terminal', 'dark'], ['stackshot', 'tiles', 'dark'], ['jwasham', 'terminal', 'light']],
+  [['stackshot', 'terminal', 'light'], ['next', 'tiles', 'dark'], ['jwasham', 'tiles', 'light'], ['zustand', 'terminal', 'light']],
+  [['zustand', 'tiles', 'light'], ['next', 'terminal', 'dark'], ['stackshot', 'tiles', 'light'], ['jwasham', 'terminal', 'dark']],
+  [['jwasham', 'tiles', 'dark'], ['stackshot', 'terminal', 'dark'], ['zustand', 'tiles', 'dark'], ['next', 'terminal', 'light']],
+];
+function seg(options, current, pick) {
+  return options.map(([k, label]) => {
+    const on = current === k;
+    return { label, pressed: on ? 'true' : 'false', bg: on ? '#FFFFFF' : 'transparent', fg: on ? '#101615' : '#4A524E', pick: () => pick(k) };
+  });
+}
+function pickRepo(url) {
+  const u = (url || '').toLowerCase();
+  if (u.indexOf('next') >= 0) return 'next';
+  if (u.indexOf('jwasham') >= 0 || u.indexOf('interview') >= 0) return 'jwasham';
+  if (u.indexOf('stackshot') >= 0) return 'stackshot';
+  return 'zustand';
+}
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { style: 'tiles', mode: 'system', sysDark: false, phase: 'idle', url: 'https://github.com/cybprom/stackshot', repoKey: 'stackshot', copied: false };
+  }
+  componentDidMount() {
+    try {
+      this._mq = window.matchMedia('(prefers-color-scheme: dark)');
+      this._onMq = (e) => this.setState({ sysDark: e.matches });
+      this.setState({ sysDark: this._mq.matches });
+      this._mq.addEventListener('change', this._onMq);
+    } catch (e) {}
+  }
+  componentWillUnmount() {
+    if (this._mq) this._mq.removeEventListener('change', this._onMq);
+    clearTimeout(this._t1); clearTimeout(this._t2); clearTimeout(this._t3);
+  }
+  generate() {
+    const p = this.state.phase;
+    if (p === 'reading' || p === 'drawing') return;
+    this.setState({ phase: 'reading' });
+    this._t1 = setTimeout(() => this.setState({ phase: 'drawing' }), 1300);
+    this._t2 = setTimeout(() => this.setState({ phase: 'done', repoKey: pickRepo(this.state.url) }), 2100);
+  }
+  copy() {
+    try { navigator.clipboard.writeText('<picture>…</picture>'); } catch (e) {}
+    this.setState({ copied: true });
+    clearTimeout(this._t3);
+    this._t3 = setTimeout(() => this.setState({ copied: false }), 2200);
+  }
+  renderVals() {
+    const s = this.state;
+    const dark = s.mode === 'dark' || (s.mode === 'system' && s.sysDark);
+    const t = dark ? THEMES.dark : THEMES.light;
+    const busy = s.phase === 'reading' || s.phase === 'drawing';
+    const r = REPOS[s.repoKey];
+    const base = 'https://stackshot.ilerioluwa.com/' + r.owner + '/' + r.repo + '/' + s.style;
+    const cols = WALL.map((col, i) => {
+      const cards = col.map((c) => mini(c[0], c[1], c[2]));
+      return { cls: i % 2 === 0 ? 'col-up' : 'col-down', cards: cards.concat(cards) };
+    });
+    const tries = [['vercel/next.js', 'https://github.com/vercel/next.js'], ['pmndrs/zustand', 'https://github.com/pmndrs/zustand'], ['cybprom/stackshot', 'https://github.com/cybprom/stackshot']]
+      .map(([label, url]) => ({ label, pick: () => { this.setState({ url }); setTimeout(() => this.generate(), 0); } }));
+    return {
+      url: s.url, onUrl: (e) => this.setState({ url: e.target.value }),
+      generate: () => this.generate(), busy, tries, cols,
+      btnLabel: s.phase === 'reading' ? 'Reading repo' : s.phase === 'drawing' ? 'Drawing card' : 'Generate card',
+      status: s.phase === 'reading' ? 'Reading ' + s.url.replace('https://github.com/', '') : s.phase === 'drawing' ? 'Drawing the card' : '',
+      styles: seg([['tiles', 'Tiles'], ['terminal', 'Terminal']], s.style, (k) => this.setState({ style: k })),
+      modes: seg([['system', 'System'], ['light', 'Light'], ['dark', 'Dark']], s.mode, (k) => this.setState({ mode: k })),
+      pg: t.page, wrapCls: busy ? 'dimmed' : 'shown', wake: t.wake, scanAccent: t.accent,
+      isTiles: s.style === 'tiles', isTerminal: s.style === 'terminal',
+      tc: tilesCard(t, r, !busy), xc: termCard(t, r, !busy),
+      snipDark: base + '-dark.png', snipLight: base + '-light.png', snipAlt: r.owner + '/' + r.repo + ' tech stack, by Stackshot',
+      copy: () => this.copy(), copyLabel: s.copied ? 'Markdown copied' : 'Copy markdown', copyBg: s.copied ? '#1B7F52' : '#101615',
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Preview: styles, theme toggle and loading</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Archivo,'Helvetica Neue',Arial,sans-serif;background:#F4F5F2}
+@keyframes tileIn{0%{opacity:0;transform:translateY(10px) scale(.9)}65%{opacity:1;transform:translateY(-1px) scale(1.03)}100%{opacity:1;transform:none}}
+@keyframes rowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.75)}70%{opacity:1;transform:scale(1.06)}100%{opacity:1;transform:none}}
+@keyframes ruleDraw{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes scan{from{top:-48px}to{top:100%}}
+.a-tile{animation:tileIn 460ms cubic-bezier(.2,0,0,1) both}
+.a-row{animation:rowIn 320ms cubic-bezier(.2,0,0,1) both}
+.a-pop{animation:pop 340ms cubic-bezier(.2,0,0,1) both}
+.a-rule{transform-origin:left center;animation:ruleDraw 480ms cubic-bezier(.2,0,0,1) both}
+.cursor-in{animation:rowIn 200ms cubic-bezier(.2,0,0,1) both,blink 1s steps(1) infinite}
+.dimmed{opacity:.28;filter:saturate(.25);transition:opacity 240ms,filter 240ms}
+.shown{opacity:1;filter:none;transition:opacity 240ms,filter 240ms}
+.scan{position:absolute;left:0;right:0;height:48px;pointer-events:none;animation:scan 1.25s cubic-bezier(.45,0,.55,1) infinite}
+button:focus-visible,input:focus-visible{outline:2px solid #C8461E;outline-offset:2px}
+@media (prefers-reduced-motion: reduce){.a-tile,.a-row,.a-pop,.a-rule,.cursor-in{animation:none}.scan{display:none}.dimmed,.shown{transition:none}}
+</style>
+</helmet>
+<div style="width: 820px; height: 900px; box-sizing: border-box; padding: 40px; display: flex; flex-direction: column; gap: 18px; background: #F4F5F2">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="repo-url-2" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; color: #5A625E">GitHub repo</label>
+<div style="display: flex; gap: 10px">
+<input id="repo-url-2" value="{{url}}" onChange="{{onUrl}}" style="flex-grow: 1; min-width: 0; height: 44px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid #101615; border-radius: 2px; background: #FFFFFF; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; color: #101615">
+<button onClick="{{generate}}" disabled="{{busy}}" style="height: 44px; min-width: 156px; padding: 0 18px; border: 0; border-radius: 2px; background: #101615; color: #F6F7F4; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; cursor: pointer; white-space: nowrap">{{btnLabel}}</button>
+</div>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap">
+<div style="display: flex; gap: 2px; padding: 3px; border: 1px solid #D3D7CF; border-radius: 4px; background: #FFFFFF" aria-label="Card style">
+<sc-for list="{{styles}}" as="m" hint-placeholder-count="4">
+<button onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="height: 32px; padding: 0 12px; border: 0; border-radius: 2px; background: {{m.bg}}; color: {{m.fg}}; font-family: Archivo, sans-serif; font-weight: 500; font-size: 13px; cursor: pointer">{{m.label}}</button>
+</sc-for>
+</div>
+<div style="display: flex; gap: 2px; padding: 3px; border: 1px solid #D3D7CF; border-radius: 4px; background: #FFFFFF" aria-label="Preview theme">
+<sc-for list="{{modes}}" as="m" hint-placeholder-count="3">
+<button onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="height: 32px; padding: 0 12px; border: 0; border-radius: 2px; background: {{m.bg}}; color: {{m.fg}}; font-family: Archivo, sans-serif; font-weight: 500; font-size: 13px; cursor: pointer">{{m.label}}</button>
+</sc-for>
+</div>
+</div>
+<div style="position: relative; overflow: hidden; border-radius: 4px; background: {{t.page}}; padding: 24px; min-height: 470px; box-sizing: border-box">
+<div class="{{wrapCls}}">
+
+<sc-if value="{{isTiles}}" hint-placeholder-val="{{ true }}">
+<div style="box-sizing: border-box; background: {{t.surface}}; border: 1px solid {{t.rule}}; border-radius: 10px; padding: 22px; display: flex; flex-direction: column; gap: 18px">
+<div class="{{head.cls}}" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 3px">
+<div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: {{t.muted}}">pmndrs /</div>
+<div style="font-family: Archivo, sans-serif; font-weight: 700; font-size: 28px; line-height: 1.05; letter-spacing: -0.025em; color: {{t.ink}}">zustand</div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; color: {{t.muted}}"><div>TypeScript</div><div>59k stars</div></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 9px">
+<sc-for list="{{tiles}}" as="tl" hint-placeholder-count="6">
+<sc-if value="{{tl.isItem}}" hint-placeholder-val="{{ true }}">
+<div class="{{tl.cls}}" style="animation-delay: {{tl.delay}}; width: 104px; height: 96px; box-sizing: border-box; border-radius: 6px; background: {{tl.tint}}; border-top: 3px solid {{tl.color}}; padding: 6px 9px 8px; display: flex; flex-direction: column; justify-content: space-between">
+<div style="display: flex; justify-content: flex-end; height: 11px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; line-height: 1; color: {{tl.muted}}">{{tl.v}}</div>
+<div style="font-family: Archivo, sans-serif; font-weight: 700; font-size: 32px; line-height: 1; letter-spacing: -0.03em; color: {{tl.color}}">{{tl.sym}}</div>
+<div style="font-family: Archivo, sans-serif; font-weight: 500; font-size: 11.5px; line-height: 13px; max-height: 26px; overflow: hidden; color: {{tl.ink}}">{{tl.n}}</div>
+</div>
+</sc-if>
+<sc-if value="{{tl.isMore}}" hint-placeholder-val="{{ false }}">
+<div class="{{tl.cls}}" style="animation-delay: {{tl.delay}}; width: 104px; height: 96px; box-sizing: border-box; border-radius: 6px; border: 1px dashed {{tl.color}}; padding: 8px 9px; display: flex; flex-direction: column; justify-content: center; gap: 2px">
+<div style="font-family: Archivo, sans-serif; font-weight: 700; font-size: 26px; line-height: 1; color: {{tl.color}}">{{tl.more}}</div>
+<div style="font-family: Archivo, sans-serif; font-weight: 500; font-size: 11.5px; color: {{tl.muted}}">more</div>
+</div>
+</sc-if>
+</sc-for>
+</div>
+<div class="{{foot.cls}}" style="animation-delay: {{foot.delay}}; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap">
+<div style="display: flex; gap: 16px; flex-wrap: wrap">
+<sc-for list="{{legend}}" as="lg" hint-placeholder-count="4">
+<span style="display: inline-flex; align-items: center; gap: 6px; font-family: Archivo, sans-serif; font-weight: 500; font-size: 12px; color: {{t.muted}}"><span style="width: 9px; height: 9px; border-radius: 2px; background: {{lg.color}}; display: inline-block"></span>{{lg.name}}</span>
+</sc-for>
+</div>
+<span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; color: {{t.muted}}">stackshot.ilerioluwa.com</span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isTerminal}}" hint-placeholder-val="{{ false }}">
+<div style="box-sizing: border-box; background: {{t.term}}; border: 1px solid {{t.rule}}; border-radius: 8px; padding: 16px 20px 14px; display: flex; flex-direction: column; gap: 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace">
+<div class="{{head.cls}}" style="font-size: 12px; color: {{t.muted}}"><span style="color: {{t.accent}}; font-weight: 600">$</span> stackshot pmndrs/zustand</div>
+<div class="{{head.cls}}" style="animation-delay: 90ms; display: flex; justify-content: space-between; align-items: baseline; gap: 16px">
+<span style="font-weight: 700; font-size: 18px; color: {{t.ink}}">pmndrs/zustand</span>
+<span style="display: flex; gap: 14px; font-size: 12px; color: {{t.muted}}"><span>TypeScript</span><span>59k stars</span></span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<sc-for list="{{rows}}" as="l" hint-placeholder-count="4">
+<div class="{{l.cls}}" style="animation-delay: {{l.delay}}; display: flex; gap: 10px; align-items: flex-start">
+<div style="width: 122px; flex-shrink: 0; font-size: 13.5px; line-height: 19px; white-space: nowrap"><span style="color: {{t.muted}}">{{l.glyph}}</span> <span style="font-weight: 600; color: {{l.color}}">{{l.key}}</span></div>
+<div style="display: flex; flex-wrap: wrap; column-gap: 14px; row-gap: 2px; min-width: 0; font-size: 13.5px; line-height: 19px">
+<sc-for list="{{l.items}}" as="it" hint-placeholder-count="3">
+<span style="color: {{t.ink}}; white-space: nowrap">{{it.n}}<sc-if value="{{it.hasV}}" hint-placeholder-val="{{ true }}"><span style="color: {{t.muted}}; margin-left: 6px">{{it.v}}</span></sc-if></span>
+</sc-for>
+<sc-if value="{{l.hasMore}}" hint-placeholder-val="{{ false }}"><span style="color: {{t.muted}}; white-space: nowrap">{{l.more}}</span></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: {{t.muted}}">
+<span>stackshot.ilerioluwa.com</span>
+<sc-if value="{{cursorOn}}" hint-placeholder-val="{{ true }}"><span class="cursor-in" style="animation-delay: {{cursorDelay}}, {{cursorDelay}}; display: inline-block; width: 8px; height: 14px; background: {{t.accent}}"></span></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isTags}}" hint-placeholder-val="{{ false }}">
+<div style="box-sizing: border-box; background: {{t.surface}}; border: 1px solid {{t.rule}}; border-radius: 12px; padding: 20px 22px 16px; display: flex; flex-direction: column; gap: 16px">
+<div class="{{head.cls}}" style="display: flex; justify-content: space-between; align-items: center; gap: 16px">
+<div style="display: flex; align-items: baseline; gap: 6px">
+<span style="font-family: Archivo, sans-serif; font-size: 16px; color: {{t.muted}}">pmndrs /</span>
+<span style="font-family: Archivo, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.015em; color: {{t.ink}}">zustand</span>
+</div>
+<div style="display: flex; gap: 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: {{t.muted}}"><span>TypeScript</span><span>59k stars</span></div>
+</div>
+<div style="height: 1px; background: {{t.rule}}"></div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<sc-for list="{{pillRows}}" as="l" hint-placeholder-count="4">
+<div style="display: flex; gap: 14px; align-items: flex-start">
+<div class="{{l.cls}}" style="animation-delay: {{l.delay}}; width: 76px; flex-shrink: 0; padding-top: 5px; font-family: Archivo, sans-serif; font-weight: 500; font-size: 13px; color: {{t.muted}}">{{l.name}}</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px; min-width: 0">
+<sc-for list="{{l.items}}" as="it" hint-placeholder-count="3">
+<span class="{{it.cls}}" style="animation-delay: {{it.delay}}; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; border-radius: 999px; background: {{it.tint}}; white-space: nowrap">
+<span style="width: 7px; height: 7px; border-radius: 999px; background: {{it.color}}; display: inline-block"></span>
+<span style="font-family: Archivo, sans-serif; font-weight: 500; font-size: 13.5px; color: {{t.ink}}">{{it.n}}</span>
+<sc-if value="{{it.hasV}}" hint-placeholder-val="{{ true }}"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: {{t.muted}}">{{it.v}}</span></sc-if>
+</span>
+</sc-for>
+<sc-if value="{{l.hasMore}}" hint-placeholder-val="{{ false }}"><span class="{{l.moreCls}}" style="animation-delay: {{l.moreDelay}}; display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; border: 1px dashed {{t.rule}}; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: {{t.muted}}; white-space: nowrap">{{l.more}}</span></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10.5px; color: {{t.muted}}">
+<span>stackshot.ilerioluwa.com</span>
+<span style="width: 18px; height: 3px; background: {{t.accent}}; display: inline-block"></span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isSheet}}" hint-placeholder-val="{{ false }}">
+<div style="box-sizing: border-box; background: {{t.sheet}}; border: 2px solid {{t.ink}}; border-radius: 2px; display: flex; flex-direction: column">
+<div style="height: 4px; background: {{t.accent}}"></div>
+<div class="{{head.cls}}" style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding: 18px 24px 16px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; color: {{t.muted}}">pmndrs/</div>
+<div style="font-family: Archivo, sans-serif; font-weight: 600; font-size: 30px; line-height: 1.05; letter-spacing: -0.02em; color: {{t.ink}}">zustand</div>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: {{t.muted}}"><div>TypeScript</div><div>59k stars</div></div>
+</div>
+<div class="{{headRule.cls}}" style="animation-delay: 80ms; height: 4px; background: {{t.ink}}"></div>
+<sc-for list="{{sheetRows}}" as="l" hint-placeholder-count="4">
+<div>
+<div class="{{l.cls}}" style="animation-delay: {{l.delay}}; display: flex; gap: 16px; align-items: baseline; padding: 12px 24px">
+<div style="width: 92px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-weight: 600; font-size: 10.5px; letter-spacing: 0.14em; color: {{t.muted}}">
+<span style="width: 8px; height: 8px; flex-shrink: 0; background: {{l.color}}; display: inline-block"></span><span>{{l.name}}</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; column-gap: 18px; row-gap: 6px; align-items: baseline; min-width: 0">
+<sc-for list="{{l.items}}" as="it" hint-placeholder-count="3">
+<span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 16px; color: {{t.ink}}; white-space: nowrap">{{it.n}}<sc-if value="{{it.hasV}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; color: {{t.muted}}; margin-left: 5px">{{it.v}}</span></sc-if></span>
+</sc-for>
+<sc-if value="{{l.hasMore}}" hint-placeholder-val="{{ false }}"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: {{t.muted}}; white-space: nowrap">{{l.more}}</span></sc-if>
+</div>
+</div>
+<sc-if value="{{l.hasRule}}" hint-placeholder-val="{{ true }}"><div class="{{l.ruleCls}}" style="animation-delay: {{l.ruleDelay}}; height: 1px; margin: 0 24px; background: {{t.rule}}"></div></sc-if>
+</div>
+</sc-for>
+<div style="padding: 12px 24px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: {{t.muted}}; border-top: 1px solid {{t.rule}}">stackshot.ilerioluwa.com</div>
+</div>
+</sc-if>
+
+</div>
+<sc-if value="{{busy}}" hint-placeholder-val="{{ false }}">
+<div class="scan" style="background: linear-gradient(to bottom, transparent, {{t.wake}}); border-bottom: 2px solid {{t.accent}}; box-shadow: 0 8px 18px -6px {{t.accent}}"></div>
+</sc-if>
+</div>
+<div aria-live="polite" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5A625E; min-height: 16px">{{status}}</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":820,"height":900}}'>
+const REPO = { layers: [
+  { k: 'frontend', name: 'Frontend', more: 0, items: [['React', '19', 'Re']] },
+  { k: 'backend', name: 'Backend', more: 0, items: [['Node', '', 'No']] },
+  { k: 'infra', name: 'Infra', more: 0, items: [['GitHub Actions', '', 'Ga']] },
+  { k: 'tooling', name: 'Tooling', more: 3, items: [['Vitest', '4', 'Vt'], ['pnpm', '11', 'Pn'], ['TypeScript', '6', 'Ts'], ['esbuild', '0.28', 'Eb'], ['Rollup', '4', 'Ru'], ['ESLint', '9', 'El']] },
+] };
+const THEMES = {
+  light: { page: '#ffffff', surface: '#FFFFFF', sheet: '#F6F7F4', term: '#FAFAF7', ink: '#101615', muted: '#5A625E', rule: '#D8DCD4', accent: '#C8461E', wake: '#C8461E22',
+    layer: { frontend: ['#2458C4', '#E4ECFA'], backend: ['#1B7F52', '#E0F1E7'], infra: ['#9A5F0E', '#F5EAD6'], tooling: ['#596068', '#EAECED'] } },
+  dark: { page: '#0d1117', surface: '#12171C', sheet: '#12171C', term: '#0A0D10', ink: '#DDE2DD', muted: '#8B9490', rule: '#2A3136', accent: '#FF6B3D', wake: '#FF6B3D26',
+    layer: { frontend: ['#7FAEFF', '#14223A'], backend: ['#5CC896', '#10291D'], infra: ['#E5AE58', '#2A2111'], tooling: ['#A8AEB5', '#1C2126'] } },
+};
+function seg(options, current, pick) {
+  return options.map(([k, label]) => {
+    const on = current === k;
+    return { label, pressed: on ? 'true' : 'false', bg: on ? '#101615' : 'transparent', fg: on ? '#F6F7F4' : '#3F4744', pick: () => pick(k) };
+  });
+}
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { style: 'tiles', mode: 'system', sysDark: false, phase: 'idle', url: 'https://github.com/pmndrs/zustand' };
+  }
+  componentDidMount() {
+    try {
+      this._mq = window.matchMedia('(prefers-color-scheme: dark)');
+      this._onMq = (e) => this.setState({ sysDark: e.matches });
+      this.setState({ sysDark: this._mq.matches });
+      this._mq.addEventListener('change', this._onMq);
+    } catch (e) {}
+  }
+  componentWillUnmount() {
+    if (this._mq) this._mq.removeEventListener('change', this._onMq);
+    clearTimeout(this._t1);
+    clearTimeout(this._t2);
+  }
+  generate() {
+    const p = this.state.phase;
+    if (p === 'reading' || p === 'drawing') return;
+    this.setState({ phase: 'reading' });
+    this._t1 = setTimeout(() => this.setState({ phase: 'drawing' }), 1300);
+    this._t2 = setTimeout(() => this.setState({ phase: 'done' }), 2100);
+  }
+  renderVals() {
+    const s = this.state;
+    const dark = s.mode === 'dark' || (s.mode === 'system' && s.sysDark);
+    const t = dark ? THEMES.dark : THEMES.light;
+    const busy = s.phase === 'reading' || s.phase === 'drawing';
+    const on = !busy;
+    const c = (name) => (on ? name : '');
+
+    const tiles = [];
+    REPO.layers.forEach((l) => {
+      const color = t.layer[l.k][0];
+      const tint = t.layer[l.k][1];
+      l.items.forEach((it) => tiles.push({ isItem: true, isMore: false, n: it[0], v: it[1], sym: it[2], color, tint, ink: t.ink, muted: t.muted }));
+      if (l.more > 0) tiles.push({ isItem: false, isMore: true, more: '+' + l.more, color, muted: t.muted });
+    });
+    tiles.forEach((tl, i) => { tl.cls = c('a-tile'); tl.delay = (120 + i * 45) + 'ms'; });
+
+    const last = REPO.layers.length - 1;
+    const rows = REPO.layers.map((l, i) => ({
+      cls: c('a-row'), delay: (200 + i * 150) + 'ms',
+      glyph: i === last ? '└──' : '├──', key: l.k, color: t.layer[l.k][0],
+      hasMore: l.more > 0, more: '+' + l.more + ' more',
+      items: l.items.map((it) => ({ n: it[0], v: it[1], hasV: !!it[1] })),
+    }));
+
+    let pillIndex = 0;
+    const pillRows = REPO.layers.map((l, i) => {
+      const items = l.items.map((it) => ({
+        n: it[0], v: it[1], hasV: !!it[1], color: t.layer[l.k][0], tint: t.layer[l.k][1],
+        cls: c('a-pop'), delay: (140 + (pillIndex++) * 40) + 'ms',
+      }));
+      return {
+        name: l.name, cls: c('a-row'), delay: (100 + i * 80) + 'ms', items,
+        hasMore: l.more > 0, more: '+' + l.more + ' more', moreCls: c('a-pop'), moreDelay: (140 + (pillIndex++) * 40) + 'ms',
+      };
+    });
+
+    const sheetRows = REPO.layers.map((l, i) => ({
+      name: l.name.toUpperCase(), color: t.layer[l.k][0],
+      cls: c('a-row'), delay: (160 + i * 130) + 'ms',
+      hasRule: i !== last, ruleCls: c('a-rule'), ruleDelay: (230 + i * 130) + 'ms',
+      hasMore: l.more > 0, more: '+' + l.more + ' more',
+      items: l.items.map((it) => ({ n: it[0], v: it[1], hasV: !!it[1] })),
+    }));
+
+    return {
+      url: s.url,
+      onUrl: (e) => this.setState({ url: e.target.value }),
+      generate: () => this.generate(),
+      busy,
+      btnLabel: s.phase === 'reading' ? 'Reading repo' : s.phase === 'drawing' ? 'Drawing card' : 'Generate card',
+      styles: seg([['tiles', 'Tiles'], ['terminal', 'Terminal'], ['tags', 'Tags'], ['sheet', 'Datasheet']], s.style, (k) => this.setState({ style: k })),
+      modes: seg([['light', 'Light'], ['dark', 'Dark'], ['system', 'System']], s.mode, (k) => this.setState({ mode: k })),
+      t,
+      wrapCls: busy ? 'dimmed' : 'shown',
+      isTiles: s.style === 'tiles', isTerminal: s.style === 'terminal', isTags: s.style === 'tags', isSheet: s.style === 'sheet',
+      head: { cls: c('a-row') },
+      headRule: { cls: c('a-rule') },
+      foot: { cls: c('a-row'), delay: (160 + tiles.length * 45) + 'ms' },
+      tiles,
+      legend: REPO.layers.map((l) => ({ name: l.name, color: t.layer[l.k][0] })),
+      rows,
+      cursorOn: on,
+      cursorDelay: (200 + REPO.layers.length * 150) + 'ms',
+      pillRows,
+      sheetRows,
+      status: s.phase === 'reading' ? 'Reading pmndrs/zustand' : s.phase === 'drawing' ? 'Drawing the card' : '',
+    };
+  }
+}
+</script>
+</body>
+</html>
