@@ -1466,6 +1466,61 @@ Two things worth keeping:
   nothing about whether the browser applies them conditionally. A test over static text
   cannot see a build-time directive ignoring its context. The screenshot pass is the check.
 
+## 047 — The style designs ask for three weights we don't ship, and one of them doesn't exist
+**Date:** 2026-09-29 · **Cost:** ~0.5h · **Status:** fixed
+**Writeup material:** yes — the third time this font's weight set has cost something
+
+The four card styles were drawn in Archivo 500/700 and Commit Mono 600. We ship Archivo
+400/600 and Commit Mono 400/700. Every style was affected and nothing would have failed
+loudly: Satori picks the nearest face it has, so the cards would simply have rendered in
+the wrong weight.
+
+**Commit Mono 600 does not exist at all** — the release carries 400 and 700 only, which is
+GOTCHAS 014 for the third time, and the second time a *document* asked for a weight the
+font never had (GOTCHAS 045 was the first). Terminal wanted it twice and Datasheet once.
+All of them become 700.
+
+Archivo gained a real file. 700 is shipped because the tile symbol is Tiles' signature at
+64 units, where 600 reads visibly light. 500 is remapped to 400 rather than shipped,
+because tile names are 23 units — the difference is invisible at every ratio we render
+for, and a font file is ~190 KB in the deployment for nothing.
+
+`Archivo-Bold.ttf` is Omnibus-Type v2.001, the same version string as the two already
+committed. Verified from the bytes before shipping rather than from the download page:
+sfnt `0x00010000` (TrueType, not the OTF trap), `usWeightClass` 700, and **no `ltag`
+table** — the thing that made the release OTFs unusable in GOTCHAS 015.
+
+Adding a face to `FONTS` could have moved existing output, since it changes what Satori
+resolves against. It did not: all 14 committed render hashes came back byte-identical,
+because nothing asks for 700 yet. So no `RENDER_VERSION` bump. Worth checking rather than
+assuming — a font that *had* shifted the fallback would have silently changed every card.
+
+## 048 — Tiles misses five-across by four units, and the fix was already in the tokens
+**Date:** 2026-09-29 · **Cost:** ~0.4h · **Status:** fixed
+**Writeup material:** yes — a four-unit number deciding fifteen percent of the card
+
+Doubling the design's values gave a card with **four** tiles per row, not five. Five tiles
+need `5×208 + 4×18 = 1112` units; the design's 44-unit padding and 2-unit border leave
+1108. Four short.
+
+This is latent in the design file, not a porting error: at its 600px draw the same
+arithmetic gives 554 against the 556 five tiles need, so it wraps to four there too. It is
+invisible in a design canvas because the tiles simply flow.
+
+The cost is a whole extra row on dense repos. Setting the card's padding to **32** —
+which is `CARD.padding`, already used by the Datasheet card, and on DESIGN's 4-unit
+spacing scale, where the design's 44 is not — gives five across:
+
+```
+vercel/next.js     1523 -> 1289 units   (-15%)
+pmndrs/zustand      893 ->  659 units   (-26%)
+```
+
+The lesson for the remaining three styles: **"multiply every value by 2" preserves
+proportions but not fit.** Anything that wraps, fits, or divides has to be re-derived
+against the 1200-unit canvas rather than scaled, and the design's own draw width is not
+evidence that it fits, because a design canvas reflows silently where a card cannot.
+
 ---
 
 *New entries go above this line as they happen.*
