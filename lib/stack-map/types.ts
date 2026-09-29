@@ -8,6 +8,16 @@ export type MapEntry = {
   // Bare and kebab-case: "next", "postgres". Never namespaced.
   id: string;
   display: string;
+  /**
+   * The Tiles symbol: one capital, one lowercase letter or digit, unique across the map.
+   * Required, because an optional one ships a blank tile without saying so.
+   *
+   * Committed data, never derived. A symbol is baked into every cached PNG containing it,
+   * so deriving it would make it depend on map order — adding one entry could silently
+   * change another's and invalidate cards nobody touched. `scripts/symbols.ts` proposes;
+   * a human picks; `tests/stack-map.test.ts` keeps them unique.
+   */
+  symbol: string;
   category: Category;
   // Rank within the layer. 90+ defines the project, 70s core, 50s notable, below 40 filler.
   weight: number;

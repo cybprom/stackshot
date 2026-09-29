@@ -171,6 +171,8 @@ lib/
 scripts/
   check-env.ts                   runs before `next build`; missing config fails the deploy
   record-github.ts               records GitHub responses into tests/fixtures/github/
+  symbols.ts                     proposes the Tiles two-letter symbols; --write applies
+  symbol-sheet.ts                every map entry as a tile, for reading them as a stranger
   render-cards.ts                every fixture card and error card to PNG, for looking at
   resolve.ts                     pnpm tsx scripts/resolve.ts owner/repo -> StackDoc JSON
 tests/

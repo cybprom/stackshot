@@ -6,6 +6,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "docker",
     display: "Docker",
+    symbol: "Do",
     category: "infra",
     weight: 74,
     description: "Containers for building and running the app.",
@@ -14,6 +15,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "github-actions",
     display: "GitHub Actions",
+    symbol: "Ga",
     category: "infra",
     weight: 58,
     description: "CI hosted alongside the repo.",
@@ -22,6 +24,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "github-pages",
     display: "GitHub Pages",
+    symbol: "Gh",
     category: "infra",
     weight: 62,
     description: "Static hosting from the repo.",
@@ -31,6 +34,7 @@ export const INFRA: MapEntry[] = [
     // @vercel/* packages (analytics, og, blob) only make sense deployed on Vercel.
     id: "vercel",
     display: "Vercel",
+    symbol: "Vc",
     category: "infra",
     weight: 80,
     description: "Deployment platform.",
@@ -41,6 +45,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "netlify",
     display: "Netlify",
+    symbol: "Nt",
     category: "infra",
     weight: 78,
     description: "Deployment platform.",
@@ -51,6 +56,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "cloudflare",
     display: "Cloudflare",
+    symbol: "Co",
     category: "infra",
     weight: 80,
     description: "Workers, Pages and edge platform.",
@@ -61,6 +67,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "aws",
     display: "AWS",
+    symbol: "Aa",
     category: "infra",
     weight: 78,
     description: "Amazon Web Services.",
@@ -81,6 +88,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "gcp",
     display: "Google Cloud",
+    symbol: "Gc",
     category: "infra",
     weight: 76,
     description: "Google Cloud Platform.",
@@ -91,6 +99,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "azure",
     display: "Azure",
+    symbol: "Az",
     category: "infra",
     weight: 76,
     description: "Microsoft Azure.",
@@ -101,6 +110,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "supabase",
     display: "Supabase",
+    symbol: "Su",
     category: "infra",
     weight: 80,
     description: "Postgres platform with auth, storage and APIs.",
@@ -111,6 +121,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "firebase",
     display: "Firebase",
+    symbol: "Fr",
     category: "infra",
     weight: 78,
     description: "Google's app backend platform.",
@@ -121,6 +132,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "neon",
     display: "Neon",
+    symbol: "Nn",
     category: "infra",
     weight: 70,
     description: "Serverless Postgres.",
@@ -131,6 +143,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "upstash",
     display: "Upstash",
+    symbol: "Up",
     category: "infra",
     weight: 66,
     description: "Serverless Redis and queues.",
@@ -141,6 +154,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "fly",
     display: "Fly.io",
+    symbol: "Fy",
     category: "infra",
     weight: 76,
     description: "App hosting close to users.",
@@ -149,6 +163,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "terraform",
     display: "Terraform",
+    symbol: "Tr",
     category: "infra",
     weight: 72,
     description: "Infrastructure as code.",
@@ -157,6 +172,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "nginx",
     display: "nginx",
+    symbol: "Ng",
     category: "infra",
     weight: 60,
     description: "Web server and reverse proxy.",
@@ -165,6 +181,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "caddy",
     display: "Caddy",
+    symbol: "Ca",
     category: "infra",
     weight: 60,
     description: "Web server with automatic HTTPS.",
@@ -174,6 +191,7 @@ export const INFRA: MapEntry[] = [
     // Monitoring is about the running system, not the code, so it sits in infra.
     id: "sentry",
     display: "Sentry",
+    symbol: "Sn",
     category: "infra",
     weight: 64,
     description: "Error tracking and performance monitoring.",
@@ -184,6 +202,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "opentelemetry",
     display: "OpenTelemetry",
+    symbol: "Op",
     category: "infra",
     weight: 58,
     description: "Vendor-neutral traces, metrics and logs.",
@@ -194,6 +213,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "datadog",
     display: "Datadog",
+    symbol: "Da",
     category: "infra",
     weight: 58,
     description: "Monitoring and APM.",
@@ -204,6 +224,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "prometheus",
     display: "Prometheus",
+    symbol: "Pk",
     category: "infra",
     weight: 56,
     description: "Metrics collection.",

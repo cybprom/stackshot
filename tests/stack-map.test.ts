@@ -32,6 +32,28 @@ describe("map integrity", () => {
     expect(ids.length).toBe(new Set(ids).size);
   });
 
+  /**
+   * Tiles draws the symbol and nothing else at thumbnail size, so a duplicate is two
+   * technologies that look identical on a card, and a malformed one is a blank tile. Both
+   * are silent without this. ADR-0029.
+   */
+  it("gives every entry a well-formed symbol", () => {
+    for (const entry of STACK_MAP) {
+      expect(entry.symbol, `${entry.id} (${entry.display})`).toMatch(/^[A-Z][a-z0-9]$/);
+    }
+  });
+
+  it("has no duplicate symbols", () => {
+    const seen = new Map<string, string>();
+    const clashes: string[] = [];
+    for (const entry of STACK_MAP) {
+      const first = seen.get(entry.symbol);
+      if (first) clashes.push(`${entry.symbol}: ${first} and ${entry.id}`);
+      else seen.set(entry.symbol, entry.id);
+    }
+    expect(clashes, "run `pnpm tsx scripts/symbols.ts` to see who holds what").toEqual([]);
+  });
+
   it("namespaces every alias with a known ecosystem, and globs only as a trailing *", () => {
     for (const entry of STACK_MAP) {
       for (const alias of entry.aliases) {

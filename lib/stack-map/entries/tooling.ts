@@ -5,6 +5,7 @@ export const TOOLING: MapEntry[] = [
     // The monorepo signal ADR-0001 wants rendered; it makes plain "pnpm" redundant.
     id: "pnpm-workspaces",
     display: "pnpm workspaces",
+    symbol: "Pn",
     category: "tooling",
     weight: 82,
     description: "pnpm monorepo with multiple packages.",
@@ -14,6 +15,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "turborepo",
     display: "Turborepo",
+    symbol: "Tb",
     category: "tooling",
     weight: 84,
     description: "Build system for JavaScript monorepos.",
@@ -22,6 +24,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "nx",
     display: "Nx",
+    symbol: "Nx",
     category: "tooling",
     weight: 84,
     description: "Monorepo build system.",
@@ -30,6 +33,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "lerna",
     display: "Lerna",
+    symbol: "Le",
     category: "tooling",
     weight: 70,
     description: "Monorepo versioning and publishing.",
@@ -38,6 +42,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "changesets",
     display: "Changesets",
+    symbol: "Cn",
     category: "tooling",
     weight: 50,
     description: "Versioning and changelogs for packages.",
@@ -46,6 +51,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "pnpm",
     display: "pnpm",
+    symbol: "Pm",
     category: "tooling",
     weight: 60,
     description: "Package manager with a content-addressed store.",
@@ -54,6 +60,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "yarn",
     display: "Yarn",
+    symbol: "Ya",
     category: "tooling",
     weight: 58,
     description: "JavaScript package manager.",
@@ -63,6 +70,7 @@ export const TOOLING: MapEntry[] = [
     // The default, so it says the least; kept so a lone npm project isn't blank.
     id: "npm",
     display: "npm",
+    symbol: "Np",
     category: "tooling",
     weight: 20,
     description: "Node's default package manager.",
@@ -72,6 +80,7 @@ export const TOOLING: MapEntry[] = [
     // Detected from its lockfile, i.e. as a package manager; it's also a runtime.
     id: "bun",
     display: "Bun",
+    symbol: "Bu",
     category: "tooling",
     weight: 64,
     description: "JavaScript runtime, package manager and bundler.",
@@ -80,6 +89,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "uv",
     display: "uv",
+    symbol: "Uv",
     category: "tooling",
     weight: 64,
     description: "Fast Python package and project manager.",
@@ -88,6 +98,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "poetry",
     display: "Poetry",
+    symbol: "Pb",
     category: "tooling",
     weight: 60,
     description: "Python dependency management and packaging.",
@@ -96,6 +107,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "vite",
     display: "Vite",
+    symbol: "Vi",
     category: "tooling",
     weight: 76,
     description: "Dev server and bundler.",
@@ -106,6 +118,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "webpack",
     display: "webpack",
+    symbol: "Wp",
     category: "tooling",
     weight: 62,
     description: "Module bundler.",
@@ -114,6 +127,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "esbuild",
     display: "esbuild",
+    symbol: "Eb",
     category: "tooling",
     weight: 54,
     description: "Fast JavaScript bundler.",
@@ -122,6 +136,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "rollup",
     display: "Rollup",
+    symbol: "Ru",
     category: "tooling",
     weight: 54,
     description: "Module bundler for libraries.",
@@ -130,6 +145,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "parcel",
     display: "Parcel",
+    symbol: "Pg",
     category: "tooling",
     weight: 56,
     description: "Zero-config bundler.",
@@ -138,6 +154,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "tsup",
     display: "tsup",
+    symbol: "Tu",
     category: "tooling",
     weight: 46,
     description: "TypeScript library bundler.",
@@ -146,6 +163,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "swc",
     display: "SWC",
+    symbol: "Sh",
     category: "tooling",
     weight: 50,
     description: "Rust-based JavaScript compiler.",
@@ -156,6 +174,7 @@ export const TOOLING: MapEntry[] = [
     // The header usually names TypeScript already, so this ranks low.
     id: "typescript",
     display: "TypeScript",
+    symbol: "Ts",
     category: "tooling",
     weight: 56,
     description: "Typed JavaScript.",
@@ -164,6 +183,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "eslint",
     display: "ESLint",
+    symbol: "El",
     category: "tooling",
     weight: 50,
     description: "Linter.",
@@ -172,6 +192,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "biome",
     display: "Biome",
+    symbol: "Bi",
     category: "tooling",
     weight: 54,
     description: "Formatter and linter.",
@@ -180,6 +201,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "oxc",
     display: "Oxc",
+    symbol: "Ox",
     category: "tooling",
     weight: 52,
     description: "Rust-based linter and formatter.",
@@ -188,6 +210,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "prettier",
     display: "Prettier",
+    symbol: "Pv",
     category: "tooling",
     weight: 44,
     description: "Code formatter.",
@@ -196,6 +219,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "dprint",
     display: "dprint",
+    symbol: "Dp",
     category: "tooling",
     weight: 40,
     description: "Pluggable code formatter.",
@@ -204,6 +228,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "stylelint",
     display: "Stylelint",
+    symbol: "Sj",
     category: "tooling",
     weight: 36,
     description: "CSS linter.",
@@ -212,6 +237,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "postcss",
     display: "PostCSS",
+    symbol: "Pz",
     category: "tooling",
     weight: 38,
     description: "CSS transforms via plugins.",
@@ -220,6 +246,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "autoprefixer",
     display: "Autoprefixer",
+    symbol: "Ar",
     category: "tooling",
     weight: 24,
     description: "Vendor prefixes for CSS.",
@@ -228,6 +255,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "vitest",
     display: "Vitest",
+    symbol: "Vt",
     category: "tooling",
     weight: 64,
     description: "Test runner.",
@@ -236,6 +264,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "jest",
     display: "Jest",
+    symbol: "Je",
     category: "tooling",
     weight: 62,
     description: "Test runner.",
@@ -244,6 +273,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "mocha",
     display: "Mocha",
+    symbol: "Mc",
     category: "tooling",
     weight: 54,
     description: "Test framework.",
@@ -252,6 +282,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "playwright",
     display: "Playwright",
+    symbol: "Pl",
     category: "tooling",
     weight: 62,
     description: "Browser automation and end-to-end tests.",
@@ -260,6 +291,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "cypress",
     display: "Cypress",
+    symbol: "Cy",
     category: "tooling",
     weight: 60,
     description: "End-to-end browser tests.",
@@ -268,6 +300,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "testing-library",
     display: "Testing Library",
+    symbol: "Tl",
     category: "tooling",
     weight: 46,
     description: "DOM testing utilities.",
@@ -277,6 +310,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "storybook",
     display: "Storybook",
+    symbol: "Sg",
     category: "tooling",
     weight: 56,
     description: "UI component workshop.",
@@ -285,6 +319,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "msw",
     display: "MSW",
+    symbol: "Ms",
     category: "tooling",
     weight: 40,
     description: "API mocking via service workers.",
@@ -293,6 +328,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "pytest",
     display: "pytest",
+    symbol: "Pe",
     category: "tooling",
     weight: 62,
     description: "Python test framework.",
@@ -301,6 +337,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "ruff",
     display: "Ruff",
+    symbol: "Rf",
     category: "tooling",
     weight: 58,
     description: "Fast Python linter and formatter.",
@@ -309,6 +346,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "mypy",
     display: "mypy",
+    symbol: "Mp",
     category: "tooling",
     weight: 52,
     description: "Static type checker for Python.",
@@ -317,6 +355,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "ty",
     display: "ty",
+    symbol: "Tt",
     category: "tooling",
     weight: 50,
     description: "Fast Python type checker.",
@@ -325,6 +364,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "black",
     display: "Black",
+    symbol: "Bl",
     category: "tooling",
     weight: 44,
     description: "Python code formatter.",
@@ -333,6 +373,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "flake8",
     display: "Flake8",
+    symbol: "Fk",
     category: "tooling",
     weight: 38,
     description: "Python linter.",
@@ -341,6 +382,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "pre-commit",
     display: "pre-commit",
+    symbol: "P0",
     category: "tooling",
     weight: 36,
     description: "Git hook framework.",
@@ -350,6 +392,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "goreleaser",
     display: "GoReleaser",
+    symbol: "Ge",
     category: "tooling",
     weight: 56,
     description: "Release automation for Go.",
@@ -358,6 +401,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "golangci-lint",
     display: "golangci-lint",
+    symbol: "Gl",
     category: "tooling",
     weight: 50,
     description: "Go linters runner.",
@@ -366,6 +410,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "testify",
     display: "testify",
+    symbol: "Ti",
     category: "tooling",
     weight: 46,
     description: "Go testing toolkit.",
@@ -374,6 +419,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "insta",
     display: "insta",
+    symbol: "Is",
     category: "tooling",
     weight: 40,
     description: "Snapshot testing for Rust.",
@@ -382,6 +428,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "rspec",
     display: "RSpec",
+    symbol: "Rp",
     category: "tooling",
     weight: 60,
     description: "Ruby testing framework.",
@@ -391,6 +438,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "rubocop",
     display: "RuboCop",
+    symbol: "Rg",
     category: "tooling",
     weight: 50,
     description: "Ruby linter and formatter.",
@@ -400,6 +448,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "capybara",
     display: "Capybara",
+    symbol: "Cp",
     category: "tooling",
     weight: 44,
     description: "Acceptance tests for Ruby web apps.",
@@ -408,6 +457,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "phpunit",
     display: "PHPUnit",
+    symbol: "Pc",
     category: "tooling",
     weight: 58,
     description: "PHP testing framework.",
@@ -416,6 +466,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "pest",
     display: "Pest",
+    symbol: "Ps",
     category: "tooling",
     weight: 60,
     description: "PHP testing framework.",
@@ -425,6 +476,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "pint",
     display: "Pint",
+    symbol: "Pw",
     category: "tooling",
     weight: 42,
     description: "Laravel's PHP code style fixer.",
@@ -433,6 +485,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "phpstan",
     display: "PHPStan",
+    symbol: "Pq",
     category: "tooling",
     weight: 50,
     description: "Static analysis for PHP.",

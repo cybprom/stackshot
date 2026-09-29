@@ -1521,6 +1521,50 @@ proportions but not fit.** Anything that wraps, fits, or divides has to be re-de
 against the 1200-unit canvas rather than scaled, and the design's own draw width is not
 evidence that it fits, because a design canvas reflows silently where a card cannot.
 
+## 049 — Whoever is allocated first gets the good letters, and the order was arbitrary
+**Date:** 2026-09-29 · **Cost:** ~0.9h · **Status:** fixed
+**Writeup material:** yes — three orderings, three different sets of wrong answers
+
+Tiles needs a unique two-letter symbol for each of 225 map entries. Two letters give 2704
+combinations against 225 entries, so it looks like there is room. There is not: names
+cluster on initials — nine begin with P, fourteen with S — and **whoever is allocated
+first takes the letters everyone else wanted.**
+
+Three orderings, each producing a different set of indefensible symbols:
+
+```
+declaration order   TypeScript -> Tc   ESLint -> Ei    PHPStan -> P0
+                    (frontend and backend drained the pool before tooling was reached)
+
+by weight           Python -> Pk       Rust -> Rg      PHP -> Pj
+                    (weight ranks WITHIN a layer, and types.ts deliberately depresses
+                     languages because "the header already names the primary language")
+
+by weight + anchors  the 19 left over are all genuinely scarce, and none is a language
+                     or a household name
+```
+
+The second was worse than the first, which is the part worth remembering: a rule that
+sounds principled — "allocate by importance" — was reading a field that does not mean what
+it appeared to mean. `weight` is documented as a within-layer rank in the line directly
+above it, and nothing enforced that reading.
+
+Two anchor groups fixed it. **Languages and runtimes**, whose low weight is a card-ranking
+decision with nothing to do with symbols. And **the designer's own 26 picks**, which were
+sitting in `docs/design/directions/tiles.dc.html` the whole time: the ladder had given
+Tailwind `Ti` and webpack `We` while `Tw` and `Wp` sat unclaimed, because it takes the
+first available letter in name order rather than the idiomatic one. A hand-lettered tile
+in a design file is a decision, and it beat three generations of heuristic.
+
+What remains is honest scarcity — nineteen entries on crowded initials — and the generator
+reports **who holds the letter each one wanted**, because the reviewer's real choice is a
+trade rather than an invention.
+
+**The reason any of this matters:** a symbol is baked into every cached PNG containing it.
+Changing one after launch means a `RENDER_VERSION` bump and every card carrying it
+re-rendered. Getting the allocation right before the renderer exists is the cheap moment,
+and it is the only one.
+
 ---
 
 *New entries go above this line as they happen.*

@@ -74,7 +74,18 @@ Last done:  STYLES PHASE 1 — plumbing. CardStyle + URL + cache key + the
             RESOLVE rather than request, IP from x-vercel-forwarded-for only
             (spoofing verified ineffective live), unmapped logged not
             returned.
-Next:       PHASE 2 — Tiles. Two halves: the 225 two-letter symbols
+Next:       PHASE 2, SECOND HALF — the Tiles Satori tree. The symbols are
+            done and awaiting the author's review of the contact sheet in
+            docs/spike/styles/ (one real conflict: the design wants Nx for
+            Next.js and Nx is another entry's literal name; 19 more on
+            crowded initials). Symbols are data now: lib/stack-map/types.ts
+            requires `symbol`, tests/stack-map.test.ts enforces
+            /^[A-Z][a-z0-9]$/ and uniqueness, and CHANGING ONE AFTER A CARD
+            IS CACHED NEEDS A RENDER_VERSION BUMP.
+            Then: build the tree against lib/render/tiles-layout.ts, replace
+            the stand-in in lib/render/styles.ts, BUMP RENDER_VERSION, and
+            regenerate tests/fixtures/render-hashes.json.
+            Was: PHASE 2 — Tiles. Two halves: the 225 two-letter symbols
             (scripts/symbols.ts proposes on a ladder and REFUSES to
             auto-resolve collisions, because a symbol is baked into every
             cached PNG and order-dependence would silently invalidate cards

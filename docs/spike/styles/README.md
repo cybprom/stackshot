@@ -101,3 +101,87 @@ and the card grows a row. This is latent in the design file too, which misses it
 its 600px draw. Setting the card's padding to **32 — already `CARD.padding`, and on
 DESIGN's spacing scale, where the design's 44 is not** — gives five across. All numbers
 above are at 32, with the three-row cap. GOTCHAS 048.
+
+
+---
+
+# Phase 2 — the 225 symbols, for review
+
+Every map entry drawn as a real Tiles tile by `scripts/symbol-sheet.ts`, with the real
+fonts and tokens, because the question is whether a symbol reads *on a card* rather than
+whether it looks sensible in a table. The small grey label is the layer.
+
+| light | dark |
+|---|---|
+| ![symbols, light](./symbols-light.png) | ![symbols, dark](./symbols-dark.png) |
+
+## How these were chosen
+
+`scripts/symbols.ts` proposes; it does not decide. The ladder is the periodic table's own
+rule — the first two letters, or the first plus a later one where that is taken — with
+both initials tried first for multi-word names, because `Ga` says GitHub Actions and `Gi`
+says nothing.
+
+Two groups are anchored before anything is derived, and neither is taste:
+
+- **The designer's 26 picks**, read off `docs/design/directions/tiles.dc.html`. Where a
+  real decision already existed it outranks a heuristic. The ladder had given Tailwind
+  `Ti` and webpack `We` while `Tw` and `Wp` sat free, because it takes the first available
+  letter in name order rather than the idiomatic one.
+- **Languages and runtimes**, because `weight` ranks within a layer and types.ts
+  deliberately depresses them — "the header already names the primary language" — which
+  has nothing to do with symbols. Without this, sorting by weight hands Python `Pk` and
+  Rust `Rg`.
+
+Everything else is allocated in descending `weight`, ties by id. That is a knowingly
+imperfect proxy: weight is a within-layer rank, so Gatsby outranks GitHub Actions, which
+far more readers will actually see. Allocation really wants frequency across repos, which
+we will not have until ADR-0012's counters run.
+
+## What to look at
+
+**One real conflict.** The design asked for `Nx` for Next.js, but `Nx` is the literal name
+of another entry in the map. Next.js currently has `Ne`. Both cannot be right.
+
+**Nineteen took a letter that means nothing**, because `P` and `S` are crowded — nine
+names begin with P. Each line shows what it wanted and who holds it, since the real choice
+is usually a trade rather than an invention:
+
+```
+Redux        Rc    wanted Re (react)   Rd (redis)   Ru (rollup)
+Socket.IO    Sf    wanted Si (sinatra) So (solid-start)
+Typer        Tc    wanted Ty (typeorm) Tp (trpc)    Te (tensorflow)
+Puma         Px    wanted Pu (puppeteer)  Pm (pnpm)  Pa (pandas)
+Passport     Pj    wanted Pa (pandas)  Ps (pest)    Pp (pinia)
+Satori       Sb    wanted Sa (sass)    St (sqlite)
+Prometheus   Pk    wanted Pr (preact)  Po (postgres)  Pm (pnpm)
+Poetry       Pb    wanted Po (postgres)  Pe (pytest)  Pt (pytorch)
+Parcel       Pg    wanted Pa (pandas)  Pr (preact)  Pc (phpunit)
+SWC          Sh    wanted Sw (swr)     Sc (sqlalchemy)
+Prettier     Pv    wanted Pr (preact)  Pe (pytest)  Pt (pytorch)
+Stylelint    Sj    wanted St (sqlite)  Sy (symfony) Sl (solid)
+PostCSS      Pz    wanted Po (postgres)  Ps (pest)  Pt (pytorch)
+Storybook    Sg    wanted St (sqlite)  So (solid-start)
+pre-commit   P0    wanted Pc (phpunit) Pr (preact)  Pe (pytest)
+RuboCop      Rg    wanted Ru (rollup)  Rb (ruby)    Ro (rocket)
+PHPUnit      Pc    wanted Ph (php)     Pp (pinia)   Pu (puppeteer)
+Pint         Pw    wanted Pi (prisma)  Pn (pnpm-workspaces)
+PHPStan      Pq    wanted Ph (php)     Pp (pinia)   Ps (pest)
+```
+
+Run `pnpm tsx scripts/symbols.ts` for the current version of this list.
+
+**A few high-traffic names worth a second look**, all defensible but none obvious:
+`AWS → Aa` (`Aw` is Actix Web), `Vite → Vi` beside `Vitest → Vt`, `Docker → Do`,
+`Gatsby → Gt` after yielding `Ga`.
+
+## Changing one
+
+Edit `symbol:` in `lib/stack-map/entries/*.ts` and re-run the sheet. The map-integrity
+test enforces the format and uniqueness, so a clash fails the suite rather than shipping
+two identical tiles.
+
+**A symbol is frozen once a card using it has been cached.** It is baked into the PNG, so
+changing one after launch needs a `RENDER_VERSION` bump in the same commit. Now, before
+Tiles renders anything real, is the cheap moment — which is the whole reason this sheet
+exists before the renderer.

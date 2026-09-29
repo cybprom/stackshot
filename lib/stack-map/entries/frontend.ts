@@ -7,6 +7,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "next",
     display: "Next.js",
+    symbol: "Ne",
     category: "frontend",
     weight: 95,
     description: "React framework with file-based routing and server rendering.",
@@ -16,6 +17,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "nuxt",
     display: "Nuxt",
+    symbol: "Nu",
     category: "frontend",
     weight: 95,
     description: "Vue framework with file-based routing and server rendering.",
@@ -25,6 +27,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "sveltekit",
     display: "SvelteKit",
+    symbol: "Sv",
     category: "frontend",
     weight: 95,
     description: "Svelte application framework with routing and server rendering.",
@@ -34,6 +37,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "remix",
     display: "Remix",
+    symbol: "Rm",
     category: "frontend",
     weight: 94,
     description: "Full-stack React framework built on web fetch primitives.",
@@ -43,6 +47,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "astro",
     display: "Astro",
+    symbol: "As",
     category: "frontend",
     weight: 94,
     description: "Content-first site framework that ships zero JS by default.",
@@ -51,6 +56,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "gatsby",
     display: "Gatsby",
+    symbol: "Gt",
     category: "frontend",
     weight: 92,
     description: "React static site generator with a GraphQL data layer.",
@@ -60,6 +66,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "solid-start",
     display: "SolidStart",
+    symbol: "So",
     category: "frontend",
     weight: 93,
     description: "Solid application framework with routing and server rendering.",
@@ -69,6 +76,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "expo",
     display: "Expo",
+    symbol: "Ex",
     category: "frontend",
     weight: 93,
     description: "Framework and tooling for React Native apps.",
@@ -78,6 +86,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "react",
     display: "React",
+    symbol: "Re",
     category: "frontend",
     weight: 90,
     description: "Component library for building user interfaces.",
@@ -86,6 +95,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "vue",
     display: "Vue",
+    symbol: "Vu",
     category: "frontend",
     weight: 90,
     description: "Progressive framework for building user interfaces.",
@@ -94,6 +104,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "svelte",
     display: "Svelte",
+    symbol: "Se",
     category: "frontend",
     weight: 90,
     description: "Compiler-based UI framework.",
@@ -102,6 +113,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "angular",
     display: "Angular",
+    symbol: "An",
     category: "frontend",
     weight: 92,
     description: "Batteries-included TypeScript application framework.",
@@ -110,6 +122,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "solid",
     display: "Solid",
+    symbol: "Sl",
     category: "frontend",
     weight: 88,
     description: "Reactive UI library with fine-grained signals.",
@@ -118,6 +131,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "preact",
     display: "Preact",
+    symbol: "Pr",
     category: "frontend",
     weight: 86,
     description: "Small React-compatible UI library.",
@@ -126,6 +140,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "react-native",
     display: "React Native",
+    symbol: "Rn",
     category: "frontend",
     weight: 91,
     description: "React for native iOS and Android apps.",
@@ -136,6 +151,7 @@ export const FRONTEND: MapEntry[] = [
     // Desktop shells render UI, so they sit with the UI rather than infra.
     id: "electron",
     display: "Electron",
+    symbol: "Ee",
     category: "frontend",
     weight: 88,
     description: "Desktop apps from web technologies on Chromium and Node.",
@@ -144,6 +160,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "tauri",
     display: "Tauri",
+    symbol: "Ta",
     category: "frontend",
     weight: 88,
     description: "Desktop apps with a web UI and a Rust core.",
@@ -152,6 +169,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "lit",
     display: "Lit",
+    symbol: "Li",
     category: "frontend",
     weight: 82,
     description: "Web components with reactive properties.",
@@ -160,6 +178,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "qwik",
     display: "Qwik",
+    symbol: "Qw",
     category: "frontend",
     weight: 88,
     description: "Resumable framework that defers JS until interaction.",
@@ -168,6 +187,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "react-router",
     display: "React Router",
+    symbol: "Rr",
     category: "frontend",
     weight: 72,
     description: "Routing for React apps; framework mode since v7.",
@@ -176,6 +196,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "tanstack-router",
     display: "TanStack Router",
+    symbol: "Tn",
     category: "frontend",
     weight: 70,
     description: "Type-safe router for React.",
@@ -184,6 +205,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "hotwire",
     display: "Hotwire",
+    symbol: "Ht",
     category: "frontend",
     weight: 80,
     description: "HTML-over-the-wire: Turbo and Stimulus.",
@@ -194,6 +216,7 @@ export const FRONTEND: MapEntry[] = [
     // Rendered by the backend, but it is the frontend's programming model.
     id: "htmx",
     display: "htmx",
+    symbol: "Hm",
     category: "frontend",
     weight: 80,
     description: "Hypermedia controls via HTML attributes.",
@@ -202,6 +225,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "alpine",
     display: "Alpine.js",
+    symbol: "Al",
     category: "frontend",
     weight: 76,
     description: "Small reactive behaviour declared in markup.",
@@ -210,6 +234,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "jquery",
     display: "jQuery",
+    symbol: "Jq",
     category: "frontend",
     weight: 60,
     description: "DOM manipulation and events library.",
@@ -218,6 +243,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "inertia",
     display: "Inertia",
+    symbol: "In",
     category: "frontend",
     weight: 82,
     description: "Server-driven SPAs without a separate API.",
@@ -226,6 +252,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "livewire",
     display: "Livewire",
+    symbol: "Lv",
     category: "frontend",
     weight: 82,
     description: "Reactive Laravel components rendered on the server.",
@@ -234,6 +261,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "tailwindcss",
     display: "Tailwind",
+    symbol: "Tw",
     category: "frontend",
     weight: 78,
     description: "Utility-first CSS framework.",
@@ -244,6 +272,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "sass",
     display: "Sass",
+    symbol: "Sa",
     category: "frontend",
     weight: 55,
     description: "CSS preprocessor.",
@@ -252,6 +281,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "styled-components",
     display: "styled-components",
+    symbol: "Sm",
     category: "frontend",
     weight: 62,
     description: "CSS-in-JS with tagged template literals.",
@@ -261,6 +291,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "emotion",
     display: "Emotion",
+    symbol: "Em",
     category: "frontend",
     weight: 60,
     description: "CSS-in-JS library.",
@@ -270,6 +301,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "bootstrap",
     display: "Bootstrap",
+    symbol: "Bo",
     category: "frontend",
     weight: 62,
     description: "Component CSS framework.",
@@ -279,6 +311,7 @@ export const FRONTEND: MapEntry[] = [
     // shadcn/ui ships as copied source, so Radix is what the manifest shows.
     id: "radix-ui",
     display: "Radix UI",
+    symbol: "Rx",
     category: "frontend",
     weight: 64,
     description: "Unstyled, accessible UI primitives.",
@@ -288,6 +321,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "mui",
     display: "MUI",
+    symbol: "Mu",
     category: "frontend",
     weight: 66,
     description: "Material Design React components.",
@@ -296,6 +330,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "chakra-ui",
     display: "Chakra UI",
+    symbol: "Cu",
     category: "frontend",
     weight: 64,
     description: "Accessible React component library.",
@@ -304,6 +339,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "mantine",
     display: "Mantine",
+    symbol: "Mt",
     category: "frontend",
     weight: 64,
     description: "React components and hooks library.",
@@ -312,6 +348,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "ant-design",
     display: "Ant Design",
+    symbol: "Ad",
     category: "frontend",
     weight: 64,
     description: "Enterprise React component library.",
@@ -320,6 +357,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "headless-ui",
     display: "Headless UI",
+    symbol: "Hu",
     category: "frontend",
     weight: 56,
     description: "Unstyled accessible components from Tailwind Labs.",
@@ -328,6 +366,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "motion",
     display: "Motion",
+    symbol: "Mi",
     category: "frontend",
     weight: 52,
     description: "Animation library, formerly Framer Motion.",
@@ -336,6 +375,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "lucide",
     display: "Lucide",
+    symbol: "Lu",
     category: "frontend",
     weight: 30,
     description: "Icon set.",
@@ -345,6 +385,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "redux",
     display: "Redux",
+    symbol: "Rc",
     category: "frontend",
     weight: 66,
     description: "Predictable state container.",
@@ -355,6 +396,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "zustand",
     display: "Zustand",
+    symbol: "Zu",
     category: "frontend",
     weight: 62,
     description: "Small hook-based state store.",
@@ -364,6 +406,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "jotai",
     display: "Jotai",
+    symbol: "Jo",
     category: "frontend",
     weight: 58,
     description: "Atomic state for React.",
@@ -373,6 +416,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "mobx",
     display: "MobX",
+    symbol: "Mb",
     category: "frontend",
     weight: 58,
     description: "Observable state management.",
@@ -382,6 +426,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "pinia",
     display: "Pinia",
+    symbol: "Pp",
     category: "frontend",
     weight: 60,
     description: "State store for Vue.",
@@ -391,6 +436,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "tanstack-query",
     display: "TanStack Query",
+    symbol: "Tq",
     category: "frontend",
     weight: 66,
     description: "Server-state cache for async data.",
@@ -406,6 +452,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "swr",
     display: "SWR",
+    symbol: "Sw",
     category: "frontend",
     weight: 58,
     description: "Stale-while-revalidate data fetching hooks.",
@@ -415,6 +462,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "apollo-client",
     display: "Apollo Client",
+    symbol: "Ac",
     category: "frontend",
     weight: 62,
     description: "GraphQL client with a normalized cache.",
@@ -424,6 +472,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "react-hook-form",
     display: "React Hook Form",
+    symbol: "Rh",
     category: "frontend",
     weight: 50,
     description: "Performant form state for React.",
@@ -434,6 +483,7 @@ export const FRONTEND: MapEntry[] = [
     // validating what a form or fetch hands back.
     id: "zod",
     display: "Zod",
+    symbol: "Zo",
     category: "frontend",
     weight: 54,
     description: "Schema validation with inferred types.",
@@ -442,6 +492,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "i18next",
     display: "i18next",
+    symbol: "I1",
     category: "frontend",
     weight: 40,
     description: "Internationalization framework.",
@@ -451,6 +502,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "d3",
     display: "D3",
+    symbol: "D3",
     category: "frontend",
     weight: 50,
     description: "Data-driven document manipulation for visualizations.",
@@ -459,6 +511,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "three",
     display: "Three.js",
+    symbol: "Th",
     category: "frontend",
     weight: 60,
     description: "3D graphics on WebGL.",
@@ -468,6 +521,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "chartjs",
     display: "Chart.js",
+    symbol: "Ct",
     category: "frontend",
     weight: 46,
     description: "Canvas charts.",
@@ -476,6 +530,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "recharts",
     display: "Recharts",
+    symbol: "Rt",
     category: "frontend",
     weight: 46,
     description: "React charts built on D3.",
@@ -484,6 +539,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "leaflet",
     display: "Leaflet",
+    symbol: "Lf",
     category: "frontend",
     weight: 46,
     description: "Interactive maps.",
@@ -494,6 +550,7 @@ export const FRONTEND: MapEntry[] = [
     // Docs-site generators produce what readers see, so they sit with the UI.
     id: "vitepress",
     display: "VitePress",
+    symbol: "Ve",
     category: "frontend",
     weight: 48,
     description: "Vite-powered static docs site generator.",
@@ -502,6 +559,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "docusaurus",
     display: "Docusaurus",
+    symbol: "Du",
     category: "frontend",
     weight: 48,
     description: "React-based docs site generator.",
@@ -511,6 +569,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "mkdocs",
     display: "MkDocs",
+    symbol: "Mk",
     category: "frontend",
     weight: 46,
     description: "Markdown docs site generator.",

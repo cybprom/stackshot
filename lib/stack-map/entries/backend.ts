@@ -8,6 +8,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "node",
     display: "Node",
+    symbol: "No",
     category: "backend",
     weight: 70,
     description: "JavaScript runtime.",
@@ -16,6 +17,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "deno",
     display: "Deno",
+    symbol: "De",
     category: "backend",
     weight: 72,
     description: "Secure-by-default JavaScript and TypeScript runtime.",
@@ -26,6 +28,7 @@ export const BACKEND: MapEntry[] = [
     // cover a secondary language, so they rank low.
     id: "python",
     display: "Python",
+    symbol: "Py",
     category: "backend",
     weight: 45,
     description: "Python runtime.",
@@ -35,6 +38,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "go",
     display: "Go",
+    symbol: "Go",
     category: "backend",
     weight: 45,
     description: "Go toolchain.",
@@ -44,6 +48,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "rust",
     display: "Rust",
+    symbol: "Rs",
     category: "backend",
     weight: 45,
     description: "Rust toolchain.",
@@ -53,6 +58,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "ruby",
     display: "Ruby",
+    symbol: "Rb",
     category: "backend",
     weight: 45,
     description: "Ruby runtime.",
@@ -61,6 +67,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "php",
     display: "PHP",
+    symbol: "Ph",
     category: "backend",
     weight: 45,
     description: "PHP runtime.",
@@ -69,6 +76,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "java",
     display: "Java",
+    symbol: "Ja",
     category: "backend",
     weight: 45,
     description: "Java runtime.",
@@ -77,6 +85,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "express",
     display: "Express",
+    symbol: "Ep",
     category: "backend",
     weight: 80,
     description: "Minimal Node web framework.",
@@ -86,6 +95,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "fastify",
     display: "Fastify",
+    symbol: "Fs",
     category: "backend",
     weight: 82,
     description: "Fast, schema-driven Node web framework.",
@@ -95,6 +105,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "koa",
     display: "Koa",
+    symbol: "Ko",
     category: "backend",
     weight: 76,
     description: "Middleware-first Node web framework.",
@@ -104,6 +115,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "hono",
     display: "Hono",
+    symbol: "Ho",
     category: "backend",
     weight: 82,
     description: "Small web framework for any JavaScript runtime.",
@@ -113,6 +125,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "nestjs",
     display: "NestJS",
+    symbol: "Ns",
     category: "backend",
     weight: 90,
     description: "Structured Node framework with dependency injection.",
@@ -122,6 +135,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "trpc",
     display: "tRPC",
+    symbol: "Tp",
     category: "backend",
     weight: 72,
     description: "End-to-end type-safe APIs without a schema.",
@@ -130,6 +144,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "graphql",
     display: "GraphQL",
+    symbol: "Gp",
     category: "backend",
     weight: 66,
     description: "Query language for APIs.",
@@ -138,6 +153,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "apollo-server",
     display: "Apollo Server",
+    symbol: "Ap",
     category: "backend",
     weight: 72,
     description: "GraphQL server for Node.",
@@ -148,6 +164,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "socket-io",
     display: "Socket.IO",
+    symbol: "Sf",
     category: "backend",
     weight: 60,
     description: "Realtime bidirectional events.",
@@ -157,6 +174,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "grpc",
     display: "gRPC",
+    symbol: "Gg",
     category: "backend",
     weight: 64,
     description: "RPC framework over HTTP/2 and protobuf.",
@@ -166,6 +184,7 @@ export const BACKEND: MapEntry[] = [
     // An ORM defines the data model the app is built around; it isn't dev tooling.
     id: "prisma",
     display: "Prisma",
+    symbol: "Pi",
     category: "backend",
     weight: 78,
     description: "Typed ORM and migration tool.",
@@ -174,6 +193,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "drizzle",
     display: "Drizzle",
+    symbol: "Dr",
     category: "backend",
     weight: 78,
     description: "SQL-shaped TypeScript ORM.",
@@ -183,6 +203,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "typeorm",
     display: "TypeORM",
+    symbol: "Ty",
     category: "backend",
     weight: 72,
     description: "Decorator-based ORM for TypeScript.",
@@ -191,6 +212,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "sequelize",
     display: "Sequelize",
+    symbol: "Sz",
     category: "backend",
     weight: 70,
     description: "Promise-based Node ORM.",
@@ -199,6 +221,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "mongoose",
     display: "Mongoose",
+    symbol: "Mn",
     category: "backend",
     weight: 74,
     description: "MongoDB object modelling for Node.",
@@ -207,6 +230,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "kysely",
     display: "Kysely",
+    symbol: "Ky",
     category: "backend",
     weight: 68,
     description: "Type-safe SQL query builder.",
@@ -215,6 +239,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "knex",
     display: "Knex",
+    symbol: "Kn",
     category: "backend",
     weight: 64,
     description: "SQL query builder for Node.",
@@ -224,6 +249,7 @@ export const BACKEND: MapEntry[] = [
     // Drivers imply the database: a project with `pg` runs PostgreSQL somewhere.
     id: "postgres",
     display: "PostgreSQL",
+    symbol: "Po",
     category: "backend",
     weight: 82,
     description: "Relational database.",
@@ -249,6 +275,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "mysql",
     display: "MySQL",
+    symbol: "My",
     category: "backend",
     weight: 80,
     description: "Relational database.",
@@ -268,6 +295,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "mariadb",
     display: "MariaDB",
+    symbol: "Ma",
     category: "backend",
     weight: 80,
     description: "MySQL-compatible relational database.",
@@ -278,6 +306,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "sqlite",
     display: "SQLite",
+    symbol: "St",
     category: "backend",
     weight: 74,
     description: "Embedded relational database.",
@@ -296,6 +325,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "mongodb",
     display: "MongoDB",
+    symbol: "Mo",
     category: "backend",
     weight: 80,
     description: "Document database.",
@@ -306,6 +336,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "redis",
     display: "Redis",
+    symbol: "Rd",
     category: "backend",
     weight: 72,
     description: "In-memory data store and cache.",
@@ -326,6 +357,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "elasticsearch",
     display: "Elasticsearch",
+    symbol: "Ea",
     category: "backend",
     weight: 70,
     description: "Search and analytics engine.",
@@ -336,6 +368,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "rabbitmq",
     display: "RabbitMQ",
+    symbol: "Ri",
     category: "backend",
     weight: 66,
     description: "Message broker.",
@@ -346,6 +379,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "kafka",
     display: "Kafka",
+    symbol: "Ka",
     category: "backend",
     weight: 68,
     description: "Distributed event streaming.",
@@ -356,6 +390,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "django",
     display: "Django",
+    symbol: "Dj",
     category: "backend",
     weight: 95,
     description: "Batteries-included Python web framework.",
@@ -364,6 +399,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "django-rest-framework",
     display: "DRF",
+    symbol: "Df",
     category: "backend",
     weight: 76,
     description: "Django REST framework for web APIs.",
@@ -372,6 +408,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "flask",
     display: "Flask",
+    symbol: "Fl",
     category: "backend",
     weight: 90,
     description: "Lightweight Python web framework.",
@@ -380,6 +417,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "fastapi",
     display: "FastAPI",
+    symbol: "Fa",
     category: "backend",
     weight: 94,
     description: "Async Python API framework driven by type hints.",
@@ -389,6 +427,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "starlette",
     display: "Starlette",
+    symbol: "Sr",
     category: "backend",
     weight: 70,
     description: "Lightweight ASGI framework.",
@@ -397,6 +436,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "sqlalchemy",
     display: "SQLAlchemy",
+    symbol: "Sc",
     category: "backend",
     weight: 74,
     description: "Python SQL toolkit and ORM.",
@@ -406,6 +446,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "sqlmodel",
     display: "SQLModel",
+    symbol: "Sq",
     category: "backend",
     weight: 76,
     description: "SQL models from Pydantic types, on SQLAlchemy.",
@@ -415,6 +456,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "alembic",
     display: "Alembic",
+    symbol: "Ae",
     category: "backend",
     weight: 50,
     description: "Database migrations for SQLAlchemy.",
@@ -423,6 +465,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "pydantic",
     display: "Pydantic",
+    symbol: "Pd",
     category: "backend",
     weight: 62,
     description: "Data validation from Python type hints.",
@@ -432,6 +475,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "celery",
     display: "Celery",
+    symbol: "Ce",
     category: "backend",
     weight: 72,
     description: "Distributed task queue.",
@@ -440,6 +484,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "uvicorn",
     display: "Uvicorn",
+    symbol: "Ui",
     category: "backend",
     weight: 42,
     description: "ASGI server.",
@@ -449,6 +494,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "gunicorn",
     display: "Gunicorn",
+    symbol: "Gu",
     category: "backend",
     weight: 40,
     description: "WSGI HTTP server.",
@@ -458,6 +504,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "numpy",
     display: "NumPy",
+    symbol: "Nm",
     category: "backend",
     weight: 64,
     description: "N-dimensional arrays and numerics.",
@@ -466,6 +513,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "pandas",
     display: "pandas",
+    symbol: "Pa",
     category: "backend",
     weight: 66,
     description: "Dataframes for data analysis.",
@@ -474,6 +522,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "pytorch",
     display: "PyTorch",
+    symbol: "Pt",
     category: "backend",
     weight: 84,
     description: "Deep learning framework.",
@@ -482,6 +531,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "tensorflow",
     display: "TensorFlow",
+    symbol: "Te",
     category: "backend",
     weight: 82,
     description: "Machine learning platform.",
@@ -490,6 +540,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "scikit-learn",
     display: "scikit-learn",
+    symbol: "Sk",
     category: "backend",
     weight: 72,
     description: "Classical machine learning.",
@@ -498,6 +549,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "httpx",
     display: "HTTPX",
+    symbol: "Hp",
     category: "backend",
     weight: 34,
     description: "Async-capable HTTP client for Python.",
@@ -507,6 +559,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "requests",
     display: "Requests",
+    symbol: "Rq",
     category: "backend",
     weight: 32,
     description: "HTTP client for Python.",
@@ -516,6 +569,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "typer",
     display: "Typer",
+    symbol: "Tc",
     category: "backend",
     weight: 50,
     description: "CLI apps from Python type hints.",
@@ -526,6 +580,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "click",
     display: "Click",
+    symbol: "Ci",
     category: "backend",
     weight: 46,
     description: "Composable Python CLIs.",
@@ -535,6 +590,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "gin",
     display: "Gin",
+    symbol: "Gi",
     category: "backend",
     weight: 88,
     description: "Go HTTP web framework.",
@@ -543,6 +599,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "echo",
     display: "Echo",
+    symbol: "Ec",
     category: "backend",
     weight: 86,
     description: "Minimal Go web framework.",
@@ -551,6 +608,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "fiber",
     display: "Fiber",
+    symbol: "Fi",
     category: "backend",
     weight: 86,
     description: "Express-inspired Go web framework.",
@@ -559,6 +617,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "chi",
     display: "chi",
+    symbol: "Ch",
     category: "backend",
     weight: 80,
     description: "Lightweight Go HTTP router.",
@@ -567,6 +626,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "gorm",
     display: "GORM",
+    symbol: "Gr",
     category: "backend",
     weight: 74,
     description: "ORM for Go.",
@@ -575,6 +635,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "cobra",
     display: "Cobra",
+    symbol: "Cb",
     category: "backend",
     weight: 56,
     description: "Go CLI framework.",
@@ -584,6 +645,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "tokio",
     display: "Tokio",
+    symbol: "Tk",
     category: "backend",
     weight: 66,
     description: "Async runtime for Rust.",
@@ -592,6 +654,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "axum",
     display: "Axum",
+    symbol: "Ax",
     category: "backend",
     weight: 88,
     description: "Rust web framework on Tokio and Tower.",
@@ -601,6 +664,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "actix-web",
     display: "Actix Web",
+    symbol: "Aw",
     category: "backend",
     weight: 88,
     description: "Rust web framework.",
@@ -609,6 +673,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "rocket",
     display: "Rocket",
+    symbol: "Ro",
     category: "backend",
     weight: 86,
     description: "Rust web framework.",
@@ -617,6 +682,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "sqlx",
     display: "SQLx",
+    symbol: "Sx",
     category: "backend",
     weight: 70,
     description: "Compile-time checked SQL for Rust.",
@@ -625,6 +691,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "diesel",
     display: "Diesel",
+    symbol: "Di",
     category: "backend",
     weight: 70,
     description: "ORM and query builder for Rust.",
@@ -633,6 +700,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "serde",
     display: "Serde",
+    symbol: "Sd",
     category: "backend",
     weight: 36,
     description: "Rust serialization framework.",
@@ -641,6 +709,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "clap",
     display: "clap",
+    symbol: "Cl",
     category: "backend",
     weight: 50,
     description: "Rust command-line argument parser.",
@@ -651,6 +720,7 @@ export const BACKEND: MapEntry[] = [
     // napi-rs is how a Rust core ships as a Node package (next.js's SWC bindings).
     id: "napi-rs",
     display: "napi-rs",
+    symbol: "Na",
     category: "backend",
     weight: 52,
     description: "Node addons written in Rust.",
@@ -659,6 +729,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "rails",
     display: "Rails",
+    symbol: "Ra",
     category: "backend",
     weight: 95,
     description: "Full-stack Ruby web framework.",
@@ -667,6 +738,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "sinatra",
     display: "Sinatra",
+    symbol: "Si",
     category: "backend",
     weight: 84,
     description: "Minimal Ruby web framework.",
@@ -675,6 +747,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "sidekiq",
     display: "Sidekiq",
+    symbol: "Ss",
     category: "backend",
     weight: 72,
     description: "Background jobs for Ruby on Redis.",
@@ -683,6 +756,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "puma",
     display: "Puma",
+    symbol: "Px",
     category: "backend",
     weight: 40,
     description: "Ruby web server.",
@@ -691,6 +765,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "devise",
     display: "Devise",
+    symbol: "Dv",
     category: "backend",
     weight: 56,
     description: "Authentication for Rails.",
@@ -699,6 +774,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "laravel",
     display: "Laravel",
+    symbol: "La",
     category: "backend",
     weight: 95,
     description: "Full-stack PHP web framework.",
@@ -707,6 +783,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "symfony",
     display: "Symfony",
+    symbol: "Sy",
     category: "backend",
     weight: 92,
     description: "PHP framework and reusable components.",
@@ -715,6 +792,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "doctrine",
     display: "Doctrine",
+    symbol: "Dc",
     category: "backend",
     weight: 70,
     description: "ORM for PHP.",
@@ -723,6 +801,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "openai",
     display: "OpenAI SDK",
+    symbol: "Os",
     category: "backend",
     weight: 70,
     description: "Client for the OpenAI API.",
@@ -733,6 +812,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "anthropic",
     display: "Anthropic SDK",
+    symbol: "At",
     category: "backend",
     weight: 70,
     description: "Client for the Claude API.",
@@ -743,6 +823,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "ai-sdk",
     display: "AI SDK",
+    symbol: "Ai",
     category: "backend",
     weight: 70,
     description: "Vercel's TypeScript toolkit for LLM apps.",
@@ -753,6 +834,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "langchain",
     display: "LangChain",
+    symbol: "Ln",
     category: "backend",
     weight: 70,
     description: "Framework for LLM applications.",
@@ -763,6 +845,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "auth-js",
     display: "Auth.js",
+    symbol: "Au",
     category: "backend",
     weight: 62,
     description: "Authentication for web frameworks, formerly NextAuth.",
@@ -772,6 +855,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "better-auth",
     display: "Better Auth",
+    symbol: "Ba",
     category: "backend",
     weight: 62,
     description: "TypeScript authentication framework.",
@@ -780,6 +864,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "clerk",
     display: "Clerk",
+    symbol: "Cr",
     category: "backend",
     weight: 62,
     description: "Hosted authentication and user management.",
@@ -789,6 +874,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "passport",
     display: "Passport",
+    symbol: "Pj",
     category: "backend",
     weight: 56,
     description: "Authentication middleware for Node.",
@@ -797,6 +883,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "stripe",
     display: "Stripe",
+    symbol: "Sp",
     category: "backend",
     weight: 64,
     description: "Payments API client.",
@@ -807,6 +894,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "pdfkit",
     display: "PDFKit",
+    symbol: "Pf",
     category: "backend",
     weight: 60,
     description: "PDF generation for Node.",
@@ -816,6 +904,7 @@ export const BACKEND: MapEntry[] = [
     // Headless Chrome is usually app functionality (PDFs, scraping), not a test runner.
     id: "puppeteer",
     display: "Puppeteer",
+    symbol: "Pu",
     category: "backend",
     weight: 60,
     description: "Headless Chrome automation.",
@@ -826,6 +915,7 @@ export const BACKEND: MapEntry[] = [
     // browser. Not tooling either — the images are the product, not a build artifact.
     id: "satori",
     display: "Satori",
+    symbol: "Sb",
     category: "backend",
     weight: 60,
     description: "Renders HTML and CSS to SVG, for server-generated images.",
@@ -836,6 +926,7 @@ export const BACKEND: MapEntry[] = [
     // rather than suppressed: two libraries, two steps, and a repo can use either alone.
     id: "resvg",
     display: "resvg",
+    symbol: "Rv",
     category: "backend",
     weight: 55,
     description: "Rasterizes SVG to PNG, as a native Node binding.",
@@ -845,6 +936,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "axios",
     display: "Axios",
+    symbol: "Ao",
     category: "backend",
     weight: 30,
     description: "Promise-based HTTP client.",
