@@ -105,3 +105,28 @@ Two specific triggers beyond that:
 - The 8s Camo estimate being measured rather than assumed. It is the working number the
   whole budget is derived from and it has never been verified; if it turns out to be lower,
   option B was never available anyway.
+
+---
+
+## Amendment, 2026-09-29: option C is a pair of numbers, not one
+
+C landed at Milestone 2 step 4 as `SITE_RESOLVE_DEADLINE_MS = 10_000` and nothing else. The
+route never passed `perFetchMs`, so the site kept the card route's `PER_FETCH_MS = 2500`
+and **per-fetch bound first**: a 2503 ms tree call for `vercel/next.js` was killed with
+roughly six seconds of the site's own deadline unspent. Half an option is not the option.
+
+`SITE_PER_FETCH_MS` is **6250**, derived rather than chosen: the same 62.5% of its deadline
+that 2500 is of 4000, so one slow fetch may take most of the budget and still leave room
+for the rest. Against this ADR's own measurements it is 4.56× the worst deployed tree call
+(1370 ms) and about 2.5× the Lagos-class 2503 ms observation that prompted it.
+
+This is not option B by another route. B widened the limit that governs Camo; the card
+route is untouched at 2500 / 4000 and the margins recorded above still stand. All that
+changes is the route where a human is waiting.
+
+The wiring is the part worth keeping. The limits now live in two factories beside the
+constants — `createCardClient` and `createSiteClient` — and each route calls one. The bug
+was never in the numbers; it was in one route applying half of them, which a pair of
+loose constants invites. `tests/client.test.ts` runs a 3 s tree fetch through both
+factories: the site resolves, the card route times out. Verified to fail on the
+half-applied version.

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createCache } from "@/lib/cache";
 import { githubToken } from "@/lib/env";
 import type { FailureReason } from "@/lib/failure";
-import { createGitHubClient, SITE_RESOLVE_DEADLINE_MS } from "@/lib/github/client";
+import { createSiteClient } from "@/lib/github/client";
 import { parseRepoUrl } from "@/lib/github-url";
 import { clientIp, createRateLimiter, RESOLVE_LIMIT } from "@/lib/rate-limit";
 import { resolveCached } from "@/lib/resolve-cached";
@@ -51,9 +51,7 @@ export async function POST(request: Request) {
   const result = await resolveCached(
     {
       cache: createCache(),
-      createClient: token
-        ? () => createGitHubClient({ token, deadline: AbortSignal.timeout(SITE_RESOLVE_DEADLINE_MS) })
-        : undefined,
+      createClient: token ? () => createSiteClient(token) : undefined,
       // Only a resolve costs GitHub budget, so only a resolve is counted. A cache hit is
       // free and must not consume anyone's quota.
       gate: async () => {

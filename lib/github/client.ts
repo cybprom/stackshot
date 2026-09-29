@@ -16,6 +16,10 @@ export const RESOLVE_DEADLINE_MS = 4000;
 // more. Its successful resolve writes the same KV the card route reads, which makes
 // pre-warming the normal path. ADR-0028 option C. Well under the route's maxDuration.
 export const SITE_RESOLVE_DEADLINE_MS = 10_000;
+// Derived, not chosen: the same 62.5% of the deadline that 2500 is of 4000, so one slow
+// fetch can take most of the budget and still leave room for the rest. Raising the
+// deadline alone left the site killing a 2.5s tree call with six seconds unspent.
+export const SITE_PER_FETCH_MS = (SITE_RESOLVE_DEADLINE_MS * PER_FETCH_MS) / RESOLVE_DEADLINE_MS;
 
 export type GitHubError =
   | { kind: "not_found" }
@@ -54,6 +58,30 @@ export type ClientOptions = {
   perFetchMs?: number;
   now?: () => number;
 };
+
+/**
+ * The card route's client: Camo is waiting, so both limits are the tight pair. ADR-0028.
+ *
+ * Call this inside the route's `createClient` factory and nowhere earlier — constructing a
+ * client starts its deadline. GOTCHAS 042.
+ */
+export function createCardClient(token: string, fetchImpl?: typeof fetch): GitHubClient {
+  return createGitHubClient({ token, fetch: fetchImpl });
+}
+
+/**
+ * The site route's client: a human is waiting, so **both** limits widen together. They are
+ * a pair — raising the deadline alone leaves per-fetch binding first, which is how a 2.5s
+ * tree call died with six seconds of budget unspent. ADR-0028 option C.
+ */
+export function createSiteClient(token: string, fetchImpl?: typeof fetch): GitHubClient {
+  return createGitHubClient({
+    token,
+    fetch: fetchImpl,
+    deadline: AbortSignal.timeout(SITE_RESOLVE_DEADLINE_MS),
+    perFetchMs: SITE_PER_FETCH_MS,
+  });
+}
 
 const GraphQLEnvelopeSchema = z.object({
   data: z.unknown().optional(),

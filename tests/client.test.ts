@@ -3,11 +3,18 @@ import { z } from "zod";
 import {
   BLOB_FALLBACK_BUDGET,
   BudgetExceededError,
+  createCardClient,
   createGitHubClient,
+  createSiteClient,
   errorFromResponse,
+  PER_FETCH_MS,
+  RESOLVE_DEADLINE_MS,
+  SITE_PER_FETCH_MS,
+  SITE_RESOLVE_DEADLINE_MS,
   type GitHubError,
 } from "@/lib/github/client";
-import { hangingFetch } from "@/tests/helpers/fixture-fetch";
+import { resolve } from "@/lib/resolve";
+import { hangingFetch, loadResponses, slowFixtureFetch } from "@/tests/helpers/fixture-fetch";
 
 const Any = z.unknown();
 const respond = (body: string, status = 200): typeof fetch => async () => new Response(body, { status });
@@ -92,5 +99,44 @@ describe("typed failures", () => {
     const c = client(respond("{}"), AbortSignal.abort());
     expect(await c.graphql("q", {}, Any)).toEqual({ ok: false, error: { kind: "timeout" } });
     expect(c.calls()).toBe(0);
+  });
+});
+
+/**
+ * ADR-0028 option C, both halves. The site route's deadline was widened to 10s while its
+ * per-fetch limit stayed at the card route's 2500, so per-fetch bound first and a 2.5s
+ * tree call died with six seconds of budget unspent.
+ *
+ * The two clients are built by the same factories the routes use, because the bug was
+ * never in the limits — it was in one route applying half of them.
+ */
+describe("the two routes' clients have different patience (ADR-0028)", () => {
+  const TREE = "/git/trees/";
+  // Past the card route's 2500, inside the site's 6250.
+  const SLOW_MS = 3000;
+
+  it("a 3s tree fetch resolves for the site and times out for the card route", async () => {
+    const responses = loadResponses("pmndrs__zustand");
+    const slow = () => slowFixtureFetch(responses, TREE, SLOW_MS);
+
+    // In parallel: two independent clients, so this costs 3s of wall clock, not 5.5.
+    const [site, card] = await Promise.all([
+      resolve(createSiteClient("t", slow()), "pmndrs", "zustand"),
+      resolve(createCardClient("t", slow()), "pmndrs", "zustand"),
+    ]);
+
+    expect(site.ok, "the site waited for the tree call").toBe(true);
+    expect(card).toEqual({ ok: false, error: { kind: "timeout" } });
+  }, 20_000);
+
+  it("derives the site's per-fetch limit rather than picking one", () => {
+    // The same fraction of its deadline that 2500 is of 4000.
+    expect(SITE_PER_FETCH_MS / SITE_RESOLVE_DEADLINE_MS).toBe(PER_FETCH_MS / RESOLVE_DEADLINE_MS);
+    expect(SITE_PER_FETCH_MS).toBe(6250);
+  });
+
+  it("keeps per-fetch under the deadline on both routes, or the deadline never binds", () => {
+    expect(PER_FETCH_MS).toBeLessThan(RESOLVE_DEADLINE_MS);
+    expect(SITE_PER_FETCH_MS).toBeLessThan(SITE_RESOLVE_DEADLINE_MS);
   });
 });

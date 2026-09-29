@@ -1,6 +1,6 @@
 import { createCache } from "@/lib/cache";
 import { githubToken } from "@/lib/env";
-import { createGitHubClient } from "@/lib/github/client";
+import { createCardClient } from "@/lib/github/client";
 import { serveCard } from "@/lib/serve-card";
 import type { Theme } from "@/lib/tokens";
 
@@ -47,7 +47,7 @@ export async function GET(
 
   const token = githubToken();
   const { bytes, reason, cacheControl } = await serveCard(
-    { cache: createCache(), createClient: token ? () => createGitHubClient({ token }) : undefined },
+    { cache: createCache(), createClient: token ? () => createCardClient(token) : undefined },
     owner,
     repo,
     theme,

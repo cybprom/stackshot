@@ -18,6 +18,29 @@ export function fixtureFetch(responses: Responses): typeof fetch {
   };
 }
 
+/**
+ * Fixture responses, but every URL containing `match` answers `ms` late. Honours the
+ * abort signal the way real fetch does, so a per-fetch limit can cut it off.
+ */
+export function slowFixtureFetch(responses: Responses, match: string, ms: number): typeof fetch {
+  const base = fixtureFetch(responses);
+  return async (input, init) => {
+    if (!String(input).includes(match)) return base(input, init);
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(resolve, ms);
+      init?.signal?.addEventListener(
+        "abort",
+        () => {
+          clearTimeout(timer);
+          reject(init.signal?.reason);
+        },
+        { once: true },
+      );
+    });
+    return base(input, init);
+  };
+}
+
 /** A fetch that never answers, and rejects the way real fetch does when aborted. */
 export const hangingFetch: typeof fetch = (_input, init) =>
   new Promise((_resolve, reject) => {
