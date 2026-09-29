@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DEFAULT_STYLE, type CardStyle } from "@/lib/card-style";
 import {
   NEGATIVE_TTL_S,
   POINTER_TTL_S,
@@ -43,11 +44,11 @@ function memoryCache(): Cache & { calls: string[] } {
     async setDoc(hash, doc) {
       store.set(`stack:${hash}`, doc);
     },
-    async getPng(hash, theme) {
-      return store.get(`png:${hash}:${theme}`) as Buffer | undefined;
+    async getPng(style, hash, theme) {
+      return store.get(`png:${style}:${hash}:${theme}`) as Buffer | undefined;
     },
-    async setPng(hash, theme, bytes) {
-      store.set(`png:${hash}:${theme}`, bytes);
+    async setPng(style, hash, theme, bytes) {
+      store.set(`png:${style}:${hash}:${theme}`, bytes);
     },
   };
 }
@@ -61,7 +62,15 @@ const serve = (
   owner: string,
   repo: string,
   theme: Theme = "light",
-) => serveCard({ cache: deps.cache, createClient: deps.client ? () => deps.client as GitHubClient : undefined }, owner, repo, theme);
+  style: CardStyle = DEFAULT_STYLE,
+) =>
+  serveCard(
+    { cache: deps.cache, createClient: deps.client ? () => (deps.client as GitHubClient) : undefined },
+    owner,
+    repo,
+    style,
+    theme,
+  );
 
 beforeEach(() => {
   vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -204,8 +213,11 @@ describe("the upstash wrapper", () => {
     };
     const cache = upstashCache(redis as never);
     const bytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0xff]);
-    await cache.setPng("abc", "light", bytes);
-    expect((await cache.getPng("abc", "light"))?.equals(bytes)).toBe(true);
+    await cache.setPng("tiles", "abc", "light", bytes);
+    expect((await cache.getPng("tiles", "abc", "light"))?.equals(bytes)).toBe(true);
+    // A different style is a different key, or the first one requested would be served
+    // for every other.
+    expect(await cache.getPng("sheet", "abc", "light")).toBeUndefined();
   });
 });
 

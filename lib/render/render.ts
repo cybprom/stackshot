@@ -7,11 +7,15 @@ import { FONTS } from "@/lib/render/fonts";
 /**
  * Rasterizes a Satori element tree to PNG bytes. Pure: same input, same bytes (I2), and
  * height is part of that input — the error card is shorter than a real card.
+ *
+ * `undefined` means content-height: Satori sizes the canvas to the tree. Tiles and
+ * Terminal need it, and the fixed-band Datasheet must not have it, or a short stack
+ * would leave its lower bands hanging in empty space.
  */
-export async function renderToPng(element: ReactNode, height: number = CARD.height): Promise<Buffer> {
+export async function renderToPng(element: ReactNode, height: number | undefined = CARD.height): Promise<Buffer> {
   const svg = await satori(element, {
     width: CARD.width,
-    height,
+    ...(height === undefined ? {} : { height }),
     fonts: FONTS,
   });
 

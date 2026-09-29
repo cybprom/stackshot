@@ -6,14 +6,28 @@
 it is the only thing that survives one.*
 
 ```
-Milestone:  3 BUILT, awaiting the author's eyeball pass. The one page is
-            written and verified; nothing is committed yet. Next is M4.
+Milestone:  3 COMPLETE and committed. Now on the CARD STYLES direction
+            (ADR-0029): the card becomes a choice of styles. Phase 0
+            (de-risk) and Phase 1 (plumbing) are done. Next is Phase 2.
+PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles + 225 symbols ·
+            3 Terminal · 4 site generator (switcher, theme toggle,
+            HTML preview + crossfade) · 5 docs. Aiming at one weekend,
+            nothing cut. The fallback cut order, if it runs long:
+            per-style reveals, then the Light/Dark toggle, then
+            Terminal, then the HTML preview LAST — it is the drift
+            detector AND what stops the switcher writing a PNG per flip.
+STYLES:     Every CardStyle needs an entry in lib/render/styles.ts.
+            Tiles/Terminal/Tags currently draw the Datasheet tree as
+            stand-ins. REPLACING A STAND-IN BUMPS RENDER_VERSION, or
+            PNGs cached under that style's key get served as the real
+            thing.
 Deployed:   LIVE at https://stackshot-one.vercel.app (project "stackshot",
             org cybproms-projects, region iad1, plan hobby, fluid compute,
             platform function timeout 300s; both routes pin maxDuration 30).
-            Custom domain NOT set up. Git is connected, so PUSHES TO MAIN
-            AUTO-DEPLOY PRODUCTION; nothing has ever been pushed, every deploy
-            so far was `vercel --prod` from this machine.
+            stackshot.ilerioluwa.com IS LIVE (author-confirmed 2026-09-29),
+            which is SITE_ORIGIN's default. Git is connected, so PUSHES TO
+            MAIN AUTO-DEPLOY PRODUCTION; nothing has ever been pushed, every
+            deploy so far was `vercel --prod` from this machine.
             Measure against the stable alias, never the per-deployment URL:
             that one 302s under Deployment Protection (the spike's trap).
             .env.local holds GITHUB_TOKEN, the two Upstash vars and a
@@ -34,15 +48,19 @@ SITE_ORIGIN: lib/site.ts is the single source for the origin in the card
             PORT`) or the preview points at production. Preview and snippet
             are the same absolute URLs, so the CDN entry is shared and
             same-origin `download` works.
-Last done:  M3 — the one page, NOT YET COMMITTED. Empty/pending/success/5 failure
-            states + bad-URL, spine verified aligned at 1440/768/360 (13
-            elements, one x), AA verified by script, 700 tests, build clean.
-            Found and fixed en route: the pnpm-workspace.yaml false positive
-            (GOTCHAS 044) and Tailwind's @theme-in-@media trap (046).
-            ERROR_COPY moved lib/render/error-card.tsx -> lib/failure.ts so
-            the site can import it without pulling in Satori.
-            /api/resolve now returns `cause: "per_ip"` so the site can tell
-            our gate from GitHub's limit without sniffing retry-after.
+Last done:  STYLES PHASE 1 — plumbing. CardStyle + URL + cache key + the
+            snippet all carry the style; layer colours are tokens in
+            lib/tokens.ts AND globals.css, with tests/tokens.test.ts as the
+            seam (verified able to fail on one digit). ADR-0029 records the
+            three reversals. 724 tests.
+            Before it: PHASE 0 (fd72965) — Satori honours maxHeight+overflow;
+            Commit Mono has the box-drawing glyphs; Archivo Bold shipped and
+            byte-checked; Tiles measured at ~452KB/stack and portrait.
+            Evidence in docs/spike/styles/, written to be read on a phone.
+            Before it: M3 the one page (7056b76), plus the site route's other
+            deadline half (9559bf7). ERROR_COPY moved to lib/failure.ts so the
+            site can import it without pulling in Satori; /api/resolve returns
+            `cause: "per_ip"`.
             Before it: M2 STEP 6 (1513fdf) — committed-hash determinism. Rendered bytes
             are pinned per card in tests/fixtures/render-hashes.json and
             checked by tests/render-hash.test.ts; verified able to fail on a
@@ -53,23 +71,25 @@ Last done:  M3 — the one page, NOT YET COMMITTED. Empty/pending/success/5 fail
             RESOLVE rather than request, IP from x-vercel-forwarded-for only
             (spoofing verified ineffective live), unmapped logged not
             returned.
-Next:       AUTHOR'S EYEBALL PASS on M3, then commit. Open: which repo the
-            empty state shows (cybprom/stackshot is wired in as
-            EXAMPLE_REPO in lib/site.ts, one line to change; the alternative
-            is vercel/next.js, whose own card leads with "Next.js 16" by
-            accident of manifest selection, GOTCHAS 033).
-            Then MILESTONE 4 — ship.
-            DNS: stackshot.ilerioluwa.com was being set up during M3 and is
-            not confirmed resolving. Until it does, the default SITE_ORIGIN
-            points at a domain that answers nothing, so the deployed preview
-            and every copied snippet are dead. CONFIRM DNS BEFORE DEPLOYING,
-            or set NEXT_PUBLIC_SITE_ORIGIN to the vercel.app alias and accept
-            that early snippets carry that host forever.
-            M4 carries: the badge in your own README (pull forward from M4 if
-            the domain is live — the author asked for this), the global
-            budget guard, ADR-0012's
+Next:       PHASE 2 — Tiles. Two halves: the 225 two-letter symbols
+            (scripts/symbols.ts proposes on a ladder and REFUSES to
+            auto-resolve collisions, because a symbol is baked into every
+            cached PNG and order-dependence would silently invalidate cards
+            nobody touched; then the author reviews a contact sheet of all
+            225; then the map-integrity test enforces unique /^[A-Z][a-z0-9]$/),
+            and the Satori tree. Use CARD.padding (32) NOT the design's 44 —
+            five tiles per row instead of four, GOTCHAS 048.
+            The contact sheet doubles as the name-fit check: longest display
+            is styled-components at 17 chars, so nothing should reach the
+            two-line clamp.
+            STILL OPEN: the author's phone check on docs/spike/styles/ —
+            do the symbols carry the card at 0.29? If not, the fix is bigger
+            tiles and fewer of them, not smaller type (ADR-0029).
+            M4 carries: the badge in your own README (the domain is live now,
+            so this can come forward), the global budget guard, ADR-0012's
             amendment line for the separate bug counter, and monitoring KV
-            bytes (~600-950 stacks fit the 256MB free tier).
+            bytes — now ~550 stacks in Tiles alone, ~290 across three styles,
+            so this is nearer than the old ~600-950 suggested.
 ```
 
 ---

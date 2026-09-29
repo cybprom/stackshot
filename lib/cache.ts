@@ -4,6 +4,7 @@ import { countBug } from "@/lib/counters";
 import { deployEnv, isProduction, upstashConfig } from "@/lib/env";
 import { FAILURE_REASONS, isTransient } from "@/lib/failure";
 import type { StackDoc } from "@/lib/stack-map/types";
+import type { CardStyle } from "@/lib/card-style";
 import { RENDER_VERSION, type Theme } from "@/lib/tokens";
 
 export const POINTER_TTL_S = 3600;
@@ -68,8 +69,8 @@ export type Cache = {
   setPointer(owner: string, repo: string, pointer: Pointer): Promise<void>;
   getDoc(stackHash: string): Promise<StackDoc | undefined>;
   setDoc(stackHash: string, doc: StackDoc): Promise<void>;
-  getPng(stackHash: string, theme: Theme): Promise<Buffer | undefined>;
-  setPng(stackHash: string, theme: Theme, png: Buffer): Promise<void>;
+  getPng(style: CardStyle, stackHash: string, theme: Theme): Promise<Buffer | undefined>;
+  setPng(style: CardStyle, stackHash: string, theme: Theme, png: Buffer): Promise<void>;
 };
 
 /**
@@ -93,8 +94,13 @@ export function docKey(stackHash: string): string {
 
 // RENDER_VERSION is in the key so a deliberate design change retires every stored PNG at
 // once, rather than serving the old one for the rest of its 30-day TTL. ADR-0005.
-export function pngKey(stackHash: string, theme: Theme): string {
-  return scoped(`png:v${RENDER_VERSION}:${stackHash}:${theme}`);
+//
+// The style sits beside it because one StackDoc now renders several ways: without it, the
+// first style requested for a repo would be served for every other. The `stack:` and
+// `repo:` spaces are deliberately untouched — style changes how a doc is drawn, not what
+// it contains, so switching styles costs renders and never GitHub budget. ADR-0029.
+export function pngKey(style: CardStyle, stackHash: string, theme: Theme): string {
+  return scoped(`png:v${RENDER_VERSION}:${style}:${stackHash}:${theme}`);
 }
 
 /** A cache that stores nothing. Every read misses and every write is dropped. */
@@ -164,16 +170,16 @@ export function upstashCache(redis: Redis): Cache {
       await guard("setDoc", () => redis.set(docKey(stackHash), doc, { ex: CONTENT_TTL_S }));
     },
 
-    async getPng(stackHash, theme) {
-      const base64 = await read(pngKey(stackHash, theme), z.string());
+    async getPng(style, stackHash, theme) {
+      const base64 = await read(pngKey(style, stackHash, theme), z.string());
       return base64 === undefined ? undefined : Buffer.from(base64, "base64");
     },
 
-    async setPng(stackHash, theme, png) {
+    async setPng(style, stackHash, theme, png) {
       // Upstash stores text, so PNGs ride as base64 and cost ~4/3 their bytes. See
       // ARCHITECTURE's note on storage.
       await guard("setPng", () =>
-        redis.set(pngKey(stackHash, theme), png.toString("base64"), { ex: CONTENT_TTL_S }),
+        redis.set(pngKey(style, stackHash, theme), png.toString("base64"), { ex: CONTENT_TTL_S }),
       );
     },
   };

@@ -126,7 +126,7 @@ app/
   stack-form.tsx                 the page's only client island
   globals.css                    site tokens; the card's live in lib/tokens.ts
   api/resolve/route.ts           POST { url } -> StackDoc
-  [owner]/[repo]/[file]/route.ts card-light.png | card-dark.png
+  [owner]/[repo]/[file]/route.ts {style}-{theme}.png, plus legacy card-{theme}.png
 lib/
   github/
     client.ts                    fetch wrapper, auth, budget counter, timeouts
@@ -147,6 +147,7 @@ lib/
     deny.ts                      known noise, namespaced globs, never logged
     index.ts                     assembled map + lookup (exact alias, then longest prefix)
     types.ts
+  card-style.ts                  the style names, URL parsing; render-free, client-safe
   manifest-paths.ts              path filters shared by tree selection and detection
   site.ts                        SITE_ORIGIN, card URLs, the snippet, every site string
   normalize.ts                   RawSignal[] -> StackDoc
@@ -287,9 +288,13 @@ half-finished detector is where context loss actually costs something.
 ## Scope discipline
 
 This project is budgeted at three weekends. The following are out and do not get built,
-prototyped, or accommodated "for later": user accounts, saved cards, custom themes,
+prototyped, or accommodated "for later": user accounts, saved cards, ~~custom themes~~,
 private repos, comparison mode, an iframe embed, a public API, and any CMS for the stack
 map.
+
+**"Custom themes" is amended by ADR-0029**, which adds a fixed, curated set of card styles
+chosen in the URL. There is still no theme editor and no user-supplied values: a style is
+one of a handful of names we ship. Everything else on this list stands.
 
 **Analytics is in scope but tightly bounded** — Redis counters, a weekly embed count, and
 Vercel Web Analytics, exposed as JSON behind a secret. See ADR-0012. No dashboard, no

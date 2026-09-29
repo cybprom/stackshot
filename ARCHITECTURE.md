@@ -56,13 +56,13 @@ one, no runtime theme detection, and no per-view telemetry.
      └─────────────────────┘        └──────────────────────────┘
 
 
-   GET /{owner}/{repo}/card-dark.png
+   GET /{owner}/{repo}/tiles-dark.png
                 │
                 ▼
      ┌──────────────────────────────────────────────┐
      │  CARD ROUTE                                  │
      │   a  resolve (as above, cache-first)         │
-     │   b  KV get png:{stackHash}:{theme}          │
+     │   b  KV get png:v{V}:{style}:{stackHash}:{theme}│
      │   c  miss -> render, then KV set             │
      │   d  always 200, always image/png            │
      └──────────────────┬───────────────────────────┘
@@ -76,12 +76,12 @@ one, no runtime theme detection, and no per-view telemetry.
 ### Render stage, isolated
 
 ```
-   StackDoc + theme
+   StackDoc + style + theme
           │
           ▼
    ┌──────────────────────────────────┐
-   │ satori(cardElement, {            │
-   │   width: 1200, height: 800,      │
+   │ satori(styleElement, {           │   style picks the tree and the
+   │   width: 1200, height?: 800,     │   height; omitted = content-height
    │   fonts: [Archivo, CommitMono]   │   fonts read at module scope
    │ })                  -> SVG       │
    ├──────────────────────────────────┤
@@ -106,8 +106,8 @@ one, no runtime theme detection, and no per-view telemetry.
 | `lib/version` | nothing | anything |
 | `lib/resolve` | `lib/github`, `lib/detect`, `lib/normalize` | `lib/render`, `lib/cache` |
 | `lib/failure` | `ResolveError` **as a type only** | anything at run time |
-| `lib/repo-ref`, `lib/hash` | nothing | anything |
-| `lib/render/*` | `lib/tokens`, `FailureReason`, StackDoc type | `lib/github`, `lib/cache` |
+| `lib/repo-ref`, `lib/hash`, `lib/card-style` | nothing (card-style: `lib/tokens` types) | anything |
+| `lib/render/*` | `lib/tokens`, `lib/card-style`, `FailureReason`, StackDoc type | `lib/github`, `lib/cache` |
 | `lib/serve-card` | everything, **client injected** | — |
 | `app/**/route.ts` | everything | — |
 
@@ -316,7 +316,7 @@ Three layers, each with a different job.
 |---|---|---|---|---|
 | KV repo pointer | `repo:{owner}/{repo}`, **the request lowercased** | 1h | Skip the two API calls | **yes, 1h** |
 | KV stack doc | `stack:{stackHash}` | 30d | Skip detection | no — content-keyed |
-| KV rendered png | `png:{stackHash}:{theme}` | 30d | Skip the render | no — content-keyed |
+| KV rendered png | `png:v{RENDER_VERSION}:{style}:{stackHash}:{theme}` | 30d | Skip the render | no — content-keyed |
 | CDN (Vercel edge) | the URL | `s-maxage=86400`, `swr=7d` | Skip the function entirely | **yes, and it dominates** |
 | Fastly + Camo | the URL | **our `max-age=3600`** | Honours the header we send · ADR-0013 | yes, our value |
 | Browser | the URL | our `max-age` | — | yes, our value |
@@ -449,9 +449,10 @@ as an open proxy until proven otherwise.
 
 ## Routing note
 
-The card lives at `/{owner}/{repo}/{file}` where `file` is `card-light.png` or
-`card-dark.png`. Owner is a root-level dynamic segment, which collides with any future site
-route.
+The card lives at `/{owner}/{repo}/{file}` where `file` is `{style}-{theme}.png` — for
+example `tiles-dark.png` — plus the legacy `card-{theme}.png`, which is pinned to one
+named style forever so an embedded badge can never restyle itself (ADR-0029). Owner is a
+root-level dynamic segment, which collides with any future site route.
 
 Mitigations, both required:
 1. A reserved-word deny list for `owner`: `api`, `_next`, `favicon.ico`, `robots.txt`,

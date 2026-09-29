@@ -1,3 +1,5 @@
+import type { Category } from "@/lib/stack-map/types";
+
 export type Theme = "light" | "dark";
 
 /**
@@ -26,6 +28,30 @@ export const COLORS: Record<Theme, Record<string, string>> = {
     inkMuted: "#8B9490",
     rule: "#242A2B",
     accent: "#FF6B3D",
+  },
+};
+
+/**
+ * One colour and one tint per layer, per theme. Shared by every style, so a card is
+ * recognisably Stackshot whichever one it is drawn in.
+ *
+ * These reverse DESIGN's self-critique #2, which chose rule-weight encoding over colour
+ * precisely to avoid this, and they take the palette past "one accent, nothing else".
+ * Both reversals are argued in ADR-0029 rather than assumed here. `accent` is untouched
+ * and still means one thing.
+ */
+export const LAYER_COLORS: Record<Theme, Record<Category, { color: string; tint: string }>> = {
+  light: {
+    frontend: { color: "#2458C4", tint: "#E4ECFA" },
+    backend: { color: "#1B7F52", tint: "#E0F1E7" },
+    infra: { color: "#9A5F0E", tint: "#F5EAD6" },
+    tooling: { color: "#596068", tint: "#EAECED" },
+  },
+  dark: {
+    frontend: { color: "#7FAEFF", tint: "#14223A" },
+    backend: { color: "#5CC896", tint: "#10291D" },
+    infra: { color: "#E5AE58", tint: "#2A2111" },
+    tooling: { color: "#A8AEB5", tint: "#1C2126" },
   },
 };
 

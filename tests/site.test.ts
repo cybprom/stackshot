@@ -1,10 +1,18 @@
 import { describe, expect, it } from "vitest";
+import {
+  CARD_STYLES,
+  DEFAULT_STYLE,
+  LEGACY_STYLE,
+  cardFileName,
+  parseCardFile,
+  type CardStyle,
+} from "@/lib/card-style";
 import { cardUrl, pictureSnippet, SITE_ORIGIN } from "@/lib/site";
 
 describe("card URLs and the README snippet", () => {
   it("builds both themes on one origin", () => {
-    expect(cardUrl("vercel", "next.js", "light")).toBe(`${SITE_ORIGIN}/vercel/next.js/card-light.png`);
-    expect(cardUrl("vercel", "next.js", "dark")).toBe(`${SITE_ORIGIN}/vercel/next.js/card-dark.png`);
+    expect(cardUrl("vercel", "next.js", "tiles", "light")).toBe(`${SITE_ORIGIN}/vercel/next.js/tiles-light.png`);
+    expect(cardUrl("vercel", "next.js", "tiles", "dark")).toBe(`${SITE_ORIGIN}/vercel/next.js/tiles-dark.png`);
   });
 
   /**
@@ -13,29 +21,72 @@ describe("card URLs and the README snippet", () => {
    * they can diverge is if the page builds one of them from what the user typed.
    */
   it("uses the same URLs the preview loads", () => {
-    const snippet = pictureSnippet("vercel", "next.js");
-    expect(snippet).toContain(cardUrl("vercel", "next.js", "light"));
-    expect(snippet).toContain(cardUrl("vercel", "next.js", "dark"));
+    const snippet = pictureSnippet("vercel", "next.js", "tiles");
+    expect(snippet).toContain(cardUrl("vercel", "next.js", "tiles", "light"));
+    expect(snippet).toContain(cardUrl("vercel", "next.js", "tiles", "dark"));
   });
 
-  it("pins no width or height: one URL serves two aspect ratios", () => {
-    const snippet = pictureSnippet("octocat", "hello-world");
+  /**
+   * The snippet never writes `card-{theme}.png`. That file is pinned to one style
+   * forever, so a card already in someone's README cannot be restyled by a change to the
+   * site's default — which is the whole reason the style is explicit here. ADR-0029.
+   */
+  it.each(CARD_STYLES)("writes the style explicitly: %s", (style: CardStyle) => {
+    const snippet = pictureSnippet("octocat", "hello-world", style);
+    expect(snippet).toContain(`${style}-light.png`);
+    expect(snippet).toContain(`${style}-dark.png`);
+    expect(snippet).not.toContain("card-light.png");
+    expect(snippet).not.toContain("card-dark.png");
+  });
+
+  it("pins no width or height: one URL serves several heights", () => {
+    const snippet = pictureSnippet("octocat", "hello-world", DEFAULT_STYLE);
     expect(snippet).not.toMatch(/\bwidth=/);
     expect(snippet).not.toMatch(/\bheight=/);
   });
 
   it("puts the dark card behind the dark media query and the light one on the img", () => {
-    const snippet = pictureSnippet("octocat", "hello-world");
+    const snippet = pictureSnippet("octocat", "hello-world", DEFAULT_STYLE);
     expect(snippet).toContain('<source media="(prefers-color-scheme: dark)"');
-    expect(snippet).toMatch(/<source[^>]*card-dark\.png/);
-    expect(snippet).toMatch(/<img[^>]*card-light\.png/);
+    expect(snippet).toMatch(/<source[^>]*tiles-dark\.png/);
+    expect(snippet).toMatch(/<img[^>]*tiles-light\.png/);
   });
 
   it("gives the img alt text naming the repo", () => {
-    expect(pictureSnippet("vercel", "next.js")).toContain('alt="vercel/next.js tech stack');
+    expect(pictureSnippet("vercel", "next.js", DEFAULT_STYLE)).toContain('alt="vercel/next.js tech stack');
   });
 
   it("serves the page and the cards from one origin, so `download` saves", () => {
-    expect(cardUrl("a", "b", "light").startsWith(`${SITE_ORIGIN}/`)).toBe(true);
+    expect(cardUrl("a", "b", DEFAULT_STYLE, "light").startsWith(`${SITE_ORIGIN}/`)).toBe(true);
+  });
+});
+
+describe("the card file name", () => {
+  it.each(CARD_STYLES)("round-trips %s in both themes", (style: CardStyle) => {
+    expect(parseCardFile(cardFileName(style, "light"))).toEqual({ style, theme: "light" });
+    expect(parseCardFile(cardFileName(style, "dark"))).toEqual({ style, theme: "dark" });
+  });
+
+  /**
+   * The promise the whole scheme rests on. Whatever the site's default becomes, these two
+   * URLs keep rendering the style they rendered on the day they were embedded.
+   */
+  it("keeps card-{theme}.png pinned to one style forever", () => {
+    expect(parseCardFile("card-light.png")).toEqual({ style: LEGACY_STYLE, theme: "light" });
+    expect(parseCardFile("card-dark.png")).toEqual({ style: LEGACY_STYLE, theme: "dark" });
+    expect(LEGACY_STYLE).toBe("tiles");
+  });
+
+  it.each([
+    ["card.png", "no theme"],
+    ["tiles.png", "no theme"],
+    ["tiles-light.jpg", "wrong extension"],
+    ["Tiles-light.png", "styles are lower case"],
+    ["tiles-sepia.png", "not a theme"],
+    ["nosuchstyle-light.png", "not a style"],
+    ["../../etc/passwd", "not a card at all"],
+    ["", "empty"],
+  ])("refuses %s (%s)", (file) => {
+    expect(parseCardFile(file)).toBeUndefined();
   });
 });

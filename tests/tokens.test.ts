@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { COLORS } from "@/lib/tokens";
+import { COLORS, LAYER_COLORS } from "@/lib/tokens";
 
 /**
  * The site's palette lives in CSS and the card's in TypeScript, because Satori does not
@@ -35,6 +35,18 @@ describe("the site's CSS palette matches the card's tokens", () => {
       expect(value(lightBlock, cssName), `light --color-${cssName}`).toBeDefined();
       expect(value(darkBlock, cssName), `dark --color-${cssName}`).toBeDefined();
     }
+  });
+
+  /**
+   * The same seam, for the layer colours every card style shares. The site draws its
+   * HTML preview from these and the renderer draws the PNG from `lib/tokens.ts`; the
+   * crossfade between them is only a drift detector if both start from the same hexes.
+   */
+  it.each(["frontend", "backend", "infra", "tooling"] as const)("--layer-%s and its tint", (category) => {
+    expect(value(lightBlock, `layer-${category}`)).toBe(LAYER_COLORS.light[category]?.color.toLowerCase());
+    expect(value(lightBlock, `layer-${category}-tint`)).toBe(LAYER_COLORS.light[category]?.tint.toLowerCase());
+    expect(value(darkBlock, `layer-${category}`)).toBe(LAYER_COLORS.dark[category]?.color.toLowerCase());
+    expect(value(darkBlock, `layer-${category}-tint`)).toBe(LAYER_COLORS.dark[category]?.tint.toLowerCase());
   });
 
   // DESIGN.md COLOR: the card has no semantic colors at all, and these two are site-only.

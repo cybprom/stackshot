@@ -2,7 +2,8 @@ import type { Cache } from "@/lib/cache";
 import { countBug, countCacheHit } from "@/lib/counters";
 import { BUG_REASON, isTransient, type FailureReason } from "@/lib/failure";
 import type { GitHubClient } from "@/lib/github/client";
-import { Card } from "@/lib/render/card";
+import type { CardStyle } from "@/lib/card-style";
+import { styleDef } from "@/lib/render/styles";
 import { renderErrorCard } from "@/lib/render/error-card";
 import { renderToPng } from "@/lib/render/render";
 import { resolveCached } from "@/lib/resolve-cached";
@@ -41,34 +42,53 @@ export function cacheControlFor(reason: FailureReason | undefined): string {
   return isTransient(reason) ? CACHE_ERROR_TRANSIENT : CACHE_ERROR_DETERMINISTIC;
 }
 
-export async function serveCard(deps: CardDeps, owner: string, repo: string, theme: Theme): Promise<CardResult> {
+export async function serveCard(
+  deps: CardDeps,
+  owner: string,
+  repo: string,
+  style: CardStyle,
+  theme: Theme,
+): Promise<CardResult> {
   try {
-    return await run(deps, owner, repo, theme);
+    return await run(deps, owner, repo, style, theme);
   } catch (error) {
     // Any throw is a bug, BudgetExceededError included. Counted apart from the
     // failure-by-reason counts, because a defect inside normal noise is invisible.
-    countBug("serve_card", error, { owner, repo, theme });
+    countBug("serve_card", error, { owner, repo, style, theme });
     return await errorCard(BUG_REASON, owner, repo, theme);
   }
 }
 
-async function run(deps: CardDeps, owner: string, repo: string, theme: Theme): Promise<CardResult> {
+async function run(
+  deps: CardDeps,
+  owner: string,
+  repo: string,
+  style: CardStyle,
+  theme: Theme,
+): Promise<CardResult> {
   const result = await resolveCached(deps, owner, repo);
   if (!result.ok) return errorCard(result.reason, owner, repo, theme);
 
   const { doc, stackHash, cached, reads } = result;
   const started = performance.now();
-  const png = await deps.cache.getPng(stackHash, theme);
+  const png = await deps.cache.getPng(style, stackHash, theme);
   reads.push({ name: "png", ms: Math.round(performance.now() - started) });
   if (cached) countCacheHit(owner, repo, reads);
   if (png) return { bytes: png, cacheControl: CACHE_OK };
 
-  return { bytes: await render(deps.cache, doc, stackHash, theme), cacheControl: CACHE_OK };
+  return { bytes: await render(deps.cache, doc, style, stackHash, theme), cacheControl: CACHE_OK };
 }
 
-async function render(cache: Cache, doc: StackDoc, stackHash: string, theme: Theme): Promise<Buffer> {
-  const bytes = await renderToPng(Card({ doc, theme }));
-  await cache.setPng(stackHash, theme, bytes);
+async function render(
+  cache: Cache,
+  doc: StackDoc,
+  style: CardStyle,
+  stackHash: string,
+  theme: Theme,
+): Promise<Buffer> {
+  const { element, height } = styleDef(style);
+  const bytes = await renderToPng(element({ doc, theme }), height);
+  await cache.setPng(style, stackHash, theme, bytes);
   return bytes;
 }
 

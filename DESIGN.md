@@ -186,6 +186,12 @@ these are Tailwind's gray, slate, or zinc, and none are a pure desaturated neutr
 backgrounds, so light and dark carry different values of the same colour. This is a
 deliberate exception to "one accent", not two accents.
 
+> **Superseded in part by ADR-0029.** Five tokens per theme became thirteen: every card
+> style shares a colour and a tint per layer, in `LAYER_COLORS`. `accent` is unchanged and
+> still means exactly one thing — the bar at the card's top edge, and the site's focus
+> ring. What no longer holds is the stronger claim that the card carries no colour but
+> that one. The five below are still the palette every style is built on.
+
 **Warning that must survive into code:** `rule` does not meet 3:1 against `surface`. It is
 therefore **decorative only** — item separators within a layer band. Every line that
 *encodes information* (layer separators, the card border, the gutter divider) uses `ink`,
@@ -457,6 +463,13 @@ four bands at 115 against a 120 floor. Same derivation, more overhead above the 
 See GOTCHAS 012.
 
 **2. Layers were color-coded, one hue each. Changed to rule-weight encoding.**
+**Superseded by ADR-0029 for every style but the Datasheet.** Kept because the reasoning
+still holds where it was made, and because the argument that overturned it is narrow:
+vertical position stops carrying the layer once the layout stops being four stacked bands.
+Tiles is a wrapping grid and Tags a wrapping flow; neither has a y-axis to read, so colour
+became the only thing encoding the layer rather than a decoration on top of one. The
+Datasheet still reads bottom-to-top and still encodes with rule weight.
+
 Four colors for four categories is what every diagram tool does, and it would have
 silently broken the one-accent rule while adding zero information that vertical position
 wasn't already carrying. Rule weight is quieter, denser, and traceable to a specific

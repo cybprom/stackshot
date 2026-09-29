@@ -15,6 +15,17 @@
   --accent: #c8461e;
   --error: #9b2c10;
   --success: #2f5e3f;
+
+  /* One colour and one tint per layer, shared by every card style. ADR-0029. */
+  --layer-frontend: #2458c4;
+  --layer-frontend-tint: #e4ecfa;
+  --layer-backend: #1b7f52;
+  --layer-backend-tint: #e0f1e7;
+  --layer-infra: #9a5f0e;
+  --layer-infra-tint: #f5ead6;
+  --layer-tooling: #596068;
+  --layer-tooling-tint: #eaeced;
+
   color-scheme: light;
 }
 
@@ -27,6 +38,16 @@
     --accent: #ff6b3d;
     --error: #f08055;
     --success: #79b18d;
+
+    --layer-frontend: #7faeff;
+    --layer-frontend-tint: #14223a;
+    --layer-backend: #5cc896;
+    --layer-backend-tint: #10291d;
+    --layer-infra: #e5ae58;
+    --layer-infra-tint: #2a2111;
+    --layer-tooling: #a8aeb5;
+    --layer-tooling-tint: #1c2126;
+
     color-scheme: dark;
   }
 }
@@ -39,6 +60,15 @@
   --color-accent: var(--accent);
   --color-error: var(--error);
   --color-success: var(--success);
+
+  --color-layer-frontend: var(--layer-frontend);
+  --color-layer-frontend-tint: var(--layer-frontend-tint);
+  --color-layer-backend: var(--layer-backend);
+  --color-layer-backend-tint: var(--layer-backend-tint);
+  --color-layer-infra: var(--layer-infra);
+  --color-layer-infra-tint: var(--layer-infra-tint);
+  --color-layer-tooling: var(--layer-tooling);
+  --color-layer-tooling-tint: var(--layer-tooling-tint);
 
   --font-display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
   --font-mono: var(--font-commit-mono), ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
