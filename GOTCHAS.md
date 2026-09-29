@@ -1360,6 +1360,112 @@ Identical. So the committed hashes need no authority machine and no CI-on-ubuntu
 arrangement, and a developer on any platform gets the same verdict. If that ever changes,
 the fallback is recorded in ADR-0005.
 
+## 044 — pnpm 10 gave `pnpm-workspace.yaml` a second job, so presence stopped meaning monorepo
+**Date:** 2026-09-28 · **Cost:** ~1.2h · **Status:** fixed
+**Writeup material:** yes — found by pointing the tool at its own repo, which no test would have done
+
+Milestone 3 opens by putting a real card in the site's empty state. Rendering this repo's
+own card was step one, and it read:
+
+```
+TOOLING  pnpm workspaces  Vitest 5  TypeScript 5  ESLint 9
+```
+
+Stackshot is a single package. It has never had a workspace.
+
+`lib/detect/paths.ts` treated `pnpm-workspace.yaml` as a monorepo signal by presence
+alone, which was true when the file existed only to list `packages:`. **pnpm 10 moved
+settings out of `.npmrc` into it** — `ignoredBuiltDependencies`, `onlyBuiltDependencies`
+and friends — so ordinary single-package repos now ship one. Ours holds two lines of
+build-script config and no `packages:` key at all.
+
+This was never about our repo. **Every pnpm-10 single-package repo that has ever needed a
+build-script allowlist was being told it was a monorepo**, on a card someone else was
+being invited to embed.
+
+The fix counts `package.json` files instead of trusting the file, and the interesting part
+is *which* ones it counts. The obvious version — count every `package.json` in the tree —
+walks straight into the trap that GOTCHAS 024 spent three passes on: `pmndrs/zustand` is a
+single-package library with `examples/demo/package.json` and `examples/starter/package.json`,
+so a naive count says three and the false positive survives. Counting only the paths that
+survive `selectManifests`' denied-segment and dot-directory filters says one, and zustand's
+card now reads `pnpm 11` where it used to read `pnpm workspaces`. The true fact replaces
+the false one, because the workspaces entry had been suppressing plain `pnpm` all along.
+
+The filters had to move to `lib/manifest-paths.ts` to get there: `lib/detect/*` cannot
+import `lib/github/*`, and it should not, so the shared thing is a pure path module both
+sides import and `DENIED_SEGMENTS` has one definition again instead of being about to have
+two. ARCHITECTURE's boundary table gains a row.
+
+Two things this cost beyond the fix:
+
+- **The test helper was narrower than production.** `detect()` gets every tree path from
+  `lib/resolve`, but `recordedRootPaths()` fed the tests only call 1's root listing, so
+  next.js — a real workspace — looked single-package to the new rule and failed. That gap
+  predates this change: nothing nested was reachable in those tests, `supabase/config.toml`
+  included. Replaced with `recordedTreePaths()`, which reads call 2's recorded tree.
+- **The render-hash test told me to do the wrong thing.** next.js's bytes moved, so it
+  failed with "bump RENDER_VERSION". Wrong here: the *renderer* didn't move, the StackDoc
+  did, and the `png:` key already carries `stackHash`, so a changed doc lands on a new key
+  and nothing stale is served. Bumping would have retired every correct PNG for no reason.
+  The other twelve hashes being byte-identical is what confirms it. The message now
+  distinguishes the two cases.
+
+Also fixed in the same pass, and the reason the card was thin as well as wrong: `satori`
+and `@resvg/resvg-js` were unmapped, so the two libraries the product is built out of were
+missing from its own card. `satori` turns out to be a dependency of `vercel/next.js` too,
+which is the argument that it belongs in the map on general merit rather than because it is
+ours — next.js's unmapped count fell 236 → 235 and its backend layer gained an overflow.
+
+## 045 — `site/label` asked for a weight Commit Mono does not ship
+**Date:** 2026-09-28 · **Cost:** ~0.1h · **Status:** fixed
+**Writeup material:** minor — but it is the same mistake twice, in one document
+
+DESIGN's site scale listed `site/label` as Mono 500. Commit Mono ships 400 and 700 only,
+which the card's own scale table says three sections earlier (GOTCHAS 014). We ship two
+TTFs, so 500 would have synthesized or dropped to the fallback stack.
+
+Caught by reading the table before writing the CSS rather than by anything rendering
+wrong, which is the point: on the site a missing weight degrades silently into a slightly
+different face. Fixed to 400, with the 0.02em tracking carrying the distinction.
+
+## 046 — Tailwind v4's `@theme` ignores the media query it is nested in
+**Date:** 2026-09-28 · **Cost:** ~0.4h · **Status:** fixed
+**Writeup material:** yes — a wrong thing that renders, which is the expensive kind
+
+The obvious way to write two palettes in Tailwind v4 is the one that fails:
+
+```css
+@theme { --color-surface: #EDEEEA; }               /* light */
+@media (prefers-color-scheme: dark) {
+  @theme { --color-surface: #0E1113; }             /* never conditional */
+}
+```
+
+`@theme` is resolved at build time. The media query around it is not honoured, so the dark
+values simply overwrite the light ones and **every visitor gets the dark palette**, in a
+project whose entire premise is that a rendered thing follows the reader's theme.
+
+It survived a passing build, a passing type-check and a passing lint. What caught it was
+the first screenshot: the page was dark in a run that had asked Chrome for
+`prefers-color-scheme: light` — and, tellingly, the embedded `<picture>` had correctly
+chosen the *light* card. The card and its own website disagreed in the same image, which
+is the only reason it was obvious.
+
+The working shape is the scaffold's, which we had deleted: raw custom properties on
+`:root`, overridden in a normal media query, then re-exported through `@theme inline`.
+
+Two things worth keeping:
+
+- **Verify a theme by emulating it, not by trusting the CSS.** The screenshots are driven
+  through CDP's `Emulation.setEmulatedMedia`, so both themes are actually exercised.
+  Node 24 ships a global `WebSocket`, so this needs no Playwright and no dependency — which
+  matters, because DESIGN bans adding one.
+- **`tests/tokens.test.ts` would not have caught this**, and still would not. It asserts
+  the CSS *contains* the right ten hexes on the right sides of the media query; it says
+  nothing about whether the browser applies them conditionally. A test over static text
+  cannot see a build-time directive ignoring its context. The screenshot pass is the check.
+
 ---
 
 *New entries go above this line as they happen.*

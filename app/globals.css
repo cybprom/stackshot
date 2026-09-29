@@ -1,26 +1,143 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Every value here is from DESIGN.md. tests/tokens.test.ts asserts the ten palette values
+   match lib/tokens.ts, which is what the card renders from.
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+   The palette is plain custom properties, not `@theme`, because `@theme` is resolved at
+   build time and silently ignores the media query it is nested in — the dark values then
+   overwrite the light ones for every visitor. `@theme inline` below maps these through to
+   Tailwind's utilities. GOTCHAS 046. */
+:root {
+  --surface: #edeeea;
+  --ink: #101615;
+  --ink-muted: #5a625e;
+  --rule: #c8ccc4;
+  --accent: #c8461e;
+  --error: #9b2c10;
+  --success: #2f5e3f;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --surface: #0e1113;
+    --ink: #dde2dd;
+    --ink-muted: #8b9490;
+    --rule: #242a2b;
+    --accent: #ff6b3d;
+    --error: #f08055;
+    --success: #79b18d;
+    color-scheme: dark;
   }
 }
 
+@theme inline {
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-rule: var(--rule);
+  --color-accent: var(--accent);
+  --color-error: var(--error);
+  --color-success: var(--success);
+
+  --font-display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-commit-mono), ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+
+  --radius-card: 2px;
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* The site scale. Mono 400 and 700 are the only weights shipped, so site/label is 400 and
+   its tracking carries the distinction. DESIGN.md's table said 500; see GOTCHAS 045. */
+@utility site-display {
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+@utility site-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+@utility site-body {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+}
+@utility site-data {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+@utility site-code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+@utility site-label {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+/* QUALITY FLOOR: a 2-unit accent outline at 2-unit offset, on everything focusable.
+   Never outline:none without a replacement in the same rule. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* MOTION: the closed list. Item 1 — the card's arrival. */
+@keyframes card-arrival {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-arrival {
+  animation: card-arrival 200ms var(--ease-standard);
+}
+
+/* A real branch, not a global animation:none sledgehammer: arrival becomes opacity-only
+   with no rise, and the state transitions become instant. */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes card-arrival {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .motion-state {
+    transition-duration: 0ms;
+  }
+}
+
+.motion-state {
+  transition-property: color, background-color, border-color;
+  transition-duration: 120ms;
+  transition-timing-function: var(--ease-standard);
 }

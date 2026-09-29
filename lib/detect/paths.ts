@@ -1,5 +1,6 @@
 import type { RawSignal, Scope } from "@/lib/stack-map/types";
 import { signal } from "@/lib/detect/signal";
+import { selectablePackageJsonCount } from "@/lib/manifest-paths";
 
 // Presence only, never opened, root only: next.js's examples/ hold lockfiles that say
 // nothing about the project. Lockfiles are dev tooling; deno.json declares the runtime.
@@ -32,12 +33,23 @@ const PLATFORM_CONFIG: Record<string, string> = {
   "supabase/config.toml": "supabase",
 };
 
+// pnpm 10 moved settings out of .npmrc into pnpm-workspace.yaml, so a single-package repo
+// now ships one too and its presence stopped meaning "monorepo". Counted rather than
+// opened, and counted the way selection filters, or examples/*/package.json revives the
+// same false positive. turbo.json, nx.json and lerna.json have no such second job.
+// GOTCHAS 044.
+const NEEDS_MULTIPLE_PACKAGES = new Set(["pnpm-workspace.yaml"]);
+
 /** Tooling and platform signals from which files exist. The detector that takes paths. */
 export function detectPaths(paths: string[]): RawSignal[] {
+  const packages = selectablePackageJsonCount(paths);
+
   return paths.flatMap((path) => {
     const platform = PLATFORM_CONFIG[path];
     if (platform) return [signal("tool", platform, path, 1, "runtime")];
     const tool = path.includes("/") ? undefined : ROOT_FILES[path];
-    return tool ? [signal("tool", tool[0], path, 1, tool[1])] : [];
+    if (!tool) return [];
+    if (NEEDS_MULTIPLE_PACKAGES.has(path) && packages < 2) return [];
+    return [signal("tool", tool[0], path, 1, tool[1])];
   });
 }

@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Result } from "@/lib/result";
 import type { GitHubClient, GitHubError } from "@/lib/github/client";
 import type { RepoHead } from "@/lib/github/repo";
+import { basename, depth, hasDeniedSegment, inDotDir } from "@/lib/manifest-paths";
 
 export type TreeEntry = { path: string; sha: string; size: number };
 
@@ -30,24 +31,6 @@ const NESTED_MANIFESTS = new Set(ROOT_MANIFESTS);
 // Compose's own lookup order; only the first present is read. fastapi uses compose.yml.
 const COMPOSE_FILES = ["compose.yaml", "compose.yml", "docker-compose.yaml", "docker-compose.yml"];
 const WORKFLOW = /^\.github\/workflows\/[^/]+\.ya?ml$/;
-
-// Demo and test apps would otherwise take the package.json slots: in vercel/next.js,
-// examples/ sorts before packages/ at the same depth. docs/ is deliberately allowed.
-const DENIED_SEGMENTS = new Set([
-  "node_modules",
-  "examples",
-  "example",
-  "fixtures",
-  "test",
-  "tests",
-  "__tests__",
-  "e2e",
-  "samples",
-  "demo",
-  "templates",
-  "bench",
-  "vendor",
-]);
 
 const TreeResponseSchema = z.object({
   truncated: z.boolean(),
@@ -97,29 +80,6 @@ export function selectManifests(entries: TreeEntry[], orderNested: NestedOrderin
     ...orderNested(eligible.filter((e) => depth(e.path) > 1 && NESTED_MANIFESTS.has(basename(e.path)) && !inDotDir(e.path))),
   ];
   return ordered.slice(0, MANIFEST_BUDGET);
-}
-
-function hasDeniedSegment(path: string): boolean {
-  return path
-    .split("/")
-    .slice(0, -1)
-    .some((segment) => DENIED_SEGMENTS.has(segment.toLowerCase()));
-}
-
-// .github/package.json would otherwise win on sort order alone: "." precedes letters.
-function inDotDir(path: string): boolean {
-  return path
-    .split("/")
-    .slice(0, -1)
-    .some((segment) => segment.startsWith("."));
-}
-
-function basename(path: string): string {
-  return path.slice(path.lastIndexOf("/") + 1);
-}
-
-function depth(path: string): number {
-  return path.split("/").length;
 }
 
 // Code-unit order, not localeCompare: selection must not vary with the host locale.

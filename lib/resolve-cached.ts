@@ -25,9 +25,16 @@ export type ResolveDeps = {
   gate?: () => Promise<boolean>;
 };
 
+/**
+ * Why, where the reason alone leaves the site unable to say the right sentence.
+ * `rate_limited` covers both our per-IP gate and GitHub's own limit, and those want
+ * different words: one is about the visitor, the other is about us.
+ */
+export type FailureCause = "per_ip";
+
 export type CachedResolve =
   | { ok: true; doc: StackDoc; stackHash: string; cached: boolean; reads: Phase[] }
-  | { ok: false; reason: FailureReason; reads: Phase[] };
+  | { ok: false; reason: FailureReason; cause?: FailureCause; reads: Phase[] };
 
 export async function resolveCached(deps: ResolveDeps, owner: string, repo: string): Promise<CachedResolve> {
   const { cache, createClient, gate } = deps;
@@ -63,7 +70,7 @@ export async function resolveCached(deps: ResolveDeps, owner: string, repo: stri
   // The only place budget is spent, so the only place the limiter applies.
   if (gate && !(await gate())) {
     countFailure("rate_limited", { owner, repo, cause: "per_ip" });
-    return { ok: false, reason: "rate_limited", reads };
+    return { ok: false, reason: "rate_limited", cause: "per_ip", reads };
   }
 
   // Constructed here and nowhere earlier: this call starts the resolve deadline.

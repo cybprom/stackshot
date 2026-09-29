@@ -822,6 +822,27 @@ export const BACKEND: MapEntry[] = [
     aliases: ["npm:puppeteer", "npm:puppeteer-core"],
   },
   {
+    // Backend, not frontend: it runs on the server at request time and never ships to a
+    // browser. Not tooling either — the images are the product, not a build artifact.
+    id: "satori",
+    display: "Satori",
+    category: "backend",
+    weight: 60,
+    description: "Renders HTML and CSS to SVG, for server-generated images.",
+    aliases: ["npm:satori"],
+  },
+  {
+    // Same argument as satori, and it sits directly downstream of it. Kept separate
+    // rather than suppressed: two libraries, two steps, and a repo can use either alone.
+    id: "resvg",
+    display: "resvg",
+    category: "backend",
+    weight: 55,
+    description: "Rasterizes SVG to PNG, as a native Node binding.",
+    aliases: ["npm:@resvg/resvg-js", "cargo:resvg"],
+    versionFrom: ["npm:@resvg/resvg-js"],
+  },
+  {
     id: "axios",
     display: "Axios",
     category: "backend",

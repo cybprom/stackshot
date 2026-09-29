@@ -123,6 +123,8 @@ one line wherever a classification is contestable (e.g. why Prisma is `backend` 
 app/
   layout.tsx
   page.tsx                       one page, the whole site
+  stack-form.tsx                 the page's only client island
+  globals.css                    site tokens; the card's live in lib/tokens.ts
   api/resolve/route.ts           POST { url } -> StackDoc
   [owner]/[repo]/[file]/route.ts card-light.png | card-dark.png
 lib/
@@ -145,11 +147,13 @@ lib/
     deny.ts                      known noise, namespaced globs, never logged
     index.ts                     assembled map + lookup (exact alias, then longest prefix)
     types.ts
+  manifest-paths.ts              path filters shared by tree selection and detection
+  site.ts                        SITE_ORIGIN, card URLs, the snippet, every site string
   normalize.ts                   RawSignal[] -> StackDoc
   version.ts                     version specs -> display version (ADR-0017, 0018)
   resolve.ts                     the full chain for one repo, client injected
   serve-card.ts                  cache + resolve + render for one request, client injected
-  failure.ts                     ResolveError -> FailureReason, for both routes
+  failure.ts                     ResolveError -> FailureReason + ERROR_COPY, card and site
   repo-ref.ts                    owner/repo name gate, ahead of any API call
   hash.ts                        stable stringify + sha256
   cache.ts                       Upstash wrapper, typed; no-op when unconfigured

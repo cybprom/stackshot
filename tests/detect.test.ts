@@ -11,7 +11,7 @@ import { detectPython } from "@/lib/detect/python";
 import { detectRuby } from "@/lib/detect/ruby";
 import { detectRust } from "@/lib/detect/rust";
 import { detectWorkflows } from "@/lib/detect/workflows";
-import { recordedManifest, recordedManifests, recordedRootPaths } from "@/tests/helpers/manifests";
+import { recordedManifest, recordedManifests, recordedTreePaths } from "@/tests/helpers/manifests";
 
 type Detector = (contents: string, path: string) => RawSignal[];
 
@@ -293,6 +293,22 @@ describe("detectPaths", () => {
     expect(tags(detectPaths(paths))).toEqual(["tool:pnpm", "tool:turborepo"]);
   });
 
+  // GOTCHAS 044: pnpm 10 ships a pnpm-workspace.yaml in single-package repos too, so the
+  // file's presence is no longer the claim. Counting has to filter the way selection does.
+  it.each([
+    ["pnpm-10 single package (our own shape)", ["pnpm-workspace.yaml", "package.json"], false],
+    ["single package with examples/", ["pnpm-workspace.yaml", "package.json", "examples/basic/package.json", "examples/ssr/package.json"], false],
+    ["single package with a dot-directory package.json", ["pnpm-workspace.yaml", "package.json", ".github/package.json"], false],
+    ["a real workspace", ["pnpm-workspace.yaml", "package.json", "packages/core/package.json"], true],
+    ["a workspace with no root package.json", ["pnpm-workspace.yaml", "packages/a/package.json", "packages/b/package.json"], true],
+  ])("pnpm-workspace.yaml, %s → %s", (_name, paths, claimed) => {
+    expect(tags(detectPaths(paths)).includes("tool:pnpm-workspace")).toBe(claimed);
+  });
+
+  it("holds turbo.json to presence alone: it has no second job", () => {
+    expect(tags(detectPaths(["turbo.json", "package.json"]))).toEqual(["tool:turborepo"]);
+  });
+
   it("never opens a lockfile: it takes paths, not contents", () => {
     expect(detectPaths.length).toBe(1);
   });
@@ -313,17 +329,17 @@ const FIXTURES = [
 
 describe("detect over each fixture repo", () => {
   it.each(FIXTURES)("%s", (fixture) => {
-    const signals = detect(recordedManifests(fixture), recordedRootPaths(fixture));
+    const signals = detect(recordedManifests(fixture), recordedTreePaths(fixture));
     expect([...new Set(scopedTags(signals))].sort()).toMatchSnapshot();
   });
 
   it("finds nothing in a repo with no manifests and no workflows", () => {
     const fixture = "jlevy__the-art-of-command-line";
-    expect(detect(recordedManifests(fixture), recordedRootPaths(fixture))).toEqual([]);
+    expect(detect(recordedManifests(fixture), recordedTreePaths(fixture))).toEqual([]);
   });
 
   it("finds only CI signals in github/gitignore", () => {
-    const signals = detect(recordedManifests("github__gitignore"), recordedRootPaths("github__gitignore"));
+    const signals = detect(recordedManifests("github__gitignore"), recordedTreePaths("github__gitignore"));
     expect(signals.length).toBeGreaterThan(0);
     expect(signals.every((s) => s.id.startsWith("action:") || s.id === "tool:github-actions")).toBe(true);
   });

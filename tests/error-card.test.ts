@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { FAILURE_REASONS, type FailureReason } from "@/lib/failure";
 import { ROOT_MANIFESTS } from "@/lib/github/tree";
-import { ERROR_COPY, renderErrorCard } from "@/lib/render/error-card";
+import { ERROR_COPY } from "@/lib/failure";
+import { renderErrorCard } from "@/lib/render/error-card";
 import { isRepoRef } from "@/lib/repo-ref";
 import { CARD, ERROR_CARD_HEIGHT, TYPE, displaySize } from "@/lib/tokens";
 

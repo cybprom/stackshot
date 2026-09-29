@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DENY, STACK_MAP, entryById, isDenied, lookup, matchesAlias } from "@/lib/stack-map";
 import { ECOSYSTEMS } from "@/lib/stack-map/types";
 import { detect } from "@/lib/detect";
-import { recordedManifests, recordedRootPaths } from "@/tests/helpers/manifests";
+import { recordedManifests, recordedTreePaths } from "@/tests/helpers/manifests";
 
 const CATEGORIES = ["frontend", "backend", "infra", "tooling"];
 const NAMESPACED = new RegExp(`^(${ECOSYSTEMS.join("|")}):.+`);
@@ -198,7 +198,7 @@ const IMPORTANT: Record<string, string[]> = {
 
 describe("fixture coverage", () => {
   it.each(Object.entries(IMPORTANT))("%s: important signals are emitted and mapped", (fixture, important) => {
-    const emitted = new Set(detect(recordedManifests(fixture), recordedRootPaths(fixture)).map((s) => s.id));
+    const emitted = new Set(detect(recordedManifests(fixture), recordedTreePaths(fixture)).map((s) => s.id));
     for (const id of important) {
       expect(emitted.has(id), `${fixture} doesn't emit ${id}`).toBe(true);
       expect(lookup(id), `${fixture}: ${id} is unmapped`).toBeDefined();

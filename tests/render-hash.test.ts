@@ -25,10 +25,13 @@ const HOW_TO_FIX = [
   "Rendered output changed.",
   "  If this was NOT deliberate, find what moved — a token, the card tree, a font,",
   "  or a satori/resvg version — before touching this file.",
-  "  If it WAS deliberate: bump RENDER_VERSION in lib/tokens.ts and regenerate",
-  "  tests/fixtures/render-hashes.json in the SAME commit. The version is part of",
-  "  the png: cache key, so without the bump every stored PNG keeps serving the old",
-  "  design for the rest of its 30-day TTL.",
+  "  If the RENDERER moved deliberately: bump RENDER_VERSION in lib/tokens.ts and",
+  "  regenerate tests/fixtures/render-hashes.json in the SAME commit. The version is",
+  "  part of the png: cache key, so without the bump every stored PNG keeps serving",
+  "  the old design for the rest of its 30-day TTL.",
+  "  If only the StackDoc moved — detection or the map changed what a fixture",
+  "  resolves to — regenerate the hashes and do NOT bump. The key already carries",
+  "  stackHash, so a changed doc lands on a new key and nothing stale is served.",
   `  RENDER_VERSION is currently ${RENDER_VERSION}.`,
 ].join("\n");
 

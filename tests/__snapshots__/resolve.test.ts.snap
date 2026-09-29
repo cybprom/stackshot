@@ -69,7 +69,7 @@ exports[`resolve against each fixture repo > pmndrs__zustand 1`] = `
   "FRONTEND React 19",
   "BACKEND  Node",
   "INFRA    GitHub Actions",
-  "TOOLING  pnpm workspaces, Vitest 4, TypeScript 6, esbuild 0.28, Rollup 4, ESLint 9  +3 more",
+  "TOOLING  Vitest 4, pnpm 11, TypeScript 6, esbuild 0.28, Rollup 4, ESLint 9  +3 more",
   "unmapped: 17",
 ]
 `;
@@ -89,9 +89,9 @@ exports[`resolve against each fixture repo > vercel__next.js 1`] = `
 [
   "vercel/next.js · JavaScript · 142397 stars",
   "FRONTEND Next.js 16, Radix UI, SWR 2, Lucide, Tailwind 4, Sass 1",
-  "BACKEND  Node, Tokio 1, napi-rs 3, clap 4, Rust, Serde 1",
+  "BACKEND  Node, Tokio 1, napi-rs 3, clap 4, Rust, Serde 1  +1 more",
   "INFRA    Vercel, GitHub Actions",
   "TOOLING  Turborepo 2, pnpm workspaces, Lerna 9, Jest 29, Playwright 1, webpack 5  +5 more",
-  "unmapped: 236",
+  "unmapped: 235",
 ]
 `;

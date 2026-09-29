@@ -19,6 +19,18 @@ export function recordedManifest(fixture: string, path: string): string {
   return file.contents;
 }
 
+/**
+ * Every path from call 2's recursive tree — what `lib/resolve` actually hands `detect`.
+ * Falls back to the root listing for the fixtures recorded without a tree call.
+ */
+export function recordedTreePaths(fixture: string): string[] {
+  const responses = loadResponses(fixture);
+  const key = Object.keys(responses).find((k) => k.includes("/git/trees/"));
+  if (!key || responses[key]?.status !== 200) return recordedRootPaths(fixture);
+  const body: { tree?: { path: string; type: string }[] } = JSON.parse(responses[key].body);
+  return (body.tree ?? []).filter((e) => e.type === "blob").map((e) => e.path);
+}
+
 /** Root paths from call 1's GraphQL listing, which every recorded repo has. */
 export function recordedRootPaths(fixture: string): string[] {
   const graphql = loadResponses(fixture)["POST https://api.github.com/graphql"];

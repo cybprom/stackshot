@@ -99,8 +99,9 @@ one, no runtime theme detection, and no per-view telemetry.
 
 | Module | May import | Must never import |
 |---|---|---|
-| `lib/github/*` | nothing in `lib/` except types | detectors, normalizer, render |
-| `lib/detect/*` | `lib/stack-map/types` | anything that does I/O |
+| `lib/github/*` | `lib/manifest-paths`, otherwise nothing in `lib/` except types | detectors, normalizer, render |
+| `lib/detect/*` | `lib/stack-map/types`, `lib/manifest-paths` | anything that does I/O |
+| `lib/manifest-paths` | nothing | anything |
 | `lib/normalize` | `lib/stack-map`, `lib/version`, detect types | `lib/github`, `lib/render` |
 | `lib/version` | nothing | anything |
 | `lib/resolve` | `lib/github`, `lib/detect`, `lib/normalize` | `lib/render`, `lib/cache` |
@@ -111,6 +112,12 @@ one, no runtime theme detection, and no per-view telemetry.
 | `app/**/route.ts` | everything | — |
 
 The rule in one sentence: **only route handlers construct a network client.**
+
+`lib/manifest-paths` is the one module both `lib/github/` and `lib/detect/` may import. It
+holds the denied-segment and dot-directory filters, which selection and detection have to
+agree on: a repo is a monorepo if selection would consider two of its `package.json` files,
+and a second copy of that list would drift. It is pure, imports nothing, and does no I/O,
+so neither boundary weakens. GOTCHAS 044.
 
 `lib/serve-card` composes cache, resolve and render for one request, and takes its
 `GitHubClient` injected exactly as `lib/resolve` does. That keeps the whole card path —

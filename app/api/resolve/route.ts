@@ -69,7 +69,9 @@ export async function POST(request: Request) {
   if (!result.ok) {
     const headers: Record<string, string> = {};
     if (result.reason === "rate_limited" && retryAfter > 0) headers["retry-after"] = String(retryAfter);
-    return json({ error: result.reason, limit: RESOLVE_LIMIT }, STATUS[result.reason], headers);
+    // `cause` is stated rather than left to be inferred from retry-after: a header the
+    // site has to sniff is a coupling that breaks quietly.
+    return json({ error: result.reason, cause: result.cause, limit: RESOLVE_LIMIT }, STATUS[result.reason], headers);
   }
 
   // `unmapped` is logged, never returned. It is the abuse signal as much as the backlog,

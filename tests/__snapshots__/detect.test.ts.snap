@@ -765,7 +765,6 @@ exports[`detect over each fixture repo > pmndrs__zustand 1`] = `
   "tool:node@>=12.20.0",
   "tool:npm [dev]",
   "tool:pnpm [dev]",
-  "tool:pnpm-workspace [dev]",
   "tool:pnpm@11.3.0 [dev]",
 ]
 `;

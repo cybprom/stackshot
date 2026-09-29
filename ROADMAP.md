@@ -6,8 +6,8 @@
 it is the only thing that survives one.*
 
 ```
-Milestone:  2 COMPLETE — renderer and routes. All 7 steps and every
-            definition-of-done item are met. Next is Milestone 3.
+Milestone:  3 BUILT, awaiting the author's eyeball pass. The one page is
+            written and verified; nothing is committed yet. Next is M4.
 Deployed:   LIVE at https://stackshot-one.vercel.app (project "stackshot",
             org cybproms-projects, region iad1, plan hobby, fluid compute,
             platform function timeout 300s; both routes pin maxDuration 30).
@@ -26,7 +26,24 @@ CACHE KEYS: every Upstash key is `{VERCEL_ENV}:...`, so a local `next dev`
             RENDER_VERSION in lib/tokens.ts and regenerate
             tests/fixtures/render-hashes.json IN THE SAME COMMIT — the test
             fails and tells you, ADR-0005's amendment says why.
-Last done:  M2 STEP 6 (1513fdf) — committed-hash determinism. Rendered bytes
+SITE_ORIGIN: lib/site.ts is the single source for the origin in the card
+            footer, the preview <img> and the copied snippet. Defaults to
+            https://stackshot.ilerioluwa.com; override with
+            NEXT_PUBLIC_SITE_ORIGIN. Local dev MUST set it to its own port
+            (`NEXT_PUBLIC_SITE_ORIGIN=http://localhost:PORT pnpm dev --port
+            PORT`) or the preview points at production. Preview and snippet
+            are the same absolute URLs, so the CDN entry is shared and
+            same-origin `download` works.
+Last done:  M3 — the one page, NOT YET COMMITTED. Empty/pending/success/5 failure
+            states + bad-URL, spine verified aligned at 1440/768/360 (13
+            elements, one x), AA verified by script, 700 tests, build clean.
+            Found and fixed en route: the pnpm-workspace.yaml false positive
+            (GOTCHAS 044) and Tailwind's @theme-in-@media trap (046).
+            ERROR_COPY moved lib/render/error-card.tsx -> lib/failure.ts so
+            the site can import it without pulling in Satori.
+            /api/resolve now returns `cause: "per_ip"` so the site can tell
+            our gate from GitHub's limit without sniffing retry-after.
+            Before it: M2 STEP 6 (1513fdf) — committed-hash determinism. Rendered bytes
             are pinned per card in tests/fixtures/render-hashes.json and
             checked by tests/render-hash.test.ts; verified able to fail on a
             one-digit colour change. Rendered output is byte-identical across
@@ -36,18 +53,21 @@ Last done:  M2 STEP 6 (1513fdf) — committed-hash determinism. Rendered bytes
             RESOLVE rather than request, IP from x-vercel-forwarded-for only
             (spoofing verified ineffective live), unmapped logged not
             returned.
-Next:       MILESTONE 3 — the one page. Input, generate, preview, download,
-            copy the <picture> snippet, descriptions beneath, empty state,
-            three error states, keyboard focus, reduced motion, 360px.
-            The site's three error states come from the SAME five
-            FailureReasons the card uses (lib/failure.ts), so they cannot
-            drift from the card's copy.
-            THE PREVIEW PRE-WARMS FOR FREE, but only if the preview <img> and
-            the copied snippet are byte-identical URLs — CDN entries are
-            per-URL. Build both from the CANONICAL owner/repo in the
-            /api/resolve response, never from what the user typed.
-            M4 carries: the badge in your own README (moved from M2, waits on
-            stackshot.ilerioluwa.com), the global budget guard, ADR-0012's
+Next:       AUTHOR'S EYEBALL PASS on M3, then commit. Open: which repo the
+            empty state shows (cybprom/stackshot is wired in as
+            EXAMPLE_REPO in lib/site.ts, one line to change; the alternative
+            is vercel/next.js, whose own card leads with "Next.js 16" by
+            accident of manifest selection, GOTCHAS 033).
+            Then MILESTONE 4 — ship.
+            DNS: stackshot.ilerioluwa.com was being set up during M3 and is
+            not confirmed resolving. Until it does, the default SITE_ORIGIN
+            points at a domain that answers nothing, so the deployed preview
+            and every copied snippet are dead. CONFIRM DNS BEFORE DEPLOYING,
+            or set NEXT_PUBLIC_SITE_ORIGIN to the vercel.app alias and accept
+            that early snippets carry that host forever.
+            M4 carries: the badge in your own README (pull forward from M4 if
+            the domain is live — the author asked for this), the global
+            budget guard, ADR-0012's
             amendment line for the separate bug counter, and monitoring KV
             bytes (~600-950 stacks fit the 256MB free tier).
 ```

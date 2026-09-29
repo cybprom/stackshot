@@ -159,9 +159,13 @@ needed and should not be reached for casually.
 | `site/body` | Prose | 17 | Archivo 400 | 1.55 | -0.005em |
 | `site/data` | Package rows, versions | 15 | Mono 400 | 1.45 | 0.00em |
 | `site/code` | Markdown snippet | 14 | Mono 400 | 1.50 | 0.00em |
-| `site/label` | Form label | 14 | Mono 500 | 1.20 | 0.02em |
+| `site/label` | Form label | 14 | Mono 400 | 1.20 | 0.02em |
 
 Body line length capped at 68 characters.
+
+`site/label` was Mono 500 until Milestone 3. Commit Mono ships 400 and 700 only — the same
+fact that set the card's scale — so 500 would have synthesized or fallen out of the stack.
+The 0.02em tracking carries the distinction instead. GOTCHAS 045.
 
 ---
 
@@ -398,8 +402,14 @@ Build to this without announcing it.
   this table. `rule` is excluded because it carries no information (see COLOR).
 - **Empty state.** The page before a URL is entered shows a real Stackshot card for a
   well-known repo, captioned. It demonstrates the product instead of describing it.
-- **Error states.** Three distinct ones, each naming the repo and the reason: repo not
-  found, no recognizable manifests, GitHub rate limit reached. Never a generic failure.
+- **Error states.** One per reason, each naming the repo and the reason. Never a generic
+  failure. This said "three" until ADR-0024 settled on **five** `FailureReason`s — repo not
+  found, no recognizable manifests, nothing mapped, rate limited, unavailable — and the
+  site renders all five from the same `ERROR_COPY` the card uses, so the two cannot drift.
+  A **sixth** state is the site's alone: a URL that names no GitHub repo is answered
+  client-side, before a request is spent or an hourly resolve is consumed. The site
+  composes the repo name around the shared sentences, because the card puts it in its
+  header instead.
 - **The error card.** Rendered in the full palette, stating the repo and the reason, so a
   README that embeds a broken repo shows an explanation rather than a broken-image icon.
 - **Loading.** A resolve takes seconds, not milliseconds. The button enters a labelled
@@ -478,6 +488,50 @@ description list and footer all start there; nothing on the page begins anywhere
 sparse page that single shared edge is what stops the content reading as scattered — it
 does the compositional work a full grid would do on a denser page. Centering individual
 elements within the column is the thing being ruled out, not centering the column.
+
+### Milestone 3: the same pass, run over the site
+
+Same question, decision by decision: would I have produced this for a completely different
+brief? Five where the answer was yes, and what changed.
+
+**1. The primary button was going to be `accent`. Changed to `ink`.**
+An accent-colored call to action is the single most automatic decision in this entire
+page, and it would have been the only large block of colour on a site whose card uses
+`accent` for one 4-unit bar. The palette says accent appears once and means one thing;
+a button painted with it makes the page argue with the product it is showing. On the site
+`accent` now appears **only in the focus ring**. The button is `ink` on `surface`, at
+15.7:1.
+
+**2. Loading was going to be a spinner. Changed to a labelled button and a live region.**
+A spinner is what you reach for without thinking, and it says nothing during the four-plus
+seconds a real resolve takes. "Generating card" says what is happening, keeps the flow's
+verb, and is the thing a screen reader announces. The quality floor already asked for
+this; the spinner was the reflex that had to be caught.
+
+**3. The failure message was going to be a toast. Changed to text under the input.**
+Toasts are the default because they need no layout decision. This one needed one: the
+error belongs where the eye already is, directly below the field that caused it, and it
+should persist rather than time out. The example card stays visible behind it, because it
+is still true and still the demonstration.
+
+**4. The empty state was going to be a separate "example" section. Changed to the same
+slot the result uses.**
+Two elements meant the example vanished and the result appeared somewhere else, which is a
+layout jump on the one interaction the page has. One slot, one `<picture>`, contents
+swapped. The page does not move when it answers you.
+
+**5. The description list was going to be a three-column grid of cards. Changed to a
+definition list in the card's own order.**
+A grid of little boxes is what every "features" section looks like, and it would have
+contradicted SURFACE's "no nested cards, no panels, no containers" on the same page as a
+card that obeys it. The list is now readable as a key to the diagram above it — same
+layers, same order, same overflow count — which is the job ADR-0009 actually gave it.
+
+**Still at risk, stated rather than hidden:** the headline. "Show your stack where people
+already look" is the one line on the page I could imagine writing for a different product,
+and it is doing marketing work rather than naming the thing. It survives this pass only
+because nothing better arrived; it is the first element to replace if the page reads
+generic.
 
 ### Two knowingly-retained defaults, and the argument for keeping them
 
