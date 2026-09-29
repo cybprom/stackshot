@@ -74,22 +74,34 @@ arranged, not in what a Stackshot card is.
 
 ## Consequences
 
-- **Storage roughly doubles per style, and Tiles is the expensive one.** Measured in Phase
-  0: ~452 KB base64 per stack against the Datasheet's ~275 KB. The 256 MB free tier holds
-  ~550 stacks in Tiles alone against ~950, and about 290 if a repo ends up cached in three
-  variants. Milestone 4's byte-watching stops being a precaution, and ARCHITECTURE's
-  ordered mitigation — drop the `png:` space first — is now the likely path rather than a
-  contingency.
-- **Tiles cards are portrait and content-height.** 1200×1289 for a dense repo against the
-  Datasheet's fixed 1200×800 landscape. In a README at 1100px that is a ~1180px block.
-  The `<picture>` snippet already pins no `width` or `height`, a decision made for the
-  error card's different aspect ratio, which now pays for a second reason.
+- **Storage grows per style, and Tiles is the expensive one.** ~332 KB base64 per stack
+  against the Datasheet's ~275 KB, once the three-row cap is applied; ~452 KB without it.
+  Two answers, both taken: the `png:` TTL drops from 30 days to **7**, because a PNG costs
+  function time and zero GitHub budget to redraw while a `StackDoc` costs the budget; and
+  **Upstash eviction is on**, so a full database drops old keys instead of failing writes.
+  Milestone 4 still watches bytes, but it is watching a cache that degrades rather than one
+  that stops.
+- **Tiles is content-height, capped at three rows.** Uncapped it reached 1200×1289 for a
+  dense repo — a portrait block taller than the laptop screen reading it, which is not a
+  shape a README absorbs. Capped it is 1200×869, near the Datasheet's 1200×800, and about
+  a quarter cheaper to store. Past fifteen cells the rest becomes `+N more`, and **every
+  layer present keeps at least one item tile**, so a lone backend cannot be crowded out by
+  a six-deep tooling layer: the layer set is the thing the card exists to show.
+  `lib/render/tiles-layout.ts`. The `<picture>` snippet already pins no `width` or
+  `height`, a decision made for the error card's different aspect ratio, which now pays
+  for a second reason.
 - **Tiles puts item names below the legibility floor, deliberately.** DESIGN fixed 0.29
   px/unit — GitHub's mobile apps — as the ratio that governs, and 8.75px as the floor for
   anything that must be read. A tile name is 23 units, or 6.7px there. The symbol is 64
   units, or 18.6px. **Symbols carry the card at thumbnail size and names are for up
   close**, which is the periodic-table metaphor working as intended rather than a
-  regression. Checked on a real phone in Phase 0 before the renderer was built.
+  regression.
+
+  **Verified, not assumed.** Read in the GitHub mobile app from
+  `docs/spike/styles/README.md` on 2026-09-29, where the two themes sit side by side in a
+  table and are therefore *smaller than a README would render them*. The symbols were
+  legible at that size. The direction stands on evidence from the surface that governs,
+  which is what ADR-0011 established as the bar.
 - **Each style needs a two-letter symbol per map entry**, 225 of them, unique. They are
   committed data rather than derived at runtime, because a symbol is baked into every
   cached PNG containing it: deriving them would make a symbol depend on map order, so

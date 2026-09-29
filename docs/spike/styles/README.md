@@ -54,36 +54,41 @@ because nothing asks for 700 yet, so no `RENDER_VERSION` bump.
 
 ## 4. How big is a Tiles card, and does it read at 0.29?
 
-Content-height, so it varies with the stack. Measured at 1200 units wide:
+Content-height, so it varies with the stack — and **capped at three rows**, which is what
+keeps it from becoming a portrait block taller than the screen reading it. Measured at
+1200 units wide, after the cap:
 
-| Repo | Height | PNG | base64, both themes |
-|---|---|---|---|
-| vercel/next.js | 1289 | 248 KB | 643 KB |
-| mastodon/mastodon | 1289 | 253 KB | 658 KB |
-| pmndrs/zustand | 659 | 142 KB | 368 KB |
-| github/gitignore | 449 | 54 KB | 139 KB |
+| Repo | Rows | Height | PNG | base64, both themes |
+|---|---|---|---|---|
+| vercel/next.js | 3 | 869 | 191 KB | 495 KB |
+| mastodon/mastodon | 3 | 869 | 186 KB | 482 KB |
+| pmndrs/zustand | 2 | 659 | 142 KB | 368 KB |
+| jwasham/coding-interview-university | 1 | 449 | 67 KB | 174 KB |
+| github/gitignore | 1 | 449 | 54 KB | 139 KB |
 
-**Tiles costs about 1.7× Datasheet to store**: ~452 KB per stack against ~275 KB
-(ARCHITECTURE). The 256 MB free tier holds roughly **550 stacks in Tiles alone**, against
-~950 in Datasheet, and about **290** if a repo ends up cached in three style variants.
-M4's byte-watching stops being a precaution.
+The cap took next.js and mastodon from 1289 units to **869**, near the Datasheet's fixed
+800, and the average from ~452 KB per stack to **~332 KB** against the Datasheet's ~275 KB.
+The 256 MB tier holds roughly **790 stacks** in Tiles alone. With the `png:` TTL at 7 days
+and Upstash eviction on, the cache degrades under pressure rather than stopping.
 
-**Tiles cards are portrait.** 1200×1289 for a dense repo, against Datasheet's 1200×800
-landscape. In a README at 1100px wide that is a ~1180px-tall block. This is the biggest
-unremarked consequence of the direction and it is a product decision, not a bug.
+### The phone check: passed
 
-### Look at these on a phone
+**Read in the GitHub mobile app on 2026-09-29.** The symbols were legible — in this table,
+where the two themes sit side by side and each image is therefore *smaller* than a README
+would render it. That is the verdict the direction needed, from the surface that governs.
 
-| | |
+| light | dark |
 |---|---|
 | ![next.js, light](./tiles-next.js-light.png) | ![next.js, dark](./tiles-next.js-dark.png) |
 | ![zustand, light](./tiles-zustand-light.png) | ![zustand, dark](./tiles-zustand-dark.png) |
+| ![sparse, light](./tiles-sparse-light.png) | ![sparse, dark](./tiles-sparse-dark.png) |
 
-The question is only this: **at phone width, can you read the symbols?** The names are
-23 units — 6.7px at 0.29, below the 8.75px floor DESIGN set for anything that must be
-read — and that is deliberate. Symbols are 64 units (18.6px) and carry the card at
-thumbnail size; names are for up close. The ADR records the reversal. If the symbols do
-not survive this, the direction needs bigger tiles, not smaller type.
+The names are 23 units — 6.7px at 0.29, below the 8.75px floor DESIGN set for anything
+that must be read — and that is deliberate. Symbols are 64 units (18.6px) and carry the
+card at thumbnail size; names are for up close. ADR-0029 records the reversal.
+
+The last row is the sparsest shape the layout has to hold: one tile, no language, a
+26-character name. It reads as a spec sheet with one entry rather than as a broken card.
 
 The symbols in these images come from a crude prototype generator and several are wrong —
 `Jest → Js` reads as JavaScript, `Next.js → Nj` should be `Nx`. That is the argument for
@@ -94,6 +99,5 @@ Phase 2's review pass over all 225, not a reason to distrust the layout.
 Five tiles need 1112 units; the design's padding leaves 1108, so it wraps to four columns
 and the card grows a row. This is latent in the design file too, which misses it by 2px at
 its 600px draw. Setting the card's padding to **32 — already `CARD.padding`, and on
-DESIGN's spacing scale, where the design's 44 is not** — gives five across and cuts
-next.js from 1523 to 1289 units and zustand from 893 to 659. All numbers above are at 32.
-GOTCHAS 048.
+DESIGN's spacing scale, where the design's 44 is not** — gives five across. All numbers
+above are at 32, with the three-row cap. GOTCHAS 048.

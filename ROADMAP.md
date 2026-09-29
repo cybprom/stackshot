@@ -25,9 +25,12 @@ Deployed:   LIVE at https://stackshot-one.vercel.app (project "stackshot",
             org cybproms-projects, region iad1, plan hobby, fluid compute,
             platform function timeout 300s; both routes pin maxDuration 30).
             stackshot.ilerioluwa.com IS LIVE (author-confirmed 2026-09-29),
-            which is SITE_ORIGIN's default. Git is connected, so PUSHES TO
-            MAIN AUTO-DEPLOY PRODUCTION; nothing has ever been pushed, every
-            deploy so far was `vercel --prod` from this machine.
+            which is SITE_ORIGIN's default. MAIN HAS BEEN PUSHED and pushes
+            auto-deploy production, so production now serves the Phase 1
+            stand-ins: tiles-*.png currently draws a Datasheet and caches it
+            under png:v1:tiles:*. Phase 2's RENDER_VERSION bump retires those.
+            Upstash EVICTION IS ON, so a full database drops old keys instead
+            of failing writes.
             Measure against the stable alias, never the per-deployment URL:
             that one 302s under Deployment Protection (the spike's trap).
             .env.local holds GITHUB_TOKEN, the two Upstash vars and a
@@ -82,14 +85,14 @@ Next:       PHASE 2 — Tiles. Two halves: the 225 two-letter symbols
             The contact sheet doubles as the name-fit check: longest display
             is styled-components at 17 chars, so nothing should reach the
             two-line clamp.
-            STILL OPEN: the author's phone check on docs/spike/styles/ —
-            do the symbols carry the card at 0.29? If not, the fix is bigger
-            tiles and fewer of them, not smaller type (ADR-0029).
+            PHONE CHECK PASSED (2026-09-29): symbols legible in the GitHub
+            app, at the smaller-than-README size the spike README's side-by-side
+            table renders them.
             M4 carries: the badge in your own README (the domain is live now,
             so this can come forward), the global budget guard, ADR-0012's
             amendment line for the separate bug counter, and monitoring KV
-            bytes — now ~550 stacks in Tiles alone, ~290 across three styles,
-            so this is nearer than the old ~600-950 suggested.
+            bytes — ~790 stacks in Tiles alone after the three-row cap and the
+            7-day png: TTL, ~430 if a repo is cached in two styles.
 ```
 
 ---

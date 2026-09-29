@@ -316,7 +316,7 @@ Three layers, each with a different job.
 |---|---|---|---|---|
 | KV repo pointer | `repo:{owner}/{repo}`, **the request lowercased** | 1h | Skip the two API calls | **yes, 1h** |
 | KV stack doc | `stack:{stackHash}` | 30d | Skip detection | no — content-keyed |
-| KV rendered png | `png:v{RENDER_VERSION}:{style}:{stackHash}:{theme}` | 30d | Skip the render | no — content-keyed |
+| KV rendered png | `png:v{RENDER_VERSION}:{style}:{stackHash}:{theme}` | **7d** | Skip the render | no — content-keyed |
 | CDN (Vercel edge) | the URL | `s-maxage=86400`, `swr=7d` | Skip the function entirely | **yes, and it dominates** |
 | Fastly + Camo | the URL | **our `max-age=3600`** | Honours the header we send · ADR-0013 | yes, our value |
 | Browser | the URL | our `max-age` | — | yes, our value |
@@ -338,23 +338,43 @@ The full chain and its numbers are ADR-0026.
 ### Storage, and what M4 watches
 
 PNGs are ~99% of what we store, and Upstash holds text, so they ride as base64 at 4/3 their
-bytes. Measured across the nine fixture cards: **103 KB average, 163 KB worst**, per theme.
+bytes. Styles multiply that: one `StackDoc` now renders several ways, and the Tiles card is
+the expensive one.
 
-| | Per stack (2 themes) | Stacks in 256 MB |
+| Style | Per stack (2 themes) | Stacks in 256 MB |
 |---|---|---|
-| Average card | ~275 KB base64 | ~950 |
-| Worst-case card | ~435 KB base64 | ~600 |
+| Datasheet, average | ~275 KB base64 | ~950 |
+| Tiles, average (capped at three rows) | ~332 KB base64 | ~790 |
+| Both cached for the same repo | ~607 KB base64 | ~430 |
 
-So the free tier's 256 MB holds roughly **600–950 distinct stacks** at a 30-day TTL, and
-the `stack:` and `repo:` spaces are rounding error beside that (~2 KB and ~0.2 KB each).
+Tiles was ~452 KB per stack before the three-row cap; capping it bought back about a
+quarter of the space and turned a 1200×1289 portrait card into 1200×869. ADR-0029.
+
+**Two things keep this from binding.**
+
+The `png:` TTL is **7 days**, against 30 for `stack:` and `repo:`. The asymmetry is the
+point: a PNG costs ~1.2s of function time and **zero GitHub budget** to redraw, while a
+`StackDoc` costs the budget, which is the scarce thing. The CDN holds popular cards for a
+day on its own, so a 7-day PNG is re-rendered only for something nobody has asked for in a
+week. In steady state the resident PNG set is roughly one week of distinct cards rather
+than one month.
+
+**Upstash eviction is ON** (enabled by the author, 2026-09-29), so a full database drops
+old keys rather than failing writes. That is the behaviour we want and the code was
+already built for it: `lib/resolve-cached` treats a pointer whose doc has gone as a miss
+and re-resolves, rather than as a failure, so an evicted `stack:` under a live `repo:`
+costs one cold resolve and nothing else. Without eviction, a full database returns an
+error on write and `lib/cache`'s guard would swallow it — cards would still render, but
+nothing would ever be cached again and only the logs would say so. The failure mode we
+have degrades; the one we avoided is silent.
+
 Command count is the looser constraint: a warm request is 3 commands and a cold resolve
 about 7, against 500K/month, and the CDN absorbs most requests before they reach the
 function at all.
 
 **M4 monitors bytes, not keys, and the mitigation is ordered:** if storage runs out, drop
-the `png:` space before anything else. Re-rendering costs ~1.2s of function time and zero
-API budget; re-resolving costs the budget, which is the scarce thing. Shortening the PNG
-TTL is the same lever with a smaller blast radius.
+the `png:` space before anything else, and non-default styles before the default. Shortening
+the PNG TTL again is the same lever with a smaller blast radius.
 
 The render key is the **content hash, not the commit SHA**. A README typo produces a new
 SHA but an identical `stackHash`, so it costs one cheap API call and zero renders. See

@@ -14,7 +14,18 @@ export const NEGATIVE_TTL_S = 600;
 // stop a stampede re-running a slow resolve, short enough that recovery is not our
 // problem to notice. ADR-0027.
 export const TRANSIENT_TTL_S = 60;
-export const CONTENT_TTL_S = 30 * 24 * 3600;
+/**
+ * The StackDoc. Content-addressed, so it is never stale — it is only ever evicted or
+ * expired, and re-earning it costs the GitHub budget, which is the scarce thing.
+ */
+export const DOC_TTL_S = 30 * 24 * 3600;
+/**
+ * The rendered PNG. Shorter than the doc on purpose: a PNG costs ~1.2s of function time
+ * and zero GitHub budget to redraw, the CDN keeps the popular ones warm without us, and
+ * PNGs are ~99% of what we store. Styles multiplied that, so this is the lever that gives
+ * the space back. ADR-0029.
+ */
+export const PNG_TTL_S = 7 * 24 * 3600;
 // Well inside the 4s resolve deadline: a slow cache must never cost more than the work
 // it was there to skip.
 export const CACHE_TIMEOUT_MS = 500;
@@ -167,7 +178,7 @@ export function upstashCache(redis: Redis): Cache {
     getDoc: (stackHash) => read(docKey(stackHash), StackDocSchema),
 
     async setDoc(stackHash, doc) {
-      await guard("setDoc", () => redis.set(docKey(stackHash), doc, { ex: CONTENT_TTL_S }));
+      await guard("setDoc", () => redis.set(docKey(stackHash), doc, { ex: DOC_TTL_S }));
     },
 
     async getPng(style, stackHash, theme) {
@@ -179,7 +190,7 @@ export function upstashCache(redis: Redis): Cache {
       // Upstash stores text, so PNGs ride as base64 and cost ~4/3 their bytes. See
       // ARCHITECTURE's note on storage.
       await guard("setPng", () =>
-        redis.set(pngKey(style, stackHash, theme), png.toString("base64"), { ex: CONTENT_TTL_S }),
+        redis.set(pngKey(style, stackHash, theme), png.toString("base64"), { ex: PNG_TTL_S }),
       );
     },
   };
