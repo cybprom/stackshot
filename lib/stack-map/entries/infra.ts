@@ -6,7 +6,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "docker",
     display: "Docker",
-    symbol: "Do",
+    symbol: "Dk",
     category: "infra",
     weight: 74,
     description: "Containers for building and running the app.",
@@ -67,7 +67,7 @@ export const INFRA: MapEntry[] = [
   {
     id: "aws",
     display: "AWS",
-    symbol: "Aa",
+    symbol: "Aw",
     category: "infra",
     weight: 78,
     description: "Amazon Web Services.",

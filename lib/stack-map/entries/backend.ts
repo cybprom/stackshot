@@ -164,7 +164,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "socket-io",
     display: "Socket.IO",
-    symbol: "Sf",
+    symbol: "Si",
     category: "backend",
     weight: 60,
     description: "Realtime bidirectional events.",
@@ -249,7 +249,7 @@ export const BACKEND: MapEntry[] = [
     // Drivers imply the database: a project with `pg` runs PostgreSQL somewhere.
     id: "postgres",
     display: "PostgreSQL",
-    symbol: "Po",
+    symbol: "Pg",
     category: "backend",
     weight: 82,
     description: "Relational database.",
@@ -427,7 +427,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "starlette",
     display: "Starlette",
-    symbol: "Sr",
+    symbol: "Sb",
     category: "backend",
     weight: 70,
     description: "Lightweight ASGI framework.",
@@ -654,7 +654,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "axum",
     display: "Axum",
-    symbol: "Ax",
+    symbol: "Am",
     category: "backend",
     weight: 88,
     description: "Rust web framework on Tokio and Tower.",
@@ -664,7 +664,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "actix-web",
     display: "Actix Web",
-    symbol: "Aw",
+    symbol: "Ax",
     category: "backend",
     weight: 88,
     description: "Rust web framework.",
@@ -673,7 +673,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "rocket",
     display: "Rocket",
-    symbol: "Ro",
+    symbol: "Rk",
     category: "backend",
     weight: 86,
     description: "Rust web framework.",
@@ -738,7 +738,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "sinatra",
     display: "Sinatra",
-    symbol: "Si",
+    symbol: "Sf",
     category: "backend",
     weight: 84,
     description: "Minimal Ruby web framework.",
@@ -874,7 +874,7 @@ export const BACKEND: MapEntry[] = [
   {
     id: "passport",
     display: "Passport",
-    symbol: "Pj",
+    symbol: "Ps",
     category: "backend",
     weight: 56,
     description: "Authentication middleware for Node.",
@@ -915,7 +915,7 @@ export const BACKEND: MapEntry[] = [
     // browser. Not tooling either — the images are the product, not a build artifact.
     id: "satori",
     display: "Satori",
-    symbol: "Sb",
+    symbol: "Sr",
     category: "backend",
     weight: 60,
     description: "Renders HTML and CSS to SVG, for server-generated images.",

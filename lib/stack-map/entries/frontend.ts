@@ -7,7 +7,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "next",
     display: "Next.js",
-    symbol: "Ne",
+    symbol: "Nj",
     category: "frontend",
     weight: 95,
     description: "React framework with file-based routing and server rendering.",
@@ -66,7 +66,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "solid-start",
     display: "SolidStart",
-    symbol: "So",
+    symbol: "Sg",
     category: "frontend",
     weight: 93,
     description: "Solid application framework with routing and server rendering.",
@@ -131,7 +131,7 @@ export const FRONTEND: MapEntry[] = [
   {
     id: "preact",
     display: "Preact",
-    symbol: "Pr",
+    symbol: "Pv",
     category: "frontend",
     weight: 86,
     description: "Small React-compatible UI library.",

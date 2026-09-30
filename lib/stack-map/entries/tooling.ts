@@ -145,7 +145,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "parcel",
     display: "Parcel",
-    symbol: "Pg",
+    symbol: "Po",
     category: "tooling",
     weight: 56,
     description: "Zero-config bundler.",
@@ -210,7 +210,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "prettier",
     display: "Prettier",
-    symbol: "Pv",
+    symbol: "Pr",
     category: "tooling",
     weight: 44,
     description: "Code formatter.",
@@ -237,7 +237,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "postcss",
     display: "PostCSS",
-    symbol: "Pz",
+    symbol: "Pc",
     category: "tooling",
     weight: 38,
     description: "CSS transforms via plugins.",
@@ -310,7 +310,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "storybook",
     display: "Storybook",
-    symbol: "Sg",
+    symbol: "So",
     category: "tooling",
     weight: 56,
     description: "UI component workshop.",
@@ -438,7 +438,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "rubocop",
     display: "RuboCop",
-    symbol: "Rg",
+    symbol: "Ro",
     category: "tooling",
     weight: 50,
     description: "Ruby linter and formatter.",
@@ -457,7 +457,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "phpunit",
     display: "PHPUnit",
-    symbol: "Pc",
+    symbol: "Pz",
     category: "tooling",
     weight: 58,
     description: "PHP testing framework.",
@@ -466,7 +466,7 @@ export const TOOLING: MapEntry[] = [
   {
     id: "pest",
     display: "Pest",
-    symbol: "Ps",
+    symbol: "Pj",
     category: "tooling",
     weight: 60,
     description: "PHP testing framework.",

@@ -1558,7 +1558,16 @@ in a design file is a decision, and it beat three generations of heuristic.
 
 What remains is honest scarcity — nineteen entries on crowded initials — and the generator
 reports **who holds the letter each one wanted**, because the reviewer's real choice is a
-trade rather than an invention.
+trade rather than an invention. `P` and `S` turned out to be fully saturated, all 26
+combinations of each taken, so on those initials there is no such thing as an improvement
+that costs nothing.
+
+The review added a third anchor the generator could not have known about: **every symbol on
+Stackshot's own card**, because Site C generates that card on load and it is the first one
+any visitor sees. Satori had `Sb`, which reads as Supabase or Storybook, and took `Sr` with
+Starlette yielding — decided on what the card has to communicate rather than on which
+library is more popular. Worth carrying: the allocation rule was frequency, and the one
+place frequency was the wrong rule was the card we show first.
 
 **The reason any of this matters:** a symbol is baked into every cached PNG containing it.
 Changing one after launch means a `RENDER_VERSION` bump and every card carrying it

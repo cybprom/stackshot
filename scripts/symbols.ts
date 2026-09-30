@@ -1,17 +1,13 @@
-// Proposes a two-letter Tiles symbol for every map entry. Usage:
-//   pnpm tsx scripts/symbols.ts            print the proposal and any collisions
-//   pnpm tsx scripts/symbols.ts --write    insert `symbol:` into lib/stack-map/entries/*.ts
+// Proposes a Tiles symbol for a technology not yet in the map. Usage:
+//   pnpm tsx scripts/symbols.ts                what is allocated, and what is free
+//   pnpm tsx scripts/symbols.ts "Bun" "Deno"   candidates for these names
 //
-// A bootstrap tool, not a runtime one. Symbols are committed data because each is baked
-// into every cached PNG containing it: derived at runtime, a symbol would depend on map
-// order, so adding one entry could silently change another's and invalidate cards nobody
-// touched. Run this once, read the contact sheet, fix what reads wrong, and freeze it.
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+// The bootstrap is over: all 225 symbols are reviewed, committed data, and this no longer
+// writes. A symbol is baked into every cached PNG containing it, so changing one after a
+// card is cached costs a RENDER_VERSION bump and every card carrying it — which is why
+// regenerating in bulk is not something this script should still be able to do.
+// GOTCHAS 049 has how the allocation was made and why the order mattered.
 import { STACK_MAP } from "@/lib/stack-map";
-
-const FILES = ["frontend", "backend", "infra", "tooling"];
-const dir = join(process.cwd(), "lib", "stack-map", "entries");
 
 /**
  * The periodic table's own rule: the first two letters, or the first plus a later one
@@ -39,161 +35,43 @@ function candidates(display: string): string[] {
   return out;
 }
 
-/**
- * Crowded initials run out: nine names begin with P and there are only so many letters in
- * "Poetry". These keep the first letter, which is the half that carries recognition, and
- * take any second — always enough, and always flagged, because `Pq` means nothing and the
- * review pass exists to catch exactly that.
- */
-function fallbacks(display: string): string[] {
-  const first = (display[0] ?? "x").toUpperCase();
-  return [..."abcdefghijklmnopqrstuvwxyz0123456789"].map((ch) => first + ch);
-}
+const holder = new Map(STACK_MAP.map((e) => [e.symbol, e.display]));
+const spareOn = (initial: string) =>
+  [..."abcdefghijklmnopqrstuvwxyz"].map((c) => initial + c).filter((c) => !holder.has(c));
 
-/**
- * Taken first, before anything is derived. Two groups, neither of them taste.
- *
- * **The designer's own picks**, read off `docs/design/directions/tiles.dc.html`, which
- * hand-lettered 26 tiles. Where a real decision already exists it outranks a heuristic:
- * the ladder had given Tailwind `Ti` and webpack `We` while `Tw` and `Wp` sat free,
- * because it takes the first available letter in name order rather than the idiomatic one.
- *
- * **Languages and runtimes**, because `weight` ranks within a layer and types.ts
- * deliberately depresses them — "the header already names the primary language" — which
- * is a card-ranking concern with nothing to do with symbols. Sorting by weight without
- * this hands Python `Pk` and Rust `Rg`.
- *
- * Next.js is the one design pick left out: it asked for `Nx`, which is the literal name
- * of another entry. That is a real conflict and belongs in the review pass, not here.
- */
-const ANCHORS: Record<string, string> = {
-  // Languages and runtimes.
-  node: "No",
-  python: "Py",
-  go: "Go",
-  rust: "Rs",
-  ruby: "Rb",
-  php: "Ph",
-  java: "Ja",
-  deno: "De",
-  // From the design file.
-  react: "Re",
-  typescript: "Ts",
-  tailwindcss: "Tw",
-  sass: "Sa",
-  eslint: "El",
-  esbuild: "Eb",
-  rollup: "Ru",
-  vitest: "Vt",
-  jest: "Je",
-  playwright: "Pl",
-  webpack: "Wp",
-  turborepo: "Tb",
-  lerna: "Le",
-  vercel: "Vc",
-  "github-actions": "Ga",
-  swr: "Sw",
-  lucide: "Lu",
-  "radix-ui": "Rx",
-  tokio: "Tk",
-  serde: "Sd",
-  clap: "Cl",
-  "napi-rs": "Na",
-  "pnpm-workspaces": "Pn",
-};
+const names = process.argv.slice(2).filter((arg) => !arg.startsWith("-"));
 
-function propose(): { symbols: Map<string, string>; guessed: Set<string>; stuck: string[] } {
-  const taken = new Set<string>();
-  const symbols = new Map<string, string>();
-  const guessed = new Set<string>();
-  const stuck: string[] = [];
-
-  // By weight, not by file order. Letters are scarce, and in declaration order frontend
-  // and backend took the good ones while tooling was left with Tc for TypeScript.
-  //
-  // `weight` ranks within a layer, not across the map, so this is a proxy and a knowingly
-  // imperfect one: a 90-weight frontend framework outranks GitHub Actions, which far more
-  // readers will actually see. Allocation really wants frequency across repos, which we
-  // will not have until the counters run. The review pass is what corrects it — which is
-  // why the contention report below exists.
-  const order = [...STACK_MAP].sort((a, b) => b.weight - a.weight || (a.id < b.id ? -1 : 1));
-
-  for (const [id, symbol] of Object.entries(ANCHORS)) {
-    taken.add(symbol);
-    symbols.set(id, symbol);
-  }
-
-  for (const entry of order) {
-    if (symbols.has(entry.id)) continue;
-    const derived = candidates(entry.display).find((c) => !taken.has(c));
-    const pick = derived ?? fallbacks(entry.display).find((c) => !taken.has(c));
-    if (!pick) {
-      stuck.push(`${entry.id} (${entry.display})`);
-      continue;
+if (names.length > 0) {
+  for (const name of names) {
+    const options = candidates(name);
+    const free = options.find((c) => !holder.has(c));
+    console.log(`\n${name}`);
+    console.log(`  from its own letters: ${options.map((c) => `${c} ${holder.get(c) ?? "FREE"}`).join("  ") || "none"}`);
+    console.log(`  first free: ${free ?? "none — every letter in the name is taken"}`);
+    if (!free) {
+      const spare = spareOn((name[0] ?? "x").toUpperCase());
+      console.log(`  spare: ${spare.join(" ") || "this initial is saturated, so it has to be a trade"}`);
     }
-    if (!derived) guessed.add(entry.id);
-    taken.add(pick);
-    symbols.set(entry.id, pick);
   }
-  return { symbols, guessed, stuck };
-}
-
-/** Replaces or inserts `symbol:` after each entry's `display:` line, keyed by the `id:` above it. */
-function write(symbols: Map<string, string>): number {
-  let count = 0;
-  for (const name of FILES) {
-    const path = join(dir, `${name}.ts`);
-    const lines = readFileSync(path, "utf8").split("\n");
-    const out: string[] = [];
-    let id = "";
-    for (const line of lines) {
-      // Rerunnable: an existing symbol line is dropped and rewritten, never doubled.
-      if (/^\s*symbol:\s*"/.test(line)) continue;
-      out.push(line);
-      const idMatch = /^\s*id:\s*"([^"]+)"/.exec(line);
-      if (idMatch?.[1]) id = idMatch[1];
-      if (/^(\s*)display:\s*"/.test(line) && symbols.has(id)) {
-        const indent = /^(\s*)/.exec(line)?.[1] ?? "    ";
-        out.push(`${indent}symbol: "${symbols.get(id)}",`);
-        count += 1;
-      }
-    }
-    writeFileSync(path, out.join("\n"));
-  }
-  return count;
-}
-
-const { symbols, guessed, stuck } = propose();
-
-if (process.argv.includes("--write")) {
-  console.log(`wrote ${write(symbols)} symbols into lib/stack-map/entries/`);
 } else {
   const byCategory = new Map<string, string[]>();
   for (const entry of STACK_MAP) {
     const rows = byCategory.get(entry.category) ?? [];
-    const flag = guessed.has(entry.id) ? " <- no letters left, pick one" : "";
-    rows.push(`  ${(symbols.get(entry.id) ?? "??").padEnd(4)} ${entry.display}${flag}`);
+    rows.push(`  ${entry.symbol}  ${entry.display}`);
     byCategory.set(entry.category, rows);
   }
   for (const [category, rows] of byCategory) {
     console.log(`\n${category.toUpperCase()}  (${rows.length})`);
     console.log(rows.join("\n"));
   }
-  console.log(`\n${symbols.size} symbols, ${new Set(symbols.values()).size} distinct, ${guessed.size} need a human`);
 
-  // For the flagged ones, who holds the letters they wanted. The reviewer's real choice is
-  // usually a trade, not an invention.
-  if (guessed.size > 0) {
-    const holder = new Map([...symbols].map(([id, sym]) => [sym, id]));
-    console.log("\nCONTENTION — these took a meaningless letter; who holds what they wanted:");
-    for (const entry of STACK_MAP) {
-      if (!guessed.has(entry.id)) continue;
-      const wanted = candidates(entry.display)
-        .slice(0, 4)
-        .map((c) => `${c} (${holder.get(c) ?? "free"})`)
-        .join("  ");
-      console.log(`  ${entry.display.padEnd(12)} got ${symbols.get(entry.id)}   wanted: ${wanted}`);
+  console.log(`\n${STACK_MAP.length} entries, ${new Set(STACK_MAP.map((e) => e.symbol)).size} distinct symbols`);
+  console.log("\nfree letters per initial — a saturated one means any change there is a trade:");
+  for (const initial of [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"]) {
+    const free = spareOn(initial);
+    const used = 26 - free.length;
+    if (used > 0) {
+      console.log(`  ${initial}  ${String(used).padStart(2)} used   ${free.length === 0 ? "SATURATED" : free.join(" ")}`);
     }
   }
-  if (stuck.length > 0) console.log(`NO CANDIDATE LEFT for:\n  ${stuck.join("\n  ")}`);
 }
