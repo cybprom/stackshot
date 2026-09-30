@@ -75,11 +75,20 @@ SITE_ORIGIN: lib/site.ts is the single source for the origin in the card
             PORT`) or the preview points at production. Preview and snippet
             are the same absolute URLs, so the CDN entry is shared and
             same-origin `download` works.
-Last done:  STYLES PHASE 1 — plumbing. CardStyle + URL + cache key + the
-            snippet all carry the style; layer colours are tokens in
-            lib/tokens.ts AND globals.css, with tests/tokens.test.ts as the
-            seam (verified able to fail on one digit). ADR-0029 records the
-            three reversals. 724 tests.
+Last done:  PHASE 2 FIRST HALF — the 225 symbols, reviewed and FROZEN
+            (7d221d7). symbol is a required field on MapEntry;
+            tests/stack-map.test.ts enforces /^[A-Z][a-z0-9]$/ and
+            uniqueness. scripts/symbols.ts NO LONGER WRITES — a bulk
+            regenerate would undo the author's pass. Contact sheet and the
+            reasoning are in docs/spike/styles/.
+            P AND S ARE SATURATED (all 26 combinations taken), so any
+            future change on those initials is a trade, not a move.
+            Before it: the three-row Tiles cap + png: TTL 7d + eviction
+            recorded (5399bc7). PHASE 1 plumbing (c7349da) — CardStyle +
+            URL + cache key + snippet all carry the style; layer colours
+            are tokens in lib/tokens.ts AND globals.css with
+            tests/tokens.test.ts as the seam. ADR-0029 has the three
+            reversals.
             Before it: PHASE 0 (fd72965) — Satori honours maxHeight+overflow;
             Commit Mono has the box-drawing glyphs; Archivo Bold shipped and
             byte-checked; Tiles measured at ~452KB/stack and portrait.
@@ -98,17 +107,21 @@ Last done:  STYLES PHASE 1 — plumbing. CardStyle + URL + cache key + the
             RESOLVE rather than request, IP from x-vercel-forwarded-for only
             (spoofing verified ineffective live), unmapped logged not
             returned.
-Next:       PHASE 2, SECOND HALF — the Tiles Satori tree. The symbols are
-            done and awaiting the author's review of the contact sheet in
-            docs/spike/styles/ (one real conflict: the design wants Nx for
-            Next.js and Nx is another entry's literal name; 19 more on
-            crowded initials). Symbols are data now: lib/stack-map/types.ts
-            requires `symbol`, tests/stack-map.test.ts enforces
-            /^[A-Z][a-z0-9]$/ and uniqueness, and CHANGING ONE AFTER A CARD
-            IS CACHED NEEDS A RENDER_VERSION BUMP.
-            Then: build the tree against lib/render/tiles-layout.ts, replace
-            the stand-in in lib/render/styles.ts, BUMP RENDER_VERSION, and
-            regenerate tests/fixtures/render-hashes.json.
+Next:       PHASE 2, SECOND HALF — the Tiles Satori tree. NOT STARTED, by
+            the author's instruction. Everything it needs exists:
+             - lib/render/tiles-layout.ts for the allocation (15 cells,
+               5 per row, every layer keeps >=1 item tile)
+             - entry.symbol for every tile
+             - LAYER_COLORS in lib/tokens.ts
+             - CARD.padding (32) NOT the design's 44 — five per row, not
+               four. GOTCHAS 048.
+             - the throwaway prototype's measurements in
+               docs/spike/styles/README.md (1200x869 dense, ~332KB/stack)
+            Then: replace the stand-in in lib/render/styles.ts, set its
+            height to undefined (content-height), BUMP RENDER_VERSION in
+            lib/tokens.ts, and regenerate tests/fixtures/render-hashes.json
+            IN THE SAME COMMIT. Production is serving Datasheet bytes under
+            png:v1:tiles:* right now; the bump is what retires them.
             Was: PHASE 2 — Tiles. Two halves: the 225 two-letter symbols
             (scripts/symbols.ts proposes on a ladder and REFUSES to
             auto-resolve collisions, because a symbol is baked into every
