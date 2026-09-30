@@ -7,8 +7,9 @@ it is the only thing that survives one.*
 
 ```
 Milestone:  3 COMPLETE and committed. Now on the CARD STYLES direction
-            (ADR-0029): the card becomes a choice of styles. Phase 0
-            (de-risk) and Phase 1 (plumbing) are done. Next is Phase 2.
+            (ADR-0029): the card becomes a choice of styles. Phases 0
+            (de-risk) and 1 (plumbing) are done, and so are Phase 2's
+            225 symbols. The Tiles Satori tree is next.
 PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles (symbols DONE,
             tree next) · 3 Terminal · 4 site generator (switcher, theme
             toggle, HTML preview + crossfade) · 5 docs. Aiming at one
@@ -40,6 +41,41 @@ AFTER P4:   TWO PAGE DESIGNS, built to be compared live, not one chosen on
                inner scrolling box.
              - Tiles previews use the three-row cap, the same allocation
                as the renderer (lib/render/tiles-layout.ts).
+P3 TERMINAL: Content-height like Tiles, so its styleDef height is
+            undefined. Commit Mono has NO 600 — the design's two 600s
+            become 700 (GOTCHAS 047, third time this font's weight set has
+            cost something). Box-drawing glyphs were verified present in
+            both weights, so it is not blocked. Design file
+            docs/design/directions/terminal.dc.html, drawn at 600px: double
+            every value, but RE-DERIVE anything that wraps, fits or
+            divides — doubling preserves proportion and not fit, which is
+            how Tiles lost a column (GOTCHAS 048). Bytes not measured yet;
+            it should be much cheaper than Tiles, being text.
+P4 GENERATOR: Style switcher + Light/Dark/System toggle on the preview.
+            The TOGGLE IS PREVIEW-ONLY: the snippet always emits <picture>
+            with both themes, so System is the real README behaviour and
+            the toggle is a convenience, not a product capability.
+            The switcher MUST feed the copied snippet — pictureSnippet in
+            lib/site.ts already takes a style and tests/site.test.ts
+            asserts it never emits card-*.png.
+            The preview draws in HTML first and the real PNG crossfades in
+            once decoded, so a drift between the two implementations of a
+            style is visible rather than theoretical. That HTML preview is
+            ALSO what stops the switcher writing a PNG per flip — cutting
+            it has a storage cost, not just a polish cost (ADR-0029).
+            Reveals, timings and the two loading phases are in
+            docs/design/directions/preview.dc.html.
+P5 DOCS:    DESIGN.md still describes only the Datasheet and needs the
+            styles. ADR-0029 already exists and is current.
+OPEN:       terminal-*.png and tags-*.png SERVE DATASHEET BYTES today,
+            because CARD_STYLE_DEFS maps every style to something and they
+            are stand-ins. Nobody is served a wrong card — the site never
+            offers them — but the URLs lie, and Tags is post-launch so its
+            URL will lie for a while. DECIDE BEFORE LAUNCH: 404 the styles
+            that have no renderer, or ship Tags. A 404 needs care: the card
+            route's I5 says a card request always returns 200 with an
+            image, so this is "not a card request" territory like a bad
+            filename, not a failure card.
 STYLES:     Every CardStyle needs an entry in lib/render/styles.ts.
             Tiles/Terminal/Tags currently draw the Datasheet tree as
             stand-ins. REPLACING A STAND-IN BUMPS RENDER_VERSION, or
