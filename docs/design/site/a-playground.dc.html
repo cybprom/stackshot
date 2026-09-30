@@ -10,48 +10,46 @@
 <helmet>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500;600;700&amp;display=swap">
 <style>
-body{margin:0;font-family:Archivo,'Helvetica Neue',Arial,sans-serif;background:#F3F5F1}
+body{margin:0;font-family:Archivo,'Helvetica Neue',Arial,sans-serif}
 @keyframes tileIn{0%{opacity:0;transform:translateY(10px) scale(.9)}65%{opacity:1;transform:translateY(-1px) scale(1.03)}100%{opacity:1;transform:none}}
-@keyframes rowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
 @keyframes scan{from{top:-48px}to{top:100%}}
-@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes drift{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+@keyframes panelIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 .a-tile{animation:tileIn 460ms cubic-bezier(.2,0,0,1) both}
-.a-row{animation:rowIn 380ms cubic-bezier(.2,0,0,1) both}
+.a-row{animation:rowIn 360ms cubic-bezier(.2,0,0,1) both}
 .cursor-in{animation:rowIn 200ms cubic-bezier(.2,0,0,1) both,blink 1s steps(1) infinite}
 .dimmed{opacity:.28;filter:saturate(.25);transition:opacity 240ms,filter 240ms}
 .shown{opacity:1;filter:none;transition:opacity 240ms,filter 240ms}
 .scan{position:absolute;left:0;right:0;height:48px;pointer-events:none;animation:scan 1.25s cubic-bezier(.45,0,.55,1) infinite}
-.marquee{animation:marquee 38s linear infinite}
-.bob{animation:bob 2.4s ease-in-out infinite}
+.col-up{animation:drift 44s linear infinite}
+.col-down{animation:drift 52s linear infinite reverse}
+.panel-in{animation:panelIn 520ms cubic-bezier(.2,0,0,1) 150ms both}
+.bob{animation:bob 2.6s ease-in-out infinite}
+.grow{transition:width 560ms cubic-bezier(.2,0,0,1)}
+.grow-h{overflow:hidden;transition:height 460ms cubic-bezier(.2,0,0,1)}
 button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #C8461E;outline-offset:2px}
-a{color:#101615}a:hover{color:#2458C4}
-@media (prefers-reduced-motion: reduce){.a-tile,.a-row,.cursor-in,.marquee,.bob{animation:none}.scan{display:none}.dimmed,.shown{transition:none}}
-</style>
+@media (prefers-reduced-motion: reduce){.a-tile,.a-row,.cursor-in,.col-up,.col-down,.panel-in,.bob{animation:none}.scan{display:none}.dimmed,.shown,.grow,.grow-h{transition:none}}
+body{background:#F3F5F1}</style>
 </helmet>
-<div style="width: 1440px; height: 1960px; box-sizing: border-box; background: #F3F5F1; display: flex; flex-direction: column; color: #101615">
-
-<nav style="height: 76px; box-sizing: border-box; padding: 0 64px; display: flex; align-items: center; justify-content: space-between">
+<div style="width: 1440px; height: 2400px; box-sizing: border-box; background: #F3F5F1; display: flex; flex-direction: column; color: #101615">
+<nav style="height: 76px; flex-shrink: 0; box-sizing: border-box; padding: 0 64px; display: flex; align-items: center; justify-content: space-between">
 <div style="display: flex; align-items: center; gap: 10px">
-<div class="bob" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; width: 20px; height: 20px">
+<div class="bob" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; width: 20px; height: 20px; flex-shrink: 0">
 <span style="background: #2458C4; border-radius: 2px"></span><span style="background: #1B7F52; border-radius: 2px"></span>
 <span style="background: #9A5F0E; border-radius: 2px"></span><span style="background: #596068; border-radius: 2px"></span>
 </div>
 <span style="font-weight: 800; font-size: 21px; letter-spacing: -0.03em">stackshot</span>
 </div>
-<div style="display: flex; align-items: center; gap: 22px; font-size: 15px; font-weight: 500">
-<a href="#styles" style="text-decoration: none">Styles</a>
-<a href="https://github.com/cybprom/stackshot" style="display: inline-flex; align-items: center; gap: 10px; height: 38px; padding: 0 6px 0 14px; border: 1.5px solid #101615; border-radius: 8px; text-decoration: none; background: #FFFFFF">
+<a href="https://github.com/cybprom/stackshot" style="display: inline-flex; align-items: center; gap: 10px; height: 38px; padding: 0 6px 0 14px; border: 1.5px solid #101615; border-radius: 8px; text-decoration: none; background: #FFFFFF; color: #101615; font-weight: 600; font-size: 14.5px">
 <span>Star on GitHub</span>
-<span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 8px; border-radius: 5px; background: #101615; color: #F3F5F1; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px">
-<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"></path></svg>[stars]</span>
+<span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 8px; border-radius: 5px; background: #101615; color: #F3F5F1; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"></path></svg>[stars]</span>
 </a>
-</div>
 </nav>
-
-<section style="padding: 48px 64px 72px; display: flex; gap: 56px; align-items: flex-start">
-<div style="width: 520px; flex-shrink: 0; display: flex; flex-direction: column; gap: 26px; padding-top: 18px">
+<section style="padding: 40px 64px 72px; display: flex; gap: 56px; align-items: flex-start">
+<div style="width: 500px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; padding-top: 18px">
 <h1 style="margin: 0; font-weight: 800; font-size: 68px; line-height: 0.98; letter-spacing: -0.045em">
 <span class="a-row" style="display: block; animation-delay: 0ms">Your stack,</span>
 <span class="a-row" style="display: block; animation-delay: 90ms">drawn for your</span>
@@ -64,32 +62,40 @@ a{color:#101615}a:hover{color:#2458C4}
 <span style="padding: 5px 11px; border-radius: 999px; background: #EAECED; color: #596068; font-weight: 600; font-size: 13.5px">Tooling</span>
 </div>
 <p class="a-row" style="animation-delay: 320ms; margin: 0; font-size: 18px; line-height: 1.55; color: #4A524E">Paste a GitHub repo. Stackshot reads its manifests, works out what it's built with, and draws a card that matches GitHub's light and dark themes.</p>
-<div class="a-row" style="animation-delay: 380ms; display: flex; flex-direction: column; gap: 8px">
+<div class="a-row" style="animation-delay: 380ms; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 8px">
 <label for="a-url" style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; color: #5A625E">GitHub repo</label>
 <div style="display: flex; gap: 10px">
-<input id="a-url" value="{{url}}" onChange="{{onUrl}}" style="flex-grow: 1; min-width: 0; height: 52px; box-sizing: border-box; padding: 0 16px; border: 1.5px solid #101615; border-radius: 8px; background: #FFFFFF; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14.5px; color: #101615">
-<button onClick="{{generate}}" disabled="{{busy}}" style="height: 52px; min-width: 160px; padding: 0 20px; border: 0; border-radius: 8px; background: #101615; color: #F3F5F1; font-family: Archivo, sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; white-space: nowrap">{{btnLabel}}</button>
+<input id="a-url" value="{{url}}" onChange="{{onUrl}}" placeholder="github.com/owner/repo" style="flex-grow: 1; min-width: 0; height: 52px; box-sizing: border-box; padding: 0 16px; border: 1.5px solid #101615; border-radius: 8px; background: #FFFFFF; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14.5px; color: #101615">
+<button onClick="{{generate}}" disabled="{{busy}}" style="height: 52px; min-width: 156px; padding: 0 20px; border: 0; border-radius: 8px; background: #101615; color: #F3F5F1; font-family: Archivo, sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; white-space: nowrap">{{btnLabel}}</button>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; color: #5A625E">
+<span>Try</span>
+<sc-for list="{{tries}}" as="tr" hint-placeholder-count="3">
+<button onClick="{{tr.pick}}" style="height: 30px; padding: 0 11px; border: 1px solid #D0D5CC; border-radius: 999px; background: #FFFFFF; color: #101615; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; cursor: pointer">{{tr.label}}</button>
+</sc-for>
 </div>
 <div aria-live="polite" style="min-height: 18px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12.5px; color: #5A625E">{{status}}</div>
 </div>
 </div>
-
-<div id="styles" style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px">
-<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; ">
 <div style="display: flex; gap: 3px; padding: 4px; border-radius: 10px; background: #E4E7E1" aria-label="Card style">
 <sc-for list="{{styles}}" as="m" hint-placeholder-count="2">
-<button onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="height: 34px; padding: 0 16px; border: 0; border-radius: 7px; background: {{m.bg}}; color: {{m.fg}}; font-family: Archivo, sans-serif; font-weight: 600; font-size: 14px; cursor: pointer">{{m.label}}</button>
+<button onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="height: 34px; padding: 0 14px; border: 0; border-radius: 7px; background: {{m.bg}}; color: {{m.fg}}; font-family: Archivo, sans-serif; font-weight: 600; font-size: 14px; cursor: pointer">{{m.label}}</button>
 </sc-for>
 </div>
 <div style="display: flex; gap: 3px; padding: 4px; border-radius: 10px; background: #E4E7E1" aria-label="Preview theme">
 <sc-for list="{{modes}}" as="m" hint-placeholder-count="3">
-<button onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="height: 34px; padding: 0 14px; border: 0; border-radius: 7px; background: {{m.bg}}; color: {{m.fg}}; font-family: Archivo, sans-serif; font-weight: 600; font-size: 14px; cursor: pointer">{{m.label}}</button>
+<button onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="height: 34px; padding: 0 12px; border: 0; border-radius: 7px; background: {{m.bg}}; color: {{m.fg}}; font-family: Archivo, sans-serif; font-weight: 600; font-size: 14px; cursor: pointer">{{m.label}}</button>
 </sc-for>
 </div>
 </div>
-
 <div style="position: relative; overflow: hidden; border-radius: 14px; background: {{pg}}; padding: 28px; min-height: 520px; box-sizing: border-box; border: 1px solid #D8DCD4">
-<div class="{{wrapCls}}">
+<div class="grow-h" style="height: {{slotH}}">
+<div id="{{slotId}}" class="{{wrapCls}}">
+
 <sc-if value="{{isTiles}}" hint-placeholder-val="{{ true }}">
 <div style="box-sizing: border-box; background: {{tc.surface}}; border: 1px solid {{tc.rule}}; border-radius: 10px; padding: 22px; display: flex; flex-direction: column; gap: 18px">
 <div class="{{tc.headCls}}" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px">
@@ -148,71 +154,84 @@ a{color:#101615}a:hover{color:#2458C4}
 </div>
 </div>
 </sc-if>
+
+</div>
 </div>
 <sc-if value="{{busy}}" hint-placeholder-val="{{ false }}">
 <div class="scan" style="background: linear-gradient(to bottom, transparent, {{wake}}); border-bottom: 2px solid {{scanAccent}}; box-shadow: 0 8px 18px -6px {{scanAccent}}"></div>
 </sc-if>
 </div>
-<div style="font-size: 13.5px; color: #5A625E">This is how the card looks in a README. Pick a theme to check both.</div>
+<div style="display: flex; gap: 10px; ">
+<button onClick="{{copy}}" style="height: 46px; padding: 0 20px; border: 0; border-radius: 8px; background: {{copyBg}}; color: #FFFFFF; font-family: Archivo, sans-serif; font-weight: 700; font-size: 15px; cursor: pointer">{{copyLabel}}</button>
+<button style="height: 46px; padding: 0 18px; border: 1.5px solid #101615; border-radius: 8px; background: transparent; color: #101615; font-family: Archivo, sans-serif; font-weight: 600; font-size: 15px; cursor: pointer">Download PNGs</button>
+</div>
 </div>
 </section>
-
-<section style="padding: 64px; display: flex; gap: 56px; align-items: flex-start; background: #FFFFFF; border-top: 1px solid #D8DCD4; border-bottom: 1px solid #D8DCD4">
+<section style="padding: 64px; display: flex; gap: 56px; align-items: flex-start; border-top: 1px solid #D8DCD4">
 <div style="width: 420px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px">
 <h2 style="margin: 0; font-weight: 800; font-size: 40px; line-height: 1.02; letter-spacing: -0.035em">One snippet.<br>Both themes.</h2>
 <p style="margin: 0; font-size: 17px; line-height: 1.55; color: #4A524E">Paste it into your README. GitHub shows the light card or the dark one to match each reader, and the card updates when your stack changes.</p>
 </div>
-<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px">
-<div style="box-sizing: border-box; border-radius: 12px; background: #101615; padding: 22px 24px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13.5px; line-height: 1.7; color: #C9D1CB; overflow: hidden">
+<div style="flex-grow: 1; min-width: 0"><div style="box-sizing: border-box; border-radius: 12px; background: #101615; padding: 18px 20px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13.5px; line-height: 1.75; color: #C9D1CB; overflow: hidden; ">
 <div style="white-space: pre"><span style="color: #7FAEFF">&lt;picture&gt;</span></div>
-<div style="white-space: pre">  <span style="color: #7FAEFF">&lt;source</span> media="(prefers-color-scheme: dark)" srcset="<span style="color: #E5AE58">{{snipDark}}</span>"<span style="color: #7FAEFF">&gt;</span></div>
-<div style="white-space: pre">  <span style="color: #7FAEFF">&lt;img</span> alt="{{snipAlt}}" src="<span style="color: #E5AE58">{{snipLight}}</span>"<span style="color: #7FAEFF">&gt;</span></div>
+<div style="white-space: pre">  <span style="color: #7FAEFF">&lt;source</span> media="(prefers-color-scheme: dark)"</div>
+<div style="white-space: pre">    srcset="<span style="color: #E5AE58">{{snipDark}}</span>"<span style="color: #7FAEFF">&gt;</span></div>
+<div style="white-space: pre">  <span style="color: #7FAEFF">&lt;img</span> alt="{{snipAlt}}"</div>
+<div style="white-space: pre">    src="<span style="color: #E5AE58">{{snipLight}}</span>"<span style="color: #7FAEFF">&gt;</span></div>
 <div style="white-space: pre"><span style="color: #7FAEFF">&lt;/picture&gt;</span></div>
-</div>
-<div style="display: flex; gap: 10px; flex-wrap: wrap">
-<button onClick="{{copy}}" style="height: 46px; padding: 0 20px; border: 0; border-radius: 8px; background: {{copyBg}}; color: #FFFFFF; font-family: Archivo, sans-serif; font-weight: 700; font-size: 15px; cursor: pointer">{{copyLabel}}</button>
-<button style="height: 46px; padding: 0 18px; border: 1.5px solid #101615; border-radius: 8px; background: transparent; color: #101615; font-family: Archivo, sans-serif; font-weight: 600; font-size: 15px; cursor: pointer">Download light PNG</button>
-<button style="height: 46px; padding: 0 18px; border: 1.5px solid #101615; border-radius: 8px; background: transparent; color: #101615; font-family: Archivo, sans-serif; font-weight: 600; font-size: 15px; cursor: pointer">Download dark PNG</button>
-</div>
-</div>
+</div></div>
 </section>
-
-<section style="padding: 64px 0 56px; display: flex; flex-direction: column; gap: 24px; overflow: hidden">
-<div style="padding: 0 64px; display: flex; justify-content: space-between; align-items: baseline; gap: 24px">
-<h2 style="margin: 0; font-weight: 800; font-size: 32px; letter-spacing: -0.03em">Knows 223 technologies, and counting.</h2>
-<a href="https://github.com/cybprom/stackshot/issues" style="font-size: 15px; font-weight: 600">Suggest one we missed</a>
+<section style="padding: 72px 64px; display: flex; flex-direction: column; gap: 20px; background: #FFFFFF; border-top: 1px solid #D8DCD4">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 8px; max-width: 560px">
+<h2 style="margin: 0; font-weight: 800; font-size: 38px; line-height: 1.05; letter-spacing: -0.035em">Does it know your stack?</h2>
+<p style="margin: 0; font-size: 16px; line-height: 1.55; color: #4A524E">Stackshot recognises 223 technologies across four layers. Search for yours.</p>
 </div>
-<div style="overflow: hidden">
-<div class="marquee" style="display: flex; gap: 10px; width: max-content">
-<sc-for list="{{strip}}" as="s" hint-placeholder-count="12">
-<div style="width: 76px; height: 76px; flex-shrink: 0; box-sizing: border-box; border-radius: 8px; background: {{s.tint}}; border-top: 3px solid {{s.color}}; padding: 7px 8px; display: flex; flex-direction: column; justify-content: space-between">
-<div style="font-weight: 800; font-size: 24px; line-height: 1; letter-spacing: -0.03em; color: {{s.color}}">{{s.sym}}</div>
-<div style="font-weight: 500; font-size: 10.5px; color: #3F4744; white-space: nowrap; overflow: hidden">{{s.n}}</div>
+<input aria-label="Search technologies" value="{{q}}" onChange="{{onQ}}" placeholder="Search, e.g. prisma" style="width: 340px; height: 46px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid #101615; border-radius: 8px; background: #FFFFFF; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; color: #101615">
+</div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap;">
+<sc-for list="{{chips}}" as="ch" hint-placeholder-count="5">
+<button onClick="{{ch.pick}}" aria-pressed="{{ch.pressed}}" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px; border: 1px solid {{ch.border}}; border-radius: 999px; background: {{ch.bg}}; color: {{ch.fg}}; font-family: Archivo, sans-serif; font-weight: 600; font-size: 13.5px; cursor: pointer">
+<span style="width: 8px; height: 8px; border-radius: 2px; background: {{ch.dot}}; display: inline-block"></span>{{ch.label}}<span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11.5px; opacity: 0.7">{{ch.count}}</span></button>
+</sc-for>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<sc-for list="{{idx}}" as="ix" hint-placeholder-count="12">
+<div class="a-tile" style="animation-delay: {{ix.delay}}; width: 100px; height: 88px; box-sizing: border-box; border-radius: 6px; background: {{ix.tint}}; border-top: 3px solid {{ix.color}}; padding: 6px 8px 7px; display: flex; flex-direction: column; justify-content: space-between">
+<div style="font-weight: 800; font-size: 28px; line-height: 1; letter-spacing: -0.03em; color: {{ix.color}}">{{ix.sym}}</div>
+<div style="font-weight: 500; font-size: 11.5px; line-height: 1.15; max-height: 2.3em; overflow: hidden; color: #3F4744">{{ix.n}}</div>
 </div>
 </sc-for>
 </div>
-</div>
+<sc-if value="{{noHits}}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 16px; line-height: 1.5; color: #4A524E">No match for "{{q}}". <a href="https://github.com/cybprom/stackshot/issues" style="color: #101615; font-weight: 600">Suggest it on GitHub</a> and it can join the map.</div>
+</sc-if>
+<sc-if value="{{idxHasMore}}" hint-placeholder-val="{{ false }}">
+<button onClick="{{showAll}}" style="align-self: flex-start; height: 42px; padding: 0 16px; border: 1.5px solid #101615; border-radius: 8px; background: transparent; color: #101615; font-family: Archivo, sans-serif; font-weight: 600; font-size: 14.5px; cursor: pointer">{{showAllLabel}}</button>
+</sc-if>
 </section>
-
-<footer style="margin-top: auto; padding: 28px 64px 36px; border-top: 1px solid #D8DCD4; display: flex; justify-content: space-between; align-items: center; font-size: 14.5px; color: #4A524E">
+<footer style="margin-top: auto; padding: 28px 64px 36px; border-top: 1px solid #D8DCD4; display: flex; justify-content: space-between; align-items: center; font-size: 14.5px; color: #4A524E; background: #F3F5F1">
 <div style="display: flex; align-items: center; gap: 10px">
-<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; width: 14px; height: 14px">
-<span style="background: #2458C4; border-radius: 1px"></span><span style="background: #1B7F52; border-radius: 1px"></span>
-<span style="background: #9A5F0E; border-radius: 1px"></span><span style="background: #596068; border-radius: 1px"></span>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; width: 16px; height: 16px; flex-shrink: 0">
+<span style="background: #2458C4; border-radius: 2px"></span><span style="background: #1B7F52; border-radius: 2px"></span>
+<span style="background: #9A5F0E; border-radius: 2px"></span><span style="background: #596068; border-radius: 2px"></span>
 </div>
 <span>Open source. Built by Ilerioluwa.</span>
 </div>
 <div style="display: flex; gap: 24px; font-weight: 500">
-<a href="https://github.com/cybprom/stackshot">GitHub</a>
-<a href="https://github.com/cybprom/stackshot/issues">Report a problem</a>
+<a href="https://github.com/cybprom/stackshot" style="color: #101615">GitHub</a>
+<a href="https://github.com/cybprom/stackshot/issues" style="color: #101615">Suggest a technology</a>
 </div>
 </footer>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1960}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2400}}'>
+const INIT = { url: 'https://github.com/pmndrs/zustand', repoKey: 'zustand', expanded: true, intro: false };
+const IDX_CAP = 24;
+const SLOT_ID = 'slot-a';
 const REPOS = {
   next: { owner: 'vercel', repo: 'next.js', lang: 'JavaScript', stars: '142k stars', layers: [
-    { k: 'frontend', name: 'Frontend', more: 0, items: [['Next.js', '16', 'Nx'], ['Radix UI', '', 'Rx'], ['SWR', '2', 'Sw'], ['Lucide', '', 'Lu'], ['Tailwind', '4', 'Tw'], ['Sass', '1', 'Sa']] },
+    { k: 'frontend', name: 'Frontend', more: 0, items: [['Next.js', '16', 'Nj'], ['Radix UI', '', 'Rx'], ['SWR', '2', 'Sw'], ['Lucide', '', 'Lu'], ['Tailwind', '4', 'Tw'], ['Sass', '1', 'Sa']] },
     { k: 'backend', name: 'Backend', more: 1, items: [['Node', '', 'No'], ['Tokio', '1', 'Tk'], ['napi-rs', '3', 'Na'], ['clap', '4', 'Cl'], ['Rust', '', 'Rs'], ['Serde', '1', 'Sd']] },
     { k: 'infra', name: 'Infra', more: 0, items: [['Vercel', '', 'Vc'], ['GitHub Actions', '', 'Ga']] },
     { k: 'tooling', name: 'Tooling', more: 7, items: [['Turborepo', '2', 'Tb'], ['pnpm workspaces', '', 'Pw'], ['Lerna', '9', 'Le'], ['Jest', '29', 'Je'], ['Playwright', '1', 'Pl'], ['webpack', '5', 'Wp']] },
@@ -226,6 +245,12 @@ const REPOS = {
   jwasham: { owner: 'jwasham', repo: 'coding-interview-university', lang: '', stars: '362k stars', layers: [
     { k: 'infra', name: 'Infra', more: 0, items: [['GitHub Actions', '', 'Ga']] },
   ] },
+  stackshot: { owner: 'cybprom', repo: 'stackshot', lang: 'TypeScript', stars: '[stars]', layers: [
+    { k: 'frontend', name: 'Frontend', more: 0, items: [['Next.js', '16', 'Nj'], ['Tailwind', '4', 'Tw'], ['Zod', '4', 'Zd']] },
+    { k: 'backend', name: 'Backend', more: 0, items: [['Node', '', 'No'], ['Satori', '', 'St'], ['resvg', '', 'Rv'], ['Upstash', '', 'Up']] },
+    { k: 'infra', name: 'Infra', more: 0, items: [['Vercel', '', 'Vc']] },
+    { k: 'tooling', name: 'Tooling', more: 0, items: [['pnpm', '10', 'Pn'], ['Vitest', '', 'Vt'], ['TypeScript', '', 'Ts'], ['ESLint', '', 'El']] },
+  ] },
 };
 const THEMES = {
   light: { page: '#ffffff', surface: '#FFFFFF', term: '#FAFAF7', ink: '#101615', muted: '#5A625E', rule: '#D8DCD4', accent: '#C8461E', wake: '#C8461E22',
@@ -233,9 +258,54 @@ const THEMES = {
   dark: { page: '#0d1117', surface: '#12171C', term: '#0A0D10', ink: '#DDE2DD', muted: '#8B9490', rule: '#2A3136', accent: '#FF6B3D', wake: '#FF6B3D26',
     layer: { frontend: ['#7FAEFF', '#14223A'], backend: ['#5CC896', '#10291D'], infra: ['#E5AE58', '#2A2111'], tooling: ['#A8AEB5', '#1C2126'] } },
 };
+const INDEX = [
+  ['Next.js', 'Nj', 'frontend'], ['React', 'Re', 'frontend'], ['Vue', 'Vu', 'frontend'], ['Svelte', 'Sv', 'frontend'], ['Angular', 'An', 'frontend'],
+  ['Astro', 'As', 'frontend'], ['Tailwind', 'Tw', 'frontend'], ['Sass', 'Sa', 'frontend'], ['Radix UI', 'Rx', 'frontend'], ['SWR', 'Sw', 'frontend'],
+  ['TanStack Query', 'Tq', 'frontend'], ['Zustand', 'Zu', 'frontend'], ['Redux', 'Rd', 'frontend'], ['Framer Motion', 'Fm', 'frontend'], ['Lucide', 'Lu', 'frontend'],
+  ['Node', 'No', 'backend'], ['Express', 'Ex', 'backend'], ['Fastify', 'Fy', 'backend'], ['NestJS', 'Ns', 'backend'], ['FastAPI', 'Fa', 'backend'],
+  ['Django', 'Dj', 'backend'], ['Flask', 'Fl', 'backend'], ['Rails', 'Rl', 'backend'], ['Laravel', 'Lv', 'backend'], ['Go', 'Go', 'backend'],
+  ['Rust', 'Rs', 'backend'], ['Tokio', 'Tk', 'backend'], ['Prisma', 'Pr', 'backend'], ['Drizzle', 'Dz', 'backend'], ['PostgreSQL', 'Pg', 'backend'],
+  ['MySQL', 'My', 'backend'], ['Redis', 'Ri', 'backend'], ['Satori', 'St', 'backend'], ['Upstash', 'Up', 'backend'],
+  ['Docker', 'Dk', 'infra'], ['Vercel', 'Vc', 'infra'], ['Cloudflare', 'Cf', 'infra'], ['AWS', 'Aw', 'infra'], ['Supabase', 'Sb', 'infra'],
+  ['Firebase', 'Fb', 'infra'], ['Netlify', 'Nf', 'infra'], ['GitHub Actions', 'Ga', 'infra'],
+  ['TypeScript', 'Ts', 'tooling'], ['Vite', 'Vi', 'tooling'], ['Vitest', 'Vt', 'tooling'], ['Jest', 'Je', 'tooling'], ['Playwright', 'Pl', 'tooling'],
+  ['ESLint', 'El', 'tooling'], ['Prettier', 'Pt', 'tooling'], ['pnpm', 'Pn', 'tooling'], ['Turborepo', 'Tb', 'tooling'], ['Ruff', 'Rf', 'tooling'],
+  ['esbuild', 'Eb', 'tooling'], ['webpack', 'Wp', 'tooling'],
+];
+const LAYERS = [['all', 'All'], ['frontend', 'Frontend'], ['backend', 'Backend'], ['infra', 'Infra'], ['tooling', 'Tooling']];
+const INTRO_URL = 'https://github.com/cybprom/stackshot';
+const WALL_KEYS = ['next', 'zustand', 'stackshot', 'jwasham'];
+const WALL = [0, 1, 2, 3].map((c) => {
+  const col = [];
+  for (let i = 0; i < 8; i += 1) {
+    const n = c * 3 + i;
+    col.push([WALL_KEYS[n % 4], (n + c) % 2 === 0 ? 'tiles' : 'terminal', Math.floor(n / 2) % 2 === 0 ? 'light' : 'dark']);
+  }
+  return col;
+});
+
+function capLayers(layers, cap) {
+  const want = layers.map((l) => l.items.length + (l.more > 0 ? 1 : 0));
+  if (want.reduce((a, b) => a + b, 0) <= cap) return layers;
+  const floor = layers.map((l, i) => Math.min(want[i], l.items.length > 1 ? 2 : 1));
+  const left = cap - floor.reduce((a, b) => a + b, 0);
+  const extra = want.map((w, i) => w - floor[i]);
+  const exTotal = extra.reduce((a, b) => a + b, 0);
+  const share = extra.map((e) => (exTotal ? (e * left) / exTotal : 0));
+  const alloc = floor.map((f, i) => f + Math.floor(share[i]));
+  let rem = cap - alloc.reduce((a, b) => a + b, 0);
+  share.map((v, i) => [v - Math.floor(v), i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]).forEach(([, i]) => {
+    if (rem > 0 && alloc[i] < want[i]) { alloc[i] += 1; rem -= 1; }
+  });
+  return layers.map((l, i) => {
+    if (alloc[i] >= want[i]) return l;
+    const show = Math.max(1, alloc[i] - 1);
+    return Object.assign({}, l, { items: l.items.slice(0, show), more: l.items.length + l.more - show });
+  });
+}
 function tilesCard(t, r, on) {
   const tiles = [];
-  r.layers.forEach((l) => {
+  capLayers(r.layers, 15).forEach((l) => {
     const color = t.layer[l.k][0];
     const tint = t.layer[l.k][1];
     l.items.forEach((it) => tiles.push({ isItem: true, isMore: false, n: it[0], v: it[1], sym: it[2], color, tint, ink: t.ink, muted: t.muted }));
@@ -263,26 +333,37 @@ function termCard(t, r, on) {
     cursorOn: on, cursorDelay: (200 + r.layers.length * 150) + 'ms',
   };
 }
-function seg(options, current, pick, onBg, onFg, offFg) {
+function mini(key, style, themeKey) {
+  const t = THEMES[themeKey];
+  const r = REPOS[key];
+  const last = r.layers.length - 1;
+  const tiles = [];
+  r.layers.forEach((l) => l.items.forEach((it) => tiles.push({ sym: it[2], color: t.layer[l.k][0], tint: t.layer[l.k][1] })));
+  return {
+    isT: style === 'tiles', isX: style === 'terminal',
+    repo: r.repo, stars: r.stars, surface: style === 'terminal' ? t.term : t.surface, rule: t.rule, ink: t.ink, muted: t.muted,
+    tiles: tiles.slice(0, 10),
+    rows: r.layers.map((l, i) => ({ glyph: i === last ? '└─' : '├─', key: l.k, color: t.layer[l.k][0], list: l.items.map((it) => it[0]).join('  ') })),
+  };
+}
+function seg(options, current, pick) {
   return options.map(([k, label]) => {
     const on = current === k;
-    return { label, pressed: on ? 'true' : 'false', bg: on ? onBg : 'transparent', fg: on ? onFg : offFg, pick: () => pick(k) };
+    return { label, pressed: on ? 'true' : 'false', bg: on ? '#FFFFFF' : 'transparent', fg: on ? '#101615' : '#4A524E', pick: () => pick(k) };
   });
 }
 function pickRepo(url) {
   const u = (url || '').toLowerCase();
   if (u.indexOf('next') >= 0) return 'next';
   if (u.indexOf('jwasham') >= 0 || u.indexOf('interview') >= 0) return 'jwasham';
+  if (u.indexOf('stackshot') >= 0) return 'stackshot';
   return 'zustand';
 }
-const STRIP_SRC = [['Next.js', 'Nx', 'frontend'], ['React', 'Re', 'frontend'], ['Tailwind', 'Tw', 'frontend'], ['Vue', 'Vu', 'frontend'], ['Svelte', 'Sv', 'frontend'],
-  ['Node', 'No', 'backend'], ['FastAPI', 'Fa', 'backend'], ['PostgreSQL', 'Pg', 'backend'], ['Prisma', 'Pr', 'backend'], ['Django', 'Dj', 'backend'], ['Tokio', 'Tk', 'backend'],
-  ['Docker', 'Dk', 'infra'], ['Vercel', 'Vc', 'infra'], ['Cloudflare', 'Cf', 'infra'], ['GitHub Actions', 'Ga', 'infra'],
-  ['Vitest', 'Vt', 'tooling'], ['TypeScript', 'Ts', 'tooling'], ['pnpm', 'Pn', 'tooling'], ['ESLint', 'El', 'tooling'], ['Ruff', 'Rf', 'tooling']];
+
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { style: 'tiles', mode: 'system', sysDark: false, phase: 'idle', url: 'https://github.com/pmndrs/zustand', repoKey: 'zustand', copied: false };
+    this.state = { style: 'tiles', mode: 'system', sysDark: false, phase: 'idle', url: INIT.url, repoKey: INIT.repoKey, expanded: INIT.expanded, copied: false, q: '', layer: 'all', showAll: false, slotH: 'auto' };
   }
   componentDidMount() {
     try {
@@ -291,20 +372,40 @@ class Component extends DCLogic {
       this.setState({ sysDark: this._mq.matches });
       this._mq.addEventListener('change', this._onMq);
     } catch (e) {}
+    this.measure();
+    if (INIT.intro) {
+      let reduce = false;
+      try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+      if (reduce) {
+        this.setState({ url: INTRO_URL, expanded: true, phase: 'done', repoKey: pickRepo(INTRO_URL) });
+      } else {
+        this._t0 = setTimeout(() => { this.setState({ url: INTRO_URL }); this.generate(); }, 900);
+      }
+    }
+  }
+  componentDidUpdate() {
+    this.measure();
+  }
+  measure() {
+    const el = document.getElementById(SLOT_ID);
+    if (!el) return;
+    const h = el.offsetHeight;
+    const cur = parseFloat(this.state.slotH);
+    if (!(Math.abs(h - cur) <= 1)) this.setState({ slotH: h + 'px' });
   }
   componentWillUnmount() {
     if (this._mq) this._mq.removeEventListener('change', this._onMq);
-    clearTimeout(this._t1); clearTimeout(this._t2); clearTimeout(this._t3);
+    clearTimeout(this._t0); clearTimeout(this._t1); clearTimeout(this._t2); clearTimeout(this._t3);
   }
   generate() {
     const p = this.state.phase;
     if (p === 'reading' || p === 'drawing') return;
-    this.setState({ phase: 'reading' });
+    this.setState({ phase: 'reading', expanded: true });
     this._t1 = setTimeout(() => this.setState({ phase: 'drawing' }), 1300);
     this._t2 = setTimeout(() => this.setState({ phase: 'done', repoKey: pickRepo(this.state.url) }), 2100);
   }
   copy() {
-    try { navigator.clipboard.writeText('<picture>…</picture>'); } catch (e) {}
+    try { navigator.clipboard.writeText('<picture>...</picture>'); } catch (e) {}
     this.setState({ copied: true });
     clearTimeout(this._t3);
     this._t3 = setTimeout(() => this.setState({ copied: false }), 2200);
@@ -316,23 +417,52 @@ class Component extends DCLogic {
     const busy = s.phase === 'reading' || s.phase === 'drawing';
     const r = REPOS[s.repoKey];
     const base = 'https://stackshot.ilerioluwa.com/' + r.owner + '/' + r.repo + '/' + s.style;
-    const strip = STRIP_SRC.concat(STRIP_SRC).map(([n, sym, k]) => ({ n, sym, color: THEMES.light.layer[k][0], tint: THEMES.light.layer[k][1] }));
+    const shownUrl = (s.url || '').replace('https://github.com/', '');
+
+    const q = s.q.trim().toLowerCase();
+    const hits = INDEX.filter(([n, , k]) => (s.layer === 'all' || k === s.layer) && (!q || n.toLowerCase().indexOf(q) >= 0));
+    const cap = s.showAll ? hits.length : Math.min(hits.length, IDX_CAP);
+    const idx = hits.slice(0, cap).map(([n, sym, k], i) => ({ n, sym, color: THEMES.light.layer[k][0], tint: THEMES.light.layer[k][1], delay: Math.min(i * 18, 360) + 'ms' }));
+    const chips = LAYERS.map(([k, label]) => {
+      const on = s.layer === k;
+      const count = INDEX.filter((e) => k === 'all' || e[2] === k).length;
+      return {
+        label, count: String(count), pressed: on ? 'true' : 'false',
+        bg: on ? '#101615' : '#FFFFFF', fg: on ? '#F3F5F1' : '#101615', border: on ? '#101615' : '#D0D5CC',
+        dot: k === 'all' ? '#8B9490' : THEMES.light.layer[k][0],
+        pick: () => this.setState({ layer: k, showAll: false }),
+      };
+    });
+
+    const cols = WALL.map((col, i) => {
+      const cards = col.map((c) => mini(c[0], c[1], c[2]));
+      return { cls: i % 2 === 0 ? 'col-up' : 'col-down', cards: cards.concat(cards) };
+    });
+    const tries = [['vercel/next.js', 'https://github.com/vercel/next.js'], ['pmndrs/zustand', 'https://github.com/pmndrs/zustand'], ['cybprom/stackshot', 'https://github.com/cybprom/stackshot']]
+      .map(([label, url]) => ({ label, pick: () => { this.setState({ url }); setTimeout(() => this.generate(), 0); } }));
+
     return {
       url: s.url, onUrl: (e) => this.setState({ url: e.target.value }),
-      generate: () => this.generate(), busy,
+      generate: () => this.generate(), busy, tries, cols,
       btnLabel: s.phase === 'reading' ? 'Reading repo' : s.phase === 'drawing' ? 'Drawing card' : 'Generate card',
-      status: s.phase === 'reading' ? 'Reading ' + s.url.replace('https://github.com/', '') : s.phase === 'drawing' ? 'Drawing the card' : '',
-      styles: seg([['tiles', 'Tiles'], ['terminal', 'Terminal']], s.style, (k) => this.setState({ style: k }), '#FFFFFF', '#101615', '#4A524E'),
-      modes: seg([['system', 'System'], ['light', 'Light'], ['dark', 'Dark']], s.mode, (k) => this.setState({ mode: k }), '#FFFFFF', '#101615', '#4A524E'),
+      status: s.phase === 'reading' ? 'Reading ' + shownUrl : s.phase === 'drawing' ? 'Drawing the card' : '',
+      styles: seg([['tiles', 'Tiles'], ['terminal', 'Terminal']], s.style, (k) => this.setState({ style: k })),
+      modes: seg([['system', 'System'], ['light', 'Light'], ['dark', 'Dark']], s.mode, (k) => this.setState({ mode: k })),
       pg: t.page, wrapCls: busy ? 'dimmed' : 'shown', wake: t.wake, scanAccent: t.accent,
       isTiles: s.style === 'tiles', isTerminal: s.style === 'terminal',
       tc: tilesCard(t, r, !busy), xc: termCard(t, r, !busy),
+      slotH: s.slotH, slotId: SLOT_ID,
+      expanded: s.expanded, panelW: s.expanded ? '1300px' : '660px', leftW: s.expanded ? '430px' : '576px',
       snipDark: base + '-dark.png', snipLight: base + '-light.png', snipAlt: r.owner + '/' + r.repo + ' tech stack, by Stackshot',
       copy: () => this.copy(), copyLabel: s.copied ? 'Markdown copied' : 'Copy markdown', copyBg: s.copied ? '#1B7F52' : '#101615',
-      strip,
+      q: s.q, onQ: (e) => this.setState({ q: e.target.value, showAll: false }),
+      chips, idx, noHits: hits.length === 0,
+      idxHasMore: hits.length > IDX_CAP, showAll: () => this.setState({ showAll: !s.showAll }),
+      showAllLabel: s.showAll ? 'Show fewer' : 'Show all ' + hits.length,
     };
   }
 }
+
 </script>
 </body>
 </html>

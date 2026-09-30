@@ -9,13 +9,37 @@ it is the only thing that survives one.*
 Milestone:  3 COMPLETE and committed. Now on the CARD STYLES direction
             (ADR-0029): the card becomes a choice of styles. Phase 0
             (de-risk) and Phase 1 (plumbing) are done. Next is Phase 2.
-PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles + 225 symbols ·
-            3 Terminal · 4 site generator (switcher, theme toggle,
-            HTML preview + crossfade) · 5 docs. Aiming at one weekend,
-            nothing cut. The fallback cut order, if it runs long:
+PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles (symbols DONE,
+            tree next) · 3 Terminal · 4 site generator (switcher, theme
+            toggle, HTML preview + crossfade) · 5 docs. Aiming at one
+            weekend, nothing cut. The fallback cut order, if it runs long:
             per-style reveals, then the Light/Dark toggle, then
             Terminal, then the HTML preview LAST — it is the drift
             detector AND what stops the switcher writing a PNG per flip.
+AFTER P4:   TWO PAGE DESIGNS, built to be compared live, not one chosen on
+            paper. A (Playground) and C (Gallery wall) from
+            docs/design/site/. Build them as THIN LAYOUT SHELLS around
+            shared components: generator, preview, snippet, technology
+            index and footer are identical in both — ONLY THE HERO
+            DIFFERS. An env var picks the live layout; ?layout=a and
+            ?layout=c preview the other. Once the author chooses, THE
+            OTHER IS DELETED — this is a fork with an expiry, not a
+            feature. Detailed page planning deliberately not started.
+            Behaviour already settled in that README, all of it the
+            generator's business rather than the hero's:
+             - C auto-generates cybprom/stackshot ~0.9s after load, SERVED
+               FROM CACHE so the intro costs no GitHub budget; under
+               reduced motion the page loads already expanded.
+             - The preview area animates its height (measure, set explicit
+               height, transition). C's panel animates width the same way.
+             - C's wall must be taller than the tallest hero: eight
+               distinct cards per column, duplicated for the loop, so a
+               tall card never opens a gap.
+             - Technology index shows 2-3 rows then "Show all N". Search
+               and the layer filter are the navigation. No pagination, no
+               inner scrolling box.
+             - Tiles previews use the three-row cap, the same allocation
+               as the renderer (lib/render/tiles-layout.ts).
 STYLES:     Every CardStyle needs an entry in lib/render/styles.ts.
             Tiles/Terminal/Tags currently draw the Datasheet tree as
             stand-ins. REPLACING A STAND-IN BUMPS RENDER_VERSION, or
