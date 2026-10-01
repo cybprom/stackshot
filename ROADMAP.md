@@ -12,11 +12,12 @@ Milestone:  3 COMPLETE and committed. Now on the CARD STYLES direction
             Phase 4, the site generator, is next.
 PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal
             DONE · 4 site generator (switcher, theme toggle, HTML preview
-            + crossfade) · 5 docs. Aiming at one
-            weekend, nothing cut. The fallback cut order, if it runs long:
-            per-style reveals, then the Light/Dark toggle, then
-            Terminal, then the HTML preview LAST — it is the drift
-            detector AND what stops the switcher writing a PNG per flip.
+            + crossfade) · 5 docs. Aiming at one weekend, nothing cut so
+            far. The fallback cut order, if P4 runs long: per-style
+            reveals first, then the Light/Dark toggle, then the HTML
+            preview LAST — it is the drift detector AND what stops the
+            switcher writing a PNG per flip. Terminal was third on this
+            list and is now built, so the list is shorter than it was.
 AFTER P4:   TWO PAGE DESIGNS, built to be compared live, not one chosen on
             paper. A (Playground) and C (Gallery wall) from
             docs/design/site/. Build them as THIN LAYOUT SHELLS around
@@ -68,15 +69,15 @@ LAUNCH:     accent bar, 3u ink border, radius 2 — because renderErrorCard
             ADR-0007. NOT a correctness bug — I5 holds, it is 200 and an
             image — which is exactly why it will be invisible until
             someone embeds a broken repo. ADR-0030 has the context.
-OPEN:       terminal-*.png and tags-*.png SERVE DATASHEET BYTES today,
-            because CARD_STYLE_DEFS maps every style to something and they
-            are stand-ins. Nobody is served a wrong card — the site never
-            offers them — but the URLs lie, and Tags is post-launch so its
-            URL will lie for a while. DECIDE BEFORE LAUNCH: 404 the styles
-            that have no renderer, or ship Tags. A 404 needs care: the card
-            route's I5 says a card request always returns 200 with an
-            image, so this is "not a card request" territory like a bad
-            filename, not a failure card.
+OPEN:       tags-*.png SERVES DATASHEET BYTES today — the last stand-in,
+            because CARD_STYLE_DEFS maps every style to something. Nobody
+            is served a wrong card (the site never offers it) but the URL
+            lies, and Tags is post-launch so it will lie for a while.
+            DECIDE BEFORE LAUNCH: 404 the styles that have no renderer, or
+            ship Tags. A 404 needs care: the card route's I5 says a card
+            request always returns 200 with an image, so this is "not a
+            card request" territory like a bad filename, not a failure
+            card.
 STYLES:     Every CardStyle needs an entry in lib/render/styles.ts.
             ONLY TAGS still draws the Datasheet tree as a stand-in, and it
             is post-launch.
