@@ -4,7 +4,7 @@ import { ROOT_MANIFESTS } from "@/lib/github/tree";
 import { ERROR_COPY } from "@/lib/failure";
 import { renderErrorCard } from "@/lib/render/error-card";
 import { isRepoRef } from "@/lib/repo-ref";
-import { CARD, ERROR_CARD_HEIGHT, TYPE, displaySize } from "@/lib/tokens";
+import { CARD, ERROR_CARD_HEIGHT, TYPE, displaySize, lineBox } from "@/lib/tokens";
 
 const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
 const MIN_DRAWN_BYTES = 20_000;
@@ -106,7 +106,7 @@ describe("the repo-name ladder", () => {
 
   it("leaves the header band room for the owner line plus two name lines", () => {
     const smallest = displaySize("a".repeat(100));
-    const owner = TYPE.owner.size * TYPE.owner.lineHeight;
+    const owner = lineBox(TYPE.owner);
     expect(owner + 2 * smallest * TYPE.display.lineHeight).toBeLessThan(CARD.headerBand);
   });
 });

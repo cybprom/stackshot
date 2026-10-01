@@ -11,8 +11,11 @@ export type Theme = "light" | "dark";
  * bytes move, and its message says to bump this and update the committed hashes in the
  * same commit. ADR-0005's amendment has the reasoning.
  */
-// 2: Tiles stopped being a stand-in. 3: Terminal did.
-export const RENDER_VERSION = 3;
+// 2: Tiles stopped being a stand-in. 3: Terminal did. 4: four text runs state their line
+// box in px instead of taking Satori's font default, so the HTML preview can land on the
+// same line. No layout moved — every card is the same height and the glyphs shifted by a
+// fraction of a unit. GOTCHAS 052.
+export const RENDER_VERSION = 4;
 
 export const COLORS: Record<Theme, Record<string, string>> = {
   light: {
@@ -151,10 +154,22 @@ export const PREVIEW = {
   page: { light: "#FFFFFF", dark: "#0D1117" } satisfies Record<Theme, string>,
 } as const;
 
-// Commit Mono ships 400 and 700 only, and the scale is built on that. GOTCHAS 014.
+/**
+ * Commit Mono ships 400 and 700 only, and the scale is built on that. GOTCHAS 014.
+ *
+ * **A line height the preview has to match is written in px, not as a ratio.** Satori
+ * rounds every line box to a whole unit and a browser does not, so a shared 1.2 at 24
+ * units is 29 in the PNG and 28.8 in the HTML; worse, a text node with no `lineHeight` at
+ * all takes the *font's* default in each engine, which is 26 in Satori and 22.4 in Chrome.
+ * The px values below are the ones Satori already produces, so stating them moved no
+ * rendered bytes — `card/owner` and `card/meta` therefore render at 26 and 18 rather than
+ * at DESIGN's 1.2, which is what they have always done. Correcting the card to the table
+ * is a deliberate change with a `RENDER_VERSION` bump behind it, and it belongs to Phase
+ * 5's DESIGN rewrite rather than to the generator. GOTCHAS 052, ADR-0032.
+ */
 export const TYPE = {
   display: { size: 64, family: "Archivo", weight: 600, lineHeight: 1.0, tracking: -0.02 },
-  owner: { size: 24, family: "Commit Mono", weight: 400, lineHeight: 1.2, tracking: 0 },
+  owner: { size: 24, family: "Commit Mono", weight: 400, lineHeight: "26px", tracking: 0 },
   item: { size: 30, family: "Commit Mono", weight: 400, lineHeight: 1.1, tracking: -0.01 },
   version: { size: 22, family: "Commit Mono", weight: 400, lineHeight: 1.1, tracking: 0 },
   overflow: { size: 22, family: "Commit Mono", weight: 400, lineHeight: 1.1, tracking: 0.02 },
@@ -165,16 +180,21 @@ export const TYPE = {
   // 6.7px in the GitHub apps, below DESIGN's legibility floor and deliberately so: the
   // symbol carries the card at thumbnail size and the name is for up close. ADR-0029.
   tileName: { size: 23, family: "Archivo", weight: 400, lineHeight: "26px", tracking: 0 },
-  legend: { size: 24, family: "Archivo", weight: 400, lineHeight: 1.2, tracking: 0 },
+  legend: { size: 24, family: "Archivo", weight: 400, lineHeight: "29px", tracking: 0 },
   // Terminal. The design's 600s become 700, which is all Commit Mono ships (GOTCHAS 047).
-  prompt: { size: 24, family: "Commit Mono", weight: 400, lineHeight: 1.2, tracking: 0 },
-  terminalName: { size: 36, family: "Commit Mono", weight: 700, lineHeight: 1.2, tracking: 0 },
+  prompt: { size: 24, family: "Commit Mono", weight: 400, lineHeight: "29px", tracking: 0 },
+  terminalName: { size: 36, family: "Commit Mono", weight: 700, lineHeight: "43px", tracking: 0 },
   // `item`'s size, deliberately: Terminal has no symbols, so these names are the whole
   // card and the 8.75px floor applies to them. The design's 27 is 7.8px in the GitHub
   // apps. Doubling preserves proportion, not legibility — GOTCHAS 048's lesson again.
   tree: { size: 30, family: "Commit Mono", weight: 400, lineHeight: "42px", tracking: 0 },
-  meta: { size: 16, family: "Commit Mono", weight: 400, lineHeight: 1.2, tracking: 0.04 },
+  meta: { size: 16, family: "Commit Mono", weight: 400, lineHeight: "18px", tracking: 0.04 },
 } as const;
+
+/** A step's line box in units, whichever way it is written. */
+export function lineBox(step: { size: number; lineHeight: string | number }): number {
+  return typeof step.lineHeight === "string" ? Number.parseFloat(step.lineHeight) : step.size * step.lineHeight;
+}
 
 // Derived, never chosen: the error card is exactly as tall as the one shape it can hold.
 // Every term is a part of the card, so changing any of them moves the height with it.

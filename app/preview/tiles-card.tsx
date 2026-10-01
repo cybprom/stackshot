@@ -1,10 +1,20 @@
-import { CARD, COLORS, LAYER_COLORS, TILES, TYPE, type Theme } from "@/lib/tokens";
-import type { Category, StackDoc, StackItem } from "@/lib/stack-map/types";
+import { PreviewCardHeader } from "@/app/preview/card-header";
 import { DOMAIN, LAYER_NAME, starsLabel } from "@/lib/card-text";
-import { CardHeader } from "@/lib/render/chrome";
+import { family, PREVIEW_WIDTH, type PreviewDoc } from "@/lib/preview";
 import { layoutTiles } from "@/lib/render/tiles-layout";
+import { CARD, COLORS, LAYER_COLORS, TILES, TYPE, type Theme } from "@/lib/tokens";
+import type { Category, StackItem } from "@/lib/stack-map/types";
 
 type Colors = Record<string, string>;
+
+/**
+ * `lib/render/tiles.tsx` in HTML, for the site's preview.
+ *
+ * **Every number here is a card unit used as a CSS px**, straight from the tokens: this
+ * tree is laid out 1200 wide and the plate scales it by `w / 1200`, so a 64 here is the
+ * same 64 Satori is given. It reads oddly against the rest of the site's CSS and that is
+ * the price of the two implementations not drifting by arithmetic. ADR-0032.
+ */
 
 function Tile({ item, color, tint, c }: { item: StackItem; color: string; tint: string; c: Colors }) {
   return (
@@ -31,7 +41,7 @@ function Tile({ item, color, tint, c }: { item: StackItem; color: string; tint: 
           display: "flex",
           justifyContent: "flex-end",
           height: TYPE.version.size,
-          fontFamily: TYPE.version.family,
+          fontFamily: family(TYPE.version.family),
           fontSize: TYPE.version.size,
           fontWeight: TYPE.version.weight,
           lineHeight: 1,
@@ -42,8 +52,7 @@ function Tile({ item, color, tint, c }: { item: StackItem; color: string; tint: 
       </div>
       <div
         style={{
-          display: "flex",
-          fontFamily: TYPE.symbol.family,
+          fontFamily: family(TYPE.symbol.family),
           fontSize: TYPE.symbol.size,
           fontWeight: TYPE.symbol.weight,
           lineHeight: TYPE.symbol.lineHeight,
@@ -53,14 +62,13 @@ function Tile({ item, color, tint, c }: { item: StackItem; color: string; tint: 
       >
         {item.symbol}
       </div>
-      {/* maxHeight + overflow is the two-line clamp, and it is load-bearing: without it a
-          three-line name escapes the tile and paints over its corner. Phase 0, question 1. */}
+      {/* The same two-line clamp the PNG uses — maxHeight against a 26u line box, not a
+          line count — so a long display name clips at the same word in both. */}
       <div
         style={{
-          display: "flex",
           maxHeight: TILES.nameMaxHeight,
           overflow: "hidden",
-          fontFamily: TYPE.tileName.family,
+          fontFamily: family(TYPE.tileName.family),
           fontSize: TYPE.tileName.size,
           fontWeight: TYPE.tileName.weight,
           lineHeight: TYPE.tileName.lineHeight,
@@ -73,8 +81,6 @@ function Tile({ item, color, tint, c }: { item: StackItem; color: string; tint: 
   );
 }
 
-// Costs a cell like any other tile, which is why it sits in the symbol slot rather than
-// in a size of its own. `lib/render/tiles-layout.ts` does the arithmetic.
 function MoreTile({ hidden, color, c }: { hidden: number; color: string; c: Colors }) {
   return (
     <div
@@ -93,8 +99,7 @@ function MoreTile({ hidden, color, c }: { hidden: number; color: string; c: Colo
     >
       <div
         style={{
-          display: "flex",
-          fontFamily: TYPE.symbol.family,
+          fontFamily: family(TYPE.symbol.family),
           fontSize: TYPE.symbol.size,
           fontWeight: TYPE.symbol.weight,
           lineHeight: TYPE.symbol.lineHeight,
@@ -106,8 +111,7 @@ function MoreTile({ hidden, color, c }: { hidden: number; color: string; c: Colo
       </div>
       <div
         style={{
-          display: "flex",
-          fontFamily: TYPE.tileName.family,
+          fontFamily: family(TYPE.tileName.family),
           fontSize: TYPE.tileName.size,
           fontWeight: TYPE.tileName.weight,
           lineHeight: TYPE.tileName.lineHeight,
@@ -120,8 +124,6 @@ function MoreTile({ hidden, color, c }: { hidden: number; color: string; c: Colo
   );
 }
 
-// The card has no y-axis to read, so colour is the only thing encoding the layer and the
-// legend is what decodes it. ADR-0029.
 function Legend({ categories, theme, c }: { categories: Category[]; theme: Theme; c: Colors }) {
   return (
     <div style={{ display: "flex" }}>
@@ -136,7 +138,6 @@ function Legend({ categories, theme, c }: { categories: Category[]; theme: Theme
         >
           <div
             style={{
-              display: "flex",
               width: TILES.swatch,
               height: TILES.swatch,
               borderRadius: TILES.swatchRadius,
@@ -146,8 +147,7 @@ function Legend({ categories, theme, c }: { categories: Category[]; theme: Theme
           />
           <div
             style={{
-              display: "flex",
-              fontFamily: TYPE.legend.family,
+              fontFamily: family(TYPE.legend.family),
               fontSize: TYPE.legend.size,
               fontWeight: TYPE.legend.weight,
               lineHeight: TYPE.legend.lineHeight,
@@ -162,13 +162,10 @@ function Legend({ categories, theme, c }: { categories: Category[]; theme: Theme
   );
 }
 
-/**
- * Tiles' own frame, and not the Datasheet's: a decorative border, its own radius, no
- * accent bar and no rule under the header. Content-height, so the card is as tall as the
- * rows it has. ADR-0030.
- */
-export function TilesCard({ doc, theme }: { doc: StackDoc; theme: Theme }) {
+export function TilesPreviewCard({ doc, theme }: { doc: PreviewDoc; theme: Theme }) {
   const c = COLORS[theme];
+  // The renderer's own allocator, not a second three-row cap: the preview shows the same
+  // fifteen cells the PNG will, or the crossfade is a jump rather than a check.
   const layers = layoutTiles(doc.layers.slice(0, 4));
   const meta = [doc.language, starsLabel(doc.stars)].filter((line): line is string => line !== null);
 
@@ -177,7 +174,8 @@ export function TilesCard({ doc, theme }: { doc: StackDoc; theme: Theme }) {
       style={{
         display: "flex",
         flexDirection: "column",
-        width: "100%",
+        // The PNG's canvas is 1200 and its frame fills it; here the frame declares it.
+        width: PREVIEW_WIDTH,
         boxSizing: "border-box",
         backgroundColor: TILES.surface[theme],
         border: `${TILES.border}px solid ${c.rule}`,
@@ -185,7 +183,7 @@ export function TilesCard({ doc, theme }: { doc: StackDoc; theme: Theme }) {
         padding: CARD.padding,
       }}
     >
-      <CardHeader owner={doc.owner} repo={doc.repo} meta={meta} c={c} />
+      <PreviewCardHeader owner={doc.owner} repo={doc.repo} meta={meta} c={c} />
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: TILES.gap, marginTop: TILES.section }}>
         {layers.flatMap((layer) => {
@@ -201,8 +199,6 @@ export function TilesCard({ doc, theme }: { doc: StackDoc; theme: Theme }) {
         })}
       </div>
 
-      {/* The legend shares this row with the domain, which retires DESIGN's "the footer
-          carries the domain and nothing else" for this style. ADR-0030. */}
       <div
         style={{
           display: "flex",
@@ -214,8 +210,7 @@ export function TilesCard({ doc, theme }: { doc: StackDoc; theme: Theme }) {
         <Legend categories={layers.map((l) => l.category)} theme={theme} c={c} />
         <div
           style={{
-            display: "flex",
-            fontFamily: TYPE.meta.family,
+            fontFamily: family(TYPE.meta.family),
             fontSize: TYPE.meta.size,
             fontWeight: TYPE.meta.weight,
             lineHeight: TYPE.meta.lineHeight,

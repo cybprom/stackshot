@@ -1636,4 +1636,78 @@ found that way. GOTCHAS 050 was the same lesson one day earlier.
 
 ---
 
+## 052 — Satori rounds every line box, and an unset `lineHeight` is not 1.2 in either engine
+**Date:** 2026-10-01 · **Cost:** ~1.2h · **Status:** fixed
+**Writeup material:** yes — the whole point of building a style twice, paying off on day one
+
+The HTML preview laid out 2.59 units taller than the Tiles PNG and 4.38 taller than
+Terminal's, identically on every fixture. A constant offset with no obvious home: the
+grid, the tile sizes, the gaps and the paddings all matched to the unit.
+
+It was the text line boxes, in two separate ways. Measured against Satori's own SVG
+output, with a four-case probe:
+
+```
+Commit Mono 24u, no lineHeight      satori 26     browser 22.4   (each engine's font default)
+Commit Mono 24u, lineHeight 1.2     satori 29     browser 28.8   (satori rounds to a whole unit)
+Commit Mono 24u, lineHeight "29px"  satori 29     browser 29     ✓
+```
+
+So **a ratio can never agree across the two engines** — Satori rounds the computed line
+box and a browser keeps the fraction — and **a line box left unset is the font's default,
+which the two engines read differently** (26 against 22.4 at the same size). Four text
+runs were in the second category because `TYPE.owner.lineHeight` and `TYPE.meta.lineHeight`
+existed as tokens and no tree ever applied them.
+
+The fix is that **every line box a preview has to match is written in px**, which
+`TYPE.tileName` ("26px") and `TYPE.tree` ("42px") already were — the two styles built most
+recently had stumbled into the right habit without the reason being written down. The px
+values chosen are the ones Satori was already producing, so no card's layout moved: all
+seven measured cases now agree to the unit, including the 100-character name where the
+clamps are in play.
+
+**Stating a line height still moved the bytes**, even where the box height was unchanged:
+the glyph baseline inside the box shifts by a fraction of a unit. All 30 render hashes
+changed, a before/after difference showed thin outlines on exactly the four runs touched
+and pure black everywhere else, and `RENDER_VERSION` went to 4. That is the cheapest
+possible version of this change and it still cost a cache generation — worth knowing
+before anyone "tidies up" a line height.
+
+---
+
+## 053 — Satori rounds glyph advances, so the browser sets the same word 2% wider
+**Date:** 2026-10-01 · **Cost:** ~0.5h · **Status:** accepted, not fixed
+**Writeup material:** yes — the limit of how far two implementations can be made to agree
+
+With the line boxes pinned (052), the heights matched exactly and a ghost remained on the
+Archivo runs only: the repo name, the tile symbols and the tile names, growing from
+nothing at the first glyph to a visible doubling at the last. Mono runs were clean.
+
+Measured rather than guessed. The header's left column, which "zustand" at 64 units
+drives:
+
+```
+satori   228.0 units
+browser  232.91 units      +2.2%, accumulating left to right
+```
+
+Ruled out first, each with a screenshot: kerning (`font-kerning: none` changes nothing),
+ligatures, `text-rendering`, and a vertical baseline offset (a ±1–3px compensation sweep
+made it worse in both directions). What is left is glyph advance rounding — Satori rounds
+each advance to a whole unit and a browser does not, so the error accumulates with the
+character count and shows up on proportional faces rather than on a monospace.
+
+**There is no CSS knob for this**, and the only "fix" would be a per-string compensation
+tuned to one font at one size, which is what ADR-0032 says not to do. So it is accepted
+and bounded instead: structure is exact (every card height, every wrap point, every clamp,
+every tile position and every colour), and proportional text can sit up to ~2% wide of the
+PNG, which at README width is about four pixels across a seven-letter word. In the
+crossfade it reads as a slight settle rather than a jump.
+
+The number to watch is **a wrap point moving**, not the offset itself: the browser being
+wider means a name that fits on one line in the PNG could take two in the preview. The
+comparison sheet covers the longest cases in the map for exactly this reason.
+
+---
+
 *New entries go above this line as they happen.*

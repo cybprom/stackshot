@@ -115,6 +115,9 @@ STYLES:     Every CardStyle needs an entry in lib/render/styles.ts.
 Deployed:   LIVE at https://stackshot-one.vercel.app (project "stackshot",
             org cybproms-projects, region iad1, plan hobby, fluid compute,
             platform function timeout 300s; both routes pin maxDuration 30).
+            RENDER_VERSION IS 4 as of Phase 4 step 2: four text runs state
+            their line box in px so the HTML preview lands on the same
+            line. No layout moved, hashes regenerated. GOTCHAS 052.
             stackshot.ilerioluwa.com IS LIVE (author-confirmed 2026-09-29),
             which is SITE_ORIGIN's default. MAIN HAS BEEN PUSHED and pushes
             auto-deploy production. RENDER_VERSION IS 3: the bump retires

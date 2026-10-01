@@ -3,7 +3,7 @@ import satori from "satori";
 import { FONTS } from "@/lib/render/fonts";
 import { TerminalCard } from "@/lib/render/terminal";
 import type { StackDoc } from "@/lib/stack-map/types";
-import { CARD, TERMINAL, TYPE, type Theme } from "@/lib/tokens";
+import { CARD, TERMINAL, TYPE, lineBox, type Theme } from "@/lib/tokens";
 import { DOC_FIXTURES, fixtureDoc } from "@/tests/helpers/fixture-docs";
 
 /**
@@ -91,8 +91,8 @@ describe("a repo name longer than the card", () => {
 
     const prompt = nodes.find((n) => n.text.startsWith("stackshot "));
     const title = nodes.find((n) => n.text.startsWith(`${doc.owner}/a`));
-    expect(prompt?.height).toBeCloseTo(TYPE.prompt.size * TYPE.prompt.lineHeight, 0);
-    expect(title?.height).toBeLessThanOrEqual(2 * TYPE.terminalName.size * TYPE.terminalName.lineHeight);
+    expect(prompt?.height).toBeCloseTo(lineBox(TYPE.prompt), 0);
+    expect(title?.height).toBeLessThanOrEqual(2 * lineBox(TYPE.terminalName));
 
     // The clamps are the only reason this is bounded: unclamped, 100 characters at 36
     // units is nearly two cards wide and wraps to five lines.

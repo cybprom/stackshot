@@ -87,6 +87,9 @@ export function CardHeader({ owner, repo, meta, c, band }: { owner: string; repo
             fontFamily: TYPE.owner.family,
             fontSize: TYPE.owner.size,
             fontWeight: TYPE.owner.weight,
+            // Stated, not left to the engine's default: Satori's and a browser's differ,
+            // and the HTML preview has to land on the same line. GOTCHAS 052.
+            lineHeight: TYPE.owner.lineHeight,
             color: c.inkMuted,
           }}
         >
@@ -124,6 +127,7 @@ export function CardHeader({ owner, repo, meta, c, band }: { owner: string; repo
                 fontFamily: TYPE.owner.family,
                 fontSize: TYPE.owner.size,
                 fontWeight: TYPE.owner.weight,
+                lineHeight: TYPE.owner.lineHeight,
                 color: c.inkMuted,
               }}
             >
