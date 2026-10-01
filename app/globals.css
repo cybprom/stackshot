@@ -28,6 +28,8 @@
 
   /* Tiles paints its card on this, not on --surface: the tints were drawn against it. */
   --tiles-surface: #ffffff;
+  /* Terminal's, for the same reason and a different one: a terminal sits off the page. */
+  --terminal-surface: #fafaf7;
 
   color-scheme: light;
 }
@@ -52,6 +54,7 @@
     --layer-tooling-tint: #1c2126;
 
     --tiles-surface: #12171c;
+    --terminal-surface: #0a0d10;
 
     color-scheme: dark;
   }
@@ -67,6 +70,7 @@
   --color-success: var(--success);
 
   --color-tiles-surface: var(--tiles-surface);
+  --color-terminal-surface: var(--terminal-surface);
 
   --color-layer-frontend: var(--layer-frontend);
   --color-layer-frontend-tint: var(--layer-frontend-tint);

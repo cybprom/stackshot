@@ -3,8 +3,10 @@ import localFont from "next/font/local";
 import { SITE_ORIGIN } from "@/lib/site";
 import "./globals.css";
 
-// The same two faces the card uses, from the same files. Commit Mono ships 400 and 700
-// only. GOTCHAS 014.
+// The same two faces the card uses, from the same files, at every weight the card uses:
+// the preview draws a Tiles symbol in Archivo 700, and a weight the browser has to
+// synthesize is a drift on the default style's most prominent glyph. Commit Mono ships
+// 400 and 700 only. GOTCHAS 014, 047.
 const commitMono = localFont({
   src: [
     { path: "../public/fonts/CommitMono-400-Regular.ttf", weight: "400", style: "normal" },
@@ -18,6 +20,7 @@ const archivo = localFont({
   src: [
     { path: "../public/fonts/Archivo-Regular.ttf", weight: "400", style: "normal" },
     { path: "../public/fonts/Archivo-SemiBold.ttf", weight: "600", style: "normal" },
+    { path: "../public/fonts/Archivo-Bold.ttf", weight: "700", style: "normal" },
   ],
   variable: "--font-archivo",
   display: "swap",

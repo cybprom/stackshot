@@ -1,20 +1,8 @@
 import type { ReactNode } from "react";
+import { DOMAIN } from "@/lib/card-text";
 import { CARD, TYPE, displaySize } from "@/lib/tokens";
 
 type Colors = Record<string, string>;
-
-/**
- * The domain, as a literal rather than `SITE_ORIGIN`: `lib/render` must not read an
- * environment variable, or one doc would render different bytes in two deployments (I2).
- * Every style shows this line in `TYPE.meta`; where it sits is the frame's business.
- */
-export const DOMAIN = "stackshot.ilerioluwa.com";
-
-/** Header content, so every style rounds a star count the same way. */
-export function starsLabel(n: number): string {
-  if (n >= 1000) return `${Math.round(n / 1000)}k stars`;
-  return `${n} stars`;
-}
 
 // The Datasheet's frame, shared with the error card — not every style's. A style's frame
 // is its own: Tiles has no accent bar, a decorative border and its own radius (ADR-0030).

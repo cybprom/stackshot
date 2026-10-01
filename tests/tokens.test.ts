@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { COLORS, LAYER_COLORS, TILES } from "@/lib/tokens";
+import { COLORS, LAYER_COLORS, TERMINAL, TILES } from "@/lib/tokens";
 
 /**
  * The site's palette lives in CSS and the card's in TypeScript, because Satori does not
@@ -53,6 +53,13 @@ describe("the site's CSS palette matches the card's tokens", () => {
   it("--tiles-surface matches the token Tiles paints on", () => {
     expect(value(lightBlock, "tiles-surface")).toBe(TILES.surface.light.toLowerCase());
     expect(value(darkBlock, "tiles-surface")).toBe(TILES.surface.dark.toLowerCase());
+  });
+
+  // The one colour that defines Terminal. Without this seam the preview and the PNG drift
+  // on exactly the value a reader would notice first.
+  it("--terminal-surface matches the token Terminal paints on", () => {
+    expect(value(lightBlock, "terminal-surface")).toBe(TERMINAL.surface.light.toLowerCase());
+    expect(value(darkBlock, "terminal-surface")).toBe(TERMINAL.surface.dark.toLowerCase());
   });
 
   // DESIGN.md COLOR: the card has no semantic colors at all, and these two are site-only.

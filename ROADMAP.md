@@ -57,7 +57,15 @@ P4 GENERATOR: Style switcher + Light/Dark/System toggle on the preview.
             Reveals, timings and the two loading phases are in
             docs/design/directions/preview.dc.html.
 P5 DOCS:    DESIGN.md still describes only the Datasheet and needs the
-            styles. ADR-0029 already exists and is current.
+            styles. ADR-0029 already exists and is current. ADR-0032
+            is the site's motion and radius authority until that
+            rewrite lands.
+            ARCHIVO 800: both page designs set headlines in it, and the
+            site loads 400/600/700 only (700 added in P4 for the Tiles
+            symbol, which the browser was synthesizing). Phase 5 either
+            ships Archivo-ExtraBold.ttf or steps the headlines back to
+            700 — do not add the file before the hero is built, because
+            nothing on the page uses it yet.
 BLOCKS      A FAILING TILES URL RENDERS THE DATASHEET'S ERROR FRAME —
 LAUNCH:     accent bar, 3u ink border, radius 2 — because renderErrorCard
             takes no style and SheetFrame is the only frame it has. TILES

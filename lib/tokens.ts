@@ -139,6 +139,18 @@ export const TERMINAL = {
   itemRowGap: 4,
 } as const;
 
+/**
+ * The site preview's plate, and the one place on the site that is not our palette: these
+ * are GitHub's README surfaces. A card is rasterized on a transparent background, so its
+ * rounded corners show whatever sits behind them — in a README that is this colour, and a
+ * preview on `surface` would judge the corners against one no reader ever sees.
+ *
+ * Preview-only. No PNG reads it, so nothing here can move rendered bytes. ADR-0032.
+ */
+export const PREVIEW = {
+  page: { light: "#FFFFFF", dark: "#0D1117" } satisfies Record<Theme, string>,
+} as const;
+
 // Commit Mono ships 400 and 700 only, and the scale is built on that. GOTCHAS 014.
 export const TYPE = {
   display: { size: 64, family: "Archivo", weight: 600, lineHeight: 1.0, tracking: -0.02 },

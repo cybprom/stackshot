@@ -239,7 +239,9 @@ one-line comment).
 > for anything that does not state otherwise.
 
 - **Radius: 2.** One value, everywhere, card and site. A datasheet does not have rounded
-  corners. `rounded-xl` is banned by name.
+  corners. `rounded-xl` is banned by name. **Superseded for the site by ADR-0032**: the
+  two chosen page designs use rounded controls, and the radius set is taken from them.
+  Radius 2 is the card's rule and is untouched on the card.
 - **Border: 3 units, `ink`.** The card has exactly one border, at its outer edge. Internal
   structure is rules, not boxes. There are no nested cards, no panels, no containers.
 - **Shadows: none.** Two reasons, both sufficient. A card embedded in a README should sit
@@ -250,6 +252,12 @@ one-line comment).
 ---
 
 ## MOTION
+
+> **Amended by ADR-0032 for the site's preview.** The closed list below grows by four —
+> the dim with its sweep and wake, the per-style reveal, the HTML-to-PNG crossfade, and
+> the preview plate's height — which also retires "layout, height, or position" from the
+> must-not list for that one element. Everything else here stands, including no hover on a
+> card, no scroll-triggered anything, and a real reduced-motion branch.
 
 Motion applies to the site only. The product is a static image; it does not animate.
 

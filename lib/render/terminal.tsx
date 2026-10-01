@@ -1,6 +1,6 @@
 import { COLORS, LAYER_COLORS, TERMINAL, TYPE, type Theme } from "@/lib/tokens";
 import type { StackDoc, StackItem, StackLayer } from "@/lib/stack-map/types";
-import { DOMAIN, starsLabel } from "@/lib/render/chrome";
+import { DOMAIN, starsLabel } from "@/lib/card-text";
 
 type Colors = Record<string, string>;
 

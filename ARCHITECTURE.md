@@ -107,7 +107,9 @@ one, no runtime theme detection, and no per-view telemetry.
 | `lib/resolve` | `lib/github`, `lib/detect`, `lib/normalize` | `lib/render`, `lib/cache` |
 | `lib/failure` | `ResolveError` **as a type only** | anything at run time |
 | `lib/repo-ref`, `lib/hash`, `lib/card-style` | nothing (card-style: `lib/tokens` types) | anything |
-| `lib/render/*` | `lib/tokens`, `lib/card-style`, `FailureReason`, StackDoc type | `lib/github`, `lib/cache` |
+| `lib/card-text` | `Category` as a type only | anything |
+| `lib/render/*` | `lib/tokens`, `lib/card-text`, `lib/card-style`, `FailureReason`, StackDoc type | `lib/github`, `lib/cache` |
+| `app/preview/*` (client) | `lib/tokens`, `lib/card-text`, `lib/card-style`, `lib/render/tiles-layout` | everything else in `lib/render/` |
 | `lib/serve-card` | everything, **client injected** | — |
 | `app/**/route.ts` | everything | — |
 
@@ -118,6 +120,14 @@ holds the denied-segment and dot-directory filters, which selection and detectio
 agree on: a repo is a monorepo if selection would consider two of its `package.json` files,
 and a second copy of that list would drift. It is pure, imports nothing, and does no I/O,
 so neither boundary weakens. GOTCHAS 044.
+
+`lib/card-text` holds the strings every style says — the domain line, the star-count
+rounding, the layer names. It is render-free so the site's HTML preview says them
+identically, which is the point: a second copy drifts while the preview goes on looking
+correct. `lib/render/tiles-layout` is importable by the client island for the same reason —
+it is pure arithmetic with no I/O, like `lib/manifest-paths`, and the preview showing a
+different fifteen cells than the PNG is exactly the drift the preview exists to catch.
+ADR-0032.
 
 `lib/serve-card` composes cache, resolve and render for one request, and takes its
 `GitHubClient` injected exactly as `lib/resolve` does. That keeps the whole card path —

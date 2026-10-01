@@ -1,6 +1,7 @@
 import { CARD, COLORS, TYPE, type Theme } from "@/lib/tokens";
 import type { StackDoc, StackLayer } from "@/lib/stack-map/types";
-import { CardHeader, GutterHeadSpacer, GutterLabel, SheetFrame, starsLabel } from "@/lib/render/chrome";
+import { starsLabel } from "@/lib/card-text";
+import { CardHeader, GutterHeadSpacer, GutterLabel, SheetFrame } from "@/lib/render/chrome";
 
 const GUTTER_LABEL: Record<StackLayer["category"], string> = {
   frontend: "FRONTEND",

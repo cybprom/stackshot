@@ -1,4 +1,5 @@
 import { cardFileName, type CardStyle } from "@/lib/card-style";
+import { LAYER_NAME } from "@/lib/card-text";
 import type { Theme } from "@/lib/tokens";
 
 /**
@@ -58,5 +59,7 @@ export const COPY = {
   // sentences: one is about you, the other is about us.
   gateLimited: (limit: number) => `You've generated ${limit} cards this hour. Try again shortly.`,
   overflow: (n: number) => `+${n} more`,
-  layer: { frontend: "Frontend", backend: "Backend", infra: "Infra", tooling: "Tooling" },
+  // The card's own legend strings, not a second set: the description list is a key to the
+  // card above it, so a layer renamed on one has to be renamed on both.
+  layer: LAYER_NAME,
 } as const;

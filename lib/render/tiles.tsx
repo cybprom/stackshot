@@ -1,18 +1,10 @@
 import { CARD, COLORS, LAYER_COLORS, TILES, TYPE, type Theme } from "@/lib/tokens";
 import type { Category, StackDoc, StackItem } from "@/lib/stack-map/types";
-import { CardHeader, DOMAIN, starsLabel } from "@/lib/render/chrome";
+import { DOMAIN, LAYER_NAME, starsLabel } from "@/lib/card-text";
+import { CardHeader } from "@/lib/render/chrome";
 import { layoutTiles } from "@/lib/render/tiles-layout";
 
 type Colors = Record<string, string>;
-
-// Capitalised, not all-caps: the Datasheet's gutter is the project's only all-caps, and
-// this is a key to a diagram rather than signage on one.
-const LAYER_NAME: Record<Category, string> = {
-  frontend: "Frontend",
-  backend: "Backend",
-  infra: "Infra",
-  tooling: "Tooling",
-};
 
 function Tile({ item, color, tint, c }: { item: StackItem; color: string; tint: string; c: Colors }) {
   return (
