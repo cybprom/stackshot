@@ -1,5 +1,6 @@
 import { cardFileName, type CardStyle } from "@/lib/card-style";
 import { LAYER_NAME } from "@/lib/card-text";
+import type { LaunchStyle, ThemeMode } from "@/lib/preview";
 import type { Theme } from "@/lib/tokens";
 
 /**
@@ -59,6 +60,13 @@ export const COPY = {
   // sentences: one is about you, the other is about us.
   gateLimited: (limit: number) => `You've generated ${limit} cards this hour. Try again shortly.`,
   overflow: (n: number) => `+${n} more`,
+  styleGroup: "Card style",
+  style: { tiles: "Tiles", terminal: "Terminal" } satisfies Record<LaunchStyle, string>,
+  themeGroup: "Preview theme",
+  theme: { light: "Light", dark: "Dark", system: "System" } satisfies Record<ThemeMode, string>,
+  // Says what the toggle is for, because it is the one control on the page that changes
+  // nothing about what you copy. The snippet always carries both themes.
+  themeNote: "This changes the preview. Your snippet always carries both themes.",
   // The card's own legend strings, not a second set: the description list is a key to the
   // card above it, so a layer renamed on one has to be renamed on both.
   layer: LAYER_NAME,

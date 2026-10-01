@@ -3,10 +3,10 @@ import { describe, expect, it } from "vitest";
 import { PREVIEW_CARDS } from "@/app/preview/cards";
 import { CARD_STYLES, DEFAULT_STYLE, type CardStyle } from "@/lib/card-style";
 import {
+  DEFAULT_LAUNCH_STYLE,
   LAUNCH_STYLES,
   PNG_SETTLE_MS,
   PREVIEW_WIDTH,
-  STYLE_LABEL,
   THEME_MODES,
   cursorDelay,
   family,
@@ -18,6 +18,7 @@ import {
   rowDelay,
   tileDelay,
 } from "@/lib/preview";
+import { COPY } from "@/lib/site";
 import { CARD, TYPE } from "@/lib/tokens";
 
 describe("the styles the site offers", () => {
@@ -42,10 +43,19 @@ describe("the styles the site offers", () => {
     }
   });
 
-  it("names every offered style", () => {
+  it("names every offered style and every theme mode", () => {
     for (const style of LAUNCH_STYLES) {
-      expect(STYLE_LABEL[style]).toBeTruthy();
+      expect(COPY.style[style], style).toBeTruthy();
     }
+    for (const mode of THEME_MODES) {
+      expect(COPY.theme[mode], mode).toBeTruthy();
+    }
+  });
+
+  // The switcher starts where the snippet would start, so the first card a visitor sees
+  // is the one they would copy.
+  it("starts on the site's default", () => {
+    expect(DEFAULT_LAUNCH_STYLE).toBe(DEFAULT_STYLE);
   });
 
   it.each(["tags", "sheet"] satisfies CardStyle[])("keeps %s out of the switcher", (style) => {

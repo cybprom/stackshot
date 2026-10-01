@@ -31,6 +31,10 @@
   /* Terminal's, for the same reason and a different one: a terminal sits off the page. */
   --terminal-surface: #fafaf7;
 
+  /* The segmented control's groove. Site-only, like error and success — no card renders
+     it, so it is deliberately absent from lib/tokens.ts and from the seam test. */
+  --track: #e4e7e1;
+
   color-scheme: light;
 }
 
@@ -56,6 +60,8 @@
     --tiles-surface: #12171c;
     --terminal-surface: #0a0d10;
 
+    --track: #1a1f21;
+
     color-scheme: dark;
   }
 }
@@ -71,6 +77,7 @@
 
   --color-tiles-surface: var(--tiles-surface);
   --color-terminal-surface: var(--terminal-surface);
+  --color-track: var(--track);
 
   --color-layer-frontend: var(--layer-frontend);
   --color-layer-frontend-tint: var(--layer-frontend-tint);
@@ -84,7 +91,15 @@
   --font-display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
   --font-mono: var(--font-commit-mono), ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
 
-  --radius-card: 2px;
+  /* The site's radii, taken from docs/design/site/. DESIGN's "radius 2 everywhere" is the
+     card's rule and still governs the card; the page the generator sits in is rounded, and
+     a radius-2 control inside C's 18px panel reads as a mistake rather than as a rule being
+     kept. ADR-0032. */
+  --radius-control: 10px;
+  --radius-segment: 10px;
+  --radius-segment-item: 7px;
+  --radius-plate: 12px;
+  --radius-snippet: 12px;
 
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 }

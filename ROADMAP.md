@@ -40,6 +40,15 @@ AFTER P4:   TWO PAGE DESIGNS, built to be compared live, not one chosen on
              - Technology index shows 2-3 rows then "Show all N". Search
                and the layer filter are the navigation. No pagination, no
                inner scrolling box.
+             - "WHAT STACKSHOT FOUND" STAYS, shared by A and C, below the
+               main action. One row per item: the TILE SYMBOL, the full
+               name, the version and the one-line description, grouped by
+               layer. Two columns on desktop, one on a phone. It is the
+               key to the Tiles symbols as much as it is the home of the
+               descriptions (ADR-0009) — which is why the symbol leads the
+               row rather than decorating it. The section exists today as
+               a definition list with no symbol and one column; Phase 5
+               rebuilds it rather than inventing it.
              - Tiles previews use the three-row cap, the same allocation
                as the renderer (lib/render/tiles-layout.ts).
 P4 GENERATOR: Style switcher + Light/Dark/System toggle on the preview.

@@ -1,4 +1,4 @@
-import type { CardStyle } from "@/lib/card-style";
+import { DEFAULT_STYLE, type CardStyle } from "@/lib/card-style";
 import type { StackDoc } from "@/lib/stack-map/types";
 import { CARD, TYPE, type Theme } from "@/lib/tokens";
 
@@ -24,14 +24,17 @@ export const LAUNCH_STYLES = ["tiles", "terminal"] as const satisfies readonly C
 
 export type LaunchStyle = (typeof LAUNCH_STYLES)[number];
 
-export const STYLE_LABEL: Record<LaunchStyle, string> = {
-  tiles: "Tiles",
-  terminal: "Terminal",
-};
-
 export function isLaunchStyle(value: string): value is LaunchStyle {
   return (LAUNCH_STYLES as readonly string[]).includes(value);
 }
+
+/**
+ * Where the switcher starts: the site's default, narrowed to a style the site can draw.
+ * One default rather than two, so the first card shown is the one the snippet would carry.
+ */
+export const DEFAULT_LAUNCH_STYLE: LaunchStyle = isLaunchStyle(DEFAULT_STYLE)
+  ? DEFAULT_STYLE
+  : LAUNCH_STYLES[0];
 
 /**
  * The toggle is preview-only: the snippet always emits `<picture>` with both themes, so
@@ -41,12 +44,7 @@ export const THEME_MODES = ["light", "dark", "system"] as const;
 
 export type ThemeMode = (typeof THEME_MODES)[number];
 
-export const THEME_LABEL: Record<ThemeMode, string> = {
-  light: "Light",
-  dark: "Dark",
-  system: "System",
-};
-
+// The labels live in `lib/site.ts` with every other site string, not here.
 export function resolveTheme(mode: ThemeMode, systemDark: boolean): Theme {
   if (mode === "system") return systemDark ? "dark" : "light";
   return mode;
