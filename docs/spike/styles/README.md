@@ -91,8 +91,10 @@ The last row is the sparsest shape the layout has to hold: one tile, no language
 26-character name. It reads as a spec sheet with one entry rather than as a broken card.
 
 The symbols in these images come from a crude prototype generator and several are wrong —
-`Jest → Js` reads as JavaScript, `Next.js → Nj` should be `Nx`. That is the argument for
-Phase 2's review pass over all 225, not a reason to distrust the layout.
+`Jest → Js` reads as JavaScript. That was the argument for Phase 2's review pass over all
+225, not a reason to distrust the layout. **The review settled them**: `Next.js` is `Nj`,
+decided there and frozen, and an earlier draft of this paragraph arguing for `Nx` was
+reading a prototype rather than a decision.
 
 ## Also found: Tiles misses five-across by four units
 
@@ -168,6 +170,31 @@ than Redux because Redis spans every ecosystem while Redux is JavaScript-only.
 Edit `symbol:` in `lib/stack-map/entries/*.ts`. The map-integrity test enforces the format
 and uniqueness, so a clash fails the suite rather than shipping two identical tiles.
 
-**A symbol is frozen once a card using it has been cached.** It is baked into the PNG, so
-changing one after Tiles ships needs a `RENDER_VERSION` bump in the same commit and
-re-renders every card carrying it. `scripts/symbols.ts` no longer writes, for that reason.
+**A symbol edit is cheaper than this section said, since ADR-0030.** The symbol is a field
+on `StackItem`, so changing one changes the `stackHash` of every repo containing it: those
+cards land on a new `png:` key by themselves, and no `RENDER_VERSION` bump is needed.
+Cards without that entry keep their bytes. What still holds is that a symbol must never be
+*derived*, because then it would depend on map order — `scripts/symbols.ts` proposes and
+does not write, for that reason.
+
+---
+
+# Phase 2 — the Tiles renderer
+
+`lib/render/tiles.tsx`, measured the same way as the prototype above. The prototype was honest: heights land within
+ten units of it and bytes within 2%, so ADR-0029's storage arithmetic needed no correction.
+
+| Repo | Rows | Height (was) | PNG (was) | base64, both themes (was) |
+|---|---|---|---|---|
+| vercel/next.js | 3 | 859 (869) | 191 KB (191) | 507 KB (495) |
+| mastodon/mastodon | 3 | 859 (869) | 186 KB (186) | 493 KB (482) |
+| pmndrs/zustand | 2 | 651 (659) | 141 KB (142) | 373 KB (368) |
+| github/gitignore | 1 | 443 (449) | 53 KB (54) | 140 KB (139) |
+
+A row costs exactly 208 units — a tile plus a gap — so the three-row cap is a straight
+line rather than an estimate. `tests/tiles.test.ts` pins that, and pins five across, which
+is the number GOTCHAS 048 missed by four units.
+
+The card is painted on `#FFFFFF` light and `#12171C` dark rather than on `surface`: the
+tints were drawn against white, and on `#EDEEEA` the tooling tint is three points from the
+card and disappears. ADR-0030.

@@ -1,6 +1,6 @@
 import { CARD, COLORS, TYPE, type Theme } from "@/lib/tokens";
 import type { StackDoc, StackLayer } from "@/lib/stack-map/types";
-import { CardHeader, CardShell, GutterHeadSpacer, GutterLabel } from "@/lib/render/chrome";
+import { CardHeader, GutterHeadSpacer, GutterLabel, SheetFrame, starsLabel } from "@/lib/render/chrome";
 
 const GUTTER_LABEL: Record<StackLayer["category"], string> = {
   frontend: "FRONTEND",
@@ -8,11 +8,6 @@ const GUTTER_LABEL: Record<StackLayer["category"], string> = {
   infra: "INFRA",
   tooling: "TOOLING",
 };
-
-function stars(n: number): string {
-  if (n >= 1000) return `${Math.round(n / 1000)}k stars`;
-  return `${n} stars`;
-}
 
 function Item({ item, c }: { item: { display: string; version?: string }; c: Record<string, string> }) {
   return (
@@ -50,10 +45,10 @@ function Item({ item, c }: { item: { display: string; version?: string }; c: Rec
 export function Card({ doc, theme }: { doc: StackDoc; theme: Theme }) {
   const c = COLORS[theme];
   const layers = doc.layers.slice(0, 4);
-  const meta = [doc.language, stars(doc.stars)].filter((line): line is string => line !== null);
+  const meta = [doc.language, starsLabel(doc.stars)].filter((line): line is string => line !== null);
 
   return (
-    <CardShell c={c}>
+    <SheetFrame c={c}>
       <div
         style={{
           display: "flex",
@@ -84,7 +79,7 @@ export function Card({ doc, theme }: { doc: StackDoc; theme: Theme }) {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", flex: 1, paddingLeft: 24 }}>
-        <CardHeader owner={doc.owner} repo={doc.repo} meta={meta} c={c} />
+        <CardHeader owner={doc.owner} repo={doc.repo} meta={meta} c={c} band={CARD.headerBand} />
 
         {layers.map((layer, i) => (
           <div
@@ -121,6 +116,6 @@ export function Card({ doc, theme }: { doc: StackDoc; theme: Theme }) {
           </div>
         ))}
       </div>
-    </CardShell>
+    </SheetFrame>
   );
 }

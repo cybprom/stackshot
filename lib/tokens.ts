@@ -11,7 +11,8 @@ export type Theme = "light" | "dark";
  * bytes move, and its message says to bump this and update the committed hashes in the
  * same commit. ADR-0005's amendment has the reasoning.
  */
-export const RENDER_VERSION = 1;
+// 2: Tiles stopped being a stand-in that drew the Datasheet.
+export const RENDER_VERSION = 2;
 
 export const COLORS: Record<Theme, Record<string, string>> = {
   light: {
@@ -81,6 +82,37 @@ export const CARD = {
   radius: 2,
 } as const;
 
+/**
+ * Tiles' frame and grid. Every gap and padding is on DESIGN's 4-unit scale, which the
+ * design file's doubled 18 and 36 are not; tile sizes are dimensions, like `headerBand`.
+ *
+ * Five across is the load-bearing number: 5×208 + 4×16 = 1104 against 1132 units of
+ * content width. Anything that moves `border`, `CARD.padding` or `gap` has to re-check it
+ * rather than trust the proportion. GOTCHAS 048.
+ */
+export const TILES = {
+  /**
+   * Not `COLORS.surface`. The layer tints were drawn against white, and on `#EDEEEA` the
+   * tooling tint is three points away from the card and disappears — the light card read
+   * as flat while the dark one popped. The frame is the style's, and so is what it is
+   * painted on. ADR-0030.
+   */
+  surface: { light: "#FFFFFF", dark: "#12171C" } satisfies Record<Theme, string>,
+  // The frame is this style's own, not the Datasheet's: no accent bar, no rule under the
+  // header, and a decorative border rather than a 3u ink one. ADR-0030.
+  border: 2,
+  radius: 20,
+  gap: 16,
+  // Header to grid, grid to the bottom row.
+  section: 32,
+  tile: { width: 208, height: 192, radius: 12, rule: 6, dash: 2, padTop: 12, padX: 16, padBottom: 16 },
+  // Two 26u lines. A guard against a future long display rather than a routine
+  // behaviour — the longest in the map is styled-components at 17 characters.
+  nameMaxHeight: 52,
+  swatch: 18,
+  swatchRadius: 4,
+} as const;
+
 // Commit Mono ships 400 and 700 only, and the scale is built on that. GOTCHAS 014.
 export const TYPE = {
   display: { size: 64, family: "Archivo", weight: 600, lineHeight: 1.0, tracking: -0.02 },
@@ -89,6 +121,13 @@ export const TYPE = {
   version: { size: 22, family: "Commit Mono", weight: 400, lineHeight: 1.1, tracking: 0 },
   overflow: { size: 22, family: "Commit Mono", weight: 400, lineHeight: 1.1, tracking: 0.02 },
   gutter: { size: 18, family: "Commit Mono", weight: 700, lineHeight: 1.0, tracking: 0.18 },
+  // Tiles. Archivo past its "the repo name, and nothing else" rule, and 700 because 600
+  // reads visibly light at 64 units. ADR-0030, GOTCHAS 047.
+  symbol: { size: 64, family: "Archivo", weight: 700, lineHeight: 1.0, tracking: -0.03 },
+  // 6.7px in the GitHub apps, below DESIGN's legibility floor and deliberately so: the
+  // symbol carries the card at thumbnail size and the name is for up close. ADR-0029.
+  tileName: { size: 23, family: "Archivo", weight: 400, lineHeight: "26px", tracking: 0 },
+  legend: { size: 24, family: "Archivo", weight: 400, lineHeight: 1.2, tracking: 0 },
   meta: { size: 16, family: "Commit Mono", weight: 400, lineHeight: 1.2, tracking: 0.04 },
 } as const;
 

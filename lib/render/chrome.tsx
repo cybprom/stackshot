@@ -3,10 +3,25 @@ import { CARD, TYPE, displaySize } from "@/lib/tokens";
 
 type Colors = Record<string, string>;
 
-// Everything both cards share outside the bands. The accent bar, header, footer and
-// padding are what leaves the bands ~71u of headroom before a rotated gutter label
-// overlaps its neighbour, so they are one component rather than two copies. GOTCHAS 021.
-export function CardShell({ c, footerRight, children }: { c: Colors; footerRight?: string; children: ReactNode }) {
+/**
+ * The domain, as a literal rather than `SITE_ORIGIN`: `lib/render` must not read an
+ * environment variable, or one doc would render different bytes in two deployments (I2).
+ * Every style shows this line in `TYPE.meta`; where it sits is the frame's business.
+ */
+export const DOMAIN = "stackshot.ilerioluwa.com";
+
+/** Header content, so every style rounds a star count the same way. */
+export function starsLabel(n: number): string {
+  if (n >= 1000) return `${Math.round(n / 1000)}k stars`;
+  return `${n} stars`;
+}
+
+// The Datasheet's frame, shared with the error card — not every style's. A style's frame
+// is its own: Tiles has no accent bar, a decorative border and its own radius (ADR-0030).
+// Here the accent bar, header, footer and padding are what leaves the bands ~71u of
+// headroom before a rotated gutter label overlaps its neighbour, so they are one component
+// rather than two copies. GOTCHAS 021.
+export function SheetFrame({ c, footerRight, children }: { c: Colors; footerRight?: string; children: ReactNode }) {
   return (
     <div
       style={{
@@ -46,7 +61,7 @@ export function CardShell({ c, footerRight, children }: { c: Colors; footerRight
           color: c.inkMuted,
         }}
       >
-        <div style={{ display: "flex" }}>stackshot.ilerioluwa.com</div>
+        <div style={{ display: "flex" }}>{DOMAIN}</div>
         {footerRight ? <div style={{ display: "flex" }}>{footerRight}</div> : null}
       </div>
     </div>
@@ -59,16 +74,20 @@ export function GutterHeadSpacer() {
 }
 
 /**
- * Owner over repo name, with right-aligned metadata. Shared so the name's size ladder is
- * applied in one place — an error card names a repo just as a real card does.
+ * Owner over repo name, with right-aligned metadata. Shared by every style, so the name's
+ * size ladder and its two-line clamp are applied in one place — an error card names a
+ * repo just as a real card does, and a Tiles card names it the same way.
+ *
+ * `band` is the Datasheet's fixed header band. Omitted, the header is content-height,
+ * which is what a style with no band system wants.
  */
-export function CardHeader({ owner, repo, meta, c }: { owner: string; repo: string; meta: string[]; c: Colors }) {
+export function CardHeader({ owner, repo, meta, c, band }: { owner: string; repo: string; meta: string[]; c: Colors; band?: number }) {
   const size = displaySize(repo);
   return (
     <div
       style={{
         display: "flex",
-        height: CARD.headerBand,
+        ...(band === undefined ? {} : { height: band }),
         alignItems: "center",
         justifyContent: "space-between",
       }}

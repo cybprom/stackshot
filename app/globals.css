@@ -26,6 +26,9 @@
   --layer-tooling: #596068;
   --layer-tooling-tint: #eaeced;
 
+  /* Tiles paints its card on this, not on --surface: the tints were drawn against it. */
+  --tiles-surface: #ffffff;
+
   color-scheme: light;
 }
 
@@ -48,6 +51,8 @@
     --layer-tooling: #a8aeb5;
     --layer-tooling-tint: #1c2126;
 
+    --tiles-surface: #12171c;
+
     color-scheme: dark;
   }
 }
@@ -60,6 +65,8 @@
   --color-accent: var(--accent);
   --color-error: var(--error);
   --color-success: var(--success);
+
+  --color-tiles-surface: var(--tiles-surface);
 
   --color-layer-frontend: var(--layer-frontend);
   --color-layer-frontend-tint: var(--layer-frontend-tint);

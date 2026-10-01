@@ -21,6 +21,8 @@ const DocSchema = z.object({
         z.object({
           id: z.string(),
           display: z.string(),
+          // The Tiles preview draws it, so the page needs it without importing the map.
+          symbol: z.string(),
           version: z.string().optional(),
           description: z.string(),
         }),

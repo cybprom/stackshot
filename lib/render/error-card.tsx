@@ -1,6 +1,6 @@
 import { CARD, COLORS, ERROR_CARD_HEIGHT, TYPE, type Theme } from "@/lib/tokens";
 import { ERROR_COPY, type FailureReason } from "@/lib/failure";
-import { CardHeader, CardShell, GutterHeadSpacer, GutterLabel } from "@/lib/render/chrome";
+import { CardHeader, GutterHeadSpacer, GutterLabel, SheetFrame } from "@/lib/render/chrome";
 import { renderToPng } from "@/lib/render/render";
 
 export type ErrorCardProps = { reason: FailureReason; owner: string; repo: string; theme: Theme };
@@ -19,7 +19,7 @@ export function ErrorCard({ reason, owner, repo, theme }: ErrorCardProps) {
   const copy = ERROR_COPY[reason];
 
   return (
-    <CardShell c={c}>
+    <SheetFrame c={c}>
       <div
         style={{
           display: "flex",
@@ -45,7 +45,7 @@ export function ErrorCard({ reason, owner, repo, theme }: ErrorCardProps) {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", flex: 1, paddingLeft: 24 }}>
-        <CardHeader owner={owner} repo={repo} meta={[]} c={c} />
+        <CardHeader owner={owner} repo={repo} meta={[]} c={c} band={CARD.headerBand} />
 
         {/* Top-aligned, so the band's empty lower half reads as space on a document
             rather than as a notice centred in a void. */}
@@ -90,6 +90,6 @@ export function ErrorCard({ reason, owner, repo, theme }: ErrorCardProps) {
           </div>
         </div>
       </div>
-    </CardShell>
+    </SheetFrame>
   );
 }

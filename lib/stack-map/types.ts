@@ -57,6 +57,10 @@ export type RawSignal = {
 export type StackItem = {
   id: string;
   display: string;
+  // Tiles draws this and nothing else at thumbnail size. Carried in the doc rather than
+  // looked up at render time, so `lib/render/` still takes a StackDoc and nothing else.
+  // ADR-0030.
+  symbol: string;
   // Major, or major.minor where the entry says so. ADR-0008, ADR-0017.
   version?: string;
   // Site only — never rendered on the card. See ADR-0009.

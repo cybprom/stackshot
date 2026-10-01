@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { COLORS, LAYER_COLORS } from "@/lib/tokens";
+import { COLORS, LAYER_COLORS, TILES } from "@/lib/tokens";
 
 /**
  * The site's palette lives in CSS and the card's in TypeScript, because Satori does not
@@ -47,6 +47,12 @@ describe("the site's CSS palette matches the card's tokens", () => {
     expect(value(lightBlock, `layer-${category}-tint`)).toBe(LAYER_COLORS.light[category]?.tint.toLowerCase());
     expect(value(darkBlock, `layer-${category}`)).toBe(LAYER_COLORS.dark[category]?.color.toLowerCase());
     expect(value(darkBlock, `layer-${category}-tint`)).toBe(LAYER_COLORS.dark[category]?.tint.toLowerCase());
+  });
+
+  // Tiles' own card surface, for the same reason: the HTML preview draws a tile on it.
+  it("--tiles-surface matches the token Tiles paints on", () => {
+    expect(value(lightBlock, "tiles-surface")).toBe(TILES.surface.light.toLowerCase());
+    expect(value(darkBlock, "tiles-surface")).toBe(TILES.surface.dark.toLowerCase());
   });
 
   // DESIGN.md COLOR: the card has no semantic colors at all, and these two are site-only.

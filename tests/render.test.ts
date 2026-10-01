@@ -1,18 +1,26 @@
 import { describe, expect, it } from "vitest";
 import type { StackDoc } from "@/lib/stack-map/types";
-import { Card } from "@/lib/render/card";
+import type { CardStyle } from "@/lib/card-style";
 import { renderToPng } from "@/lib/render/render";
+import { styleDef } from "@/lib/render/styles";
 import { DOC_FIXTURES, fixtureDoc } from "@/tests/helpers/fixture-docs";
 
 const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
 // A blank 2400x1600 PNG compresses to a few KB; a drawn card is far larger.
 const MIN_DRAWN_BYTES = 20_000;
 const THEMES = ["light", "dark"] as const;
-const render = (doc: StackDoc, theme: "light" | "dark") => renderToPng(Card({ doc, theme }));
+// Every style with a tree of its own. Terminal and Tags still draw the Datasheet.
+const STYLES = ["sheet", "tiles"] as const satisfies readonly CardStyle[];
 
-describe("the card renders every fixture repo", () => {
-  it.each(DOC_FIXTURES.flatMap((f) => THEMES.map((t) => [f, t] as const)))("%s, %s", async (fixture, theme) => {
-    const png = await render(await fixtureDoc(fixture), theme);
+const render = (doc: StackDoc, theme: "light" | "dark", style: CardStyle = "sheet") => {
+  const { element, height } = styleDef(style);
+  return renderToPng(element({ doc, theme }), height);
+};
+
+describe("every style renders every fixture repo", () => {
+  const cases = STYLES.flatMap((s) => DOC_FIXTURES.flatMap((f) => THEMES.map((t) => [s, f, t] as const)));
+  it.each(cases)("%s %s, %s", async (style, fixture, theme) => {
+    const png = await render(await fixtureDoc(fixture), theme, style);
     expect(png.subarray(0, 4)).toEqual(PNG_MAGIC);
     expect(png.byteLength).toBeGreaterThan(MIN_DRAWN_BYTES);
   });
@@ -38,16 +46,22 @@ describe("shapes real docs produce that the spike never had", () => {
     expect((await render(doc, "light")).byteLength).toBeGreaterThan(MIN_DRAWN_BYTES);
   });
 
-  it("is byte-identical for the same doc and theme", async () => {
+  it.each(STYLES)("%s is byte-identical for the same doc and theme", async (style) => {
     const doc = await fixtureDoc("Grandbusta__spyde");
-    const [first, second] = await Promise.all([render(doc, "light"), render(doc, "light")]);
+    const [first, second] = await Promise.all([render(doc, "light", style), render(doc, "light", style)]);
     expect(first.equals(second)).toBe(true);
   });
 
-  it("differs between themes", async () => {
+  it.each(STYLES)("%s differs between themes", async (style) => {
     const doc = await fixtureDoc("Grandbusta__spyde");
-    const [light, dark] = await Promise.all([render(doc, "light"), render(doc, "dark")]);
+    const [light, dark] = await Promise.all([render(doc, "light", style), render(doc, "dark", style)]);
     expect(light.equals(dark)).toBe(false);
+  });
+
+  it("draws the same doc differently in two styles, so neither is a stand-in", async () => {
+    const doc = await fixtureDoc("Grandbusta__spyde");
+    const [sheet, tiles] = await Promise.all([render(doc, "light", "sheet"), render(doc, "light", "tiles")]);
+    expect(sheet.equals(tiles)).toBe(false);
   });
 
 });

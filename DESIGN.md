@@ -233,6 +233,11 @@ one-line comment).
 
 ## SURFACE
 
+> **Amended by ADR-0030 for every style but the Datasheet.** The frame belongs to the
+> style: Tiles has a 20-unit card, 12-unit tiles and a 2-unit hairline border in `rule`,
+> with no accent bar. The rules below are the Datasheet's, and they are still the default
+> for anything that does not state otherwise.
+
 - **Radius: 2.** One value, everywhere, card and site. A datasheet does not have rounded
   corners. `rounded-xl` is banned by name.
 - **Border: 3 units, `ink`.** The card has exactly one border, at its outer edge. Internal
@@ -353,7 +358,9 @@ Rules:
 - **Items are name plus version inline**, version in `ink-muted`. Major version only:
   `Next.js 15`, never `Next.js ^15.1.0`. See ADR-0008.
 - **No descriptions on the card.** They live on the site beneath the preview. See ADR-0009.
-- **The footer carries the domain and nothing else.** It used to carry `stack as of
+- **The footer carries the domain and nothing else** *(the Datasheet's; ADR-0030 gives
+  Tiles a bottom row with the layer legend at the left and the domain at the right,
+  because a card with no gutter has nothing else naming its layers)*. It used to carry `stack as of
   <date>`; that date said when Stackshot first saw the stack rather than when the repo
   changed it, so it was wrong on the day a card was generated. Removed in ADR-0025. The
   right side of the footer is empty on both cards.

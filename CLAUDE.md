@@ -161,8 +161,11 @@ lib/
   counters.ts                    failure-by-reason and the separate bug counter
   env.ts                         lazy reads, never throws — see scripts/check-env.ts
   render/
-    card.tsx                     the Satori element tree
-    chrome.tsx                   shell, header, gutter label — shared by both cards
+    card.tsx                     the Datasheet's Satori element tree
+    tiles.tsx                    the Tiles tree: frame, grid, legend
+    tiles-layout.ts              StackLayer[] -> 15 cells, 5 per row, 3 rows
+    styles.ts                    CardStyle -> element tree + canvas height
+    chrome.tsx                   header, domain, gutter label, the Datasheet's frame
     error-card.tsx               five reasons, 1200x518
     fonts.ts                     read at module scope
     render.ts                    (StackDoc, theme) -> PNG bytes
@@ -174,6 +177,7 @@ scripts/
   symbols.ts                     proposes the Tiles two-letter symbols; --write applies
   symbol-sheet.ts                every map entry as a tile, for reading them as a stranger
   render-cards.ts                every fixture card and error card to PNG, for looking at
+  render-hashes.ts               regenerates tests/fixtures/render-hashes.json
   resolve.ts                     pnpm tsx scripts/resolve.ts owner/repo -> StackDoc JSON
 tests/
   fixtures/                      recorded GitHub responses, committed

@@ -3,7 +3,7 @@ import { layoutTiles, TILE_BUDGET, TILES_PER_ROW } from "@/lib/render/tiles-layo
 import type { Category, StackItem, StackLayer } from "@/lib/stack-map/types";
 
 const items = (n: number): StackItem[] =>
-  Array.from({ length: n }, (_, i) => ({ id: `i${i}`, display: `Item ${i}`, description: "" }));
+  Array.from({ length: n }, (_, i) => ({ id: `i${i}`, display: `Item ${i}`, symbol: `I${i}`, description: "" }));
 
 const layer = (category: Category, count: number, overflow = 0): StackLayer => ({
   category,

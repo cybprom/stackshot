@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { FAILURE_REASONS, type FailureReason } from "@/lib/failure";
-import { Card } from "@/lib/render/card";
 import { renderErrorCard } from "@/lib/render/error-card";
 import { renderToPng } from "@/lib/render/render";
+import { styleDef } from "@/lib/render/styles";
 import { RENDER_VERSION, type Theme } from "@/lib/tokens";
 import { fixtureDoc } from "@/tests/helpers/fixture-docs";
 import HASHES from "@/tests/fixtures/render-hashes.json";
@@ -40,12 +40,20 @@ const sha = (b: Buffer) => createHash("sha256").update(b).digest("hex");
 
 const DOCS = ["Grandbusta__spyde", "vercel__next.js", "mastodon__mastodon", "github__gitignore"];
 const THEMES = ["light", "dark"] as const;
+// Named, not `CARD_STYLES`: Terminal and Tags are still stand-ins drawing the Datasheet,
+// and committing hashes for them would pin bytes to URLs that currently lie. Phase 3
+// adds "terminal" here in the same commit that gives it a tree.
+const STYLES = ["sheet", "tiles"] as const;
 
 describe("rendered bytes match their committed hashes (I2)", () => {
-  it.each(DOCS.flatMap((d) => THEMES.map((t) => [d, t] as const)))("card %s, %s", async (fixture, theme) => {
-    const png = await renderToPng(Card({ doc: await fixtureDoc(fixture), theme }));
-    expect(sha(png), `card:${fixture}:${theme}${HOW_TO_FIX}`).toBe(hashes[`card:${fixture}:${theme}`]);
-  });
+  it.each(STYLES.flatMap((s) => DOCS.flatMap((d) => THEMES.map((t) => [s, d, t] as const))))(
+    "%s %s, %s",
+    async (style, fixture, theme) => {
+      const { element, height } = styleDef(style);
+      const png = await renderToPng(element({ doc: await fixtureDoc(fixture), theme }), height);
+      expect(sha(png), `${style}:${fixture}:${theme}${HOW_TO_FIX}`).toBe(hashes[`${style}:${fixture}:${theme}`]);
+    },
+  );
 
   it.each(FAILURE_REASONS)("error %s, light", async (reason: FailureReason) => {
     const png = await renderErrorCard({ reason, owner: "octocat", repo: "hello-world", theme: "light" });
@@ -59,7 +67,7 @@ describe("rendered bytes match their committed hashes (I2)", () => {
 
   it("covers every committed hash, so none can rot unnoticed", () => {
     const covered = [
-      ...DOCS.flatMap((d) => THEMES.map((t: Theme) => `card:${d}:${t}`)),
+      ...STYLES.flatMap((s) => DOCS.flatMap((d) => THEMES.map((t: Theme) => `${s}:${d}:${t}`))),
       ...FAILURE_REASONS.map((r) => `error:${r}:light`),
       "error:not_found:dark",
     ];

@@ -8,11 +8,11 @@ it is the only thing that survives one.*
 ```
 Milestone:  3 COMPLETE and committed. Now on the CARD STYLES direction
             (ADR-0029): the card becomes a choice of styles. Phases 0
-            (de-risk) and 1 (plumbing) are done, and so are Phase 2's
-            225 symbols. The Tiles Satori tree is next.
-PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles (symbols DONE,
-            tree next) · 3 Terminal · 4 site generator (switcher, theme
-            toggle, HTML preview + crossfade) · 5 docs. Aiming at one
+            (de-risk), 1 (plumbing) and 2 (TILES, BOTH HALVES) are done.
+            Phase 3, Terminal, is next.
+PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal ·
+            4 site generator (switcher, theme toggle, HTML preview +
+            crossfade) · 5 docs. Aiming at one
             weekend, nothing cut. The fallback cut order, if it runs long:
             per-style reveals, then the Light/Dark toggle, then
             Terminal, then the HTML preview LAST — it is the drift
@@ -67,6 +67,17 @@ P4 GENERATOR: Style switcher + Light/Dark/System toggle on the preview.
             docs/design/directions/preview.dc.html.
 P5 DOCS:    DESIGN.md still describes only the Datasheet and needs the
             styles. ADR-0029 already exists and is current.
+BLOCKS      A FAILING TILES URL RENDERS THE DATASHEET'S ERROR FRAME —
+LAUNCH:     accent bar, 3u ink border, radius 2 — because renderErrorCard
+            takes no style and SheetFrame is the only frame it has. TILES
+            IS THE DEFAULT AND card-*.png IS PINNED TO IT, so most failing
+            embeds in the wild would show a frame from a style the reader
+            never asked for. Fix in Phase 5 at the latest: either give
+            renderErrorCard the style and a frame per style, or decide
+            that the error card is deliberately one object and say so in
+            ADR-0007. NOT a correctness bug — I5 holds, it is 200 and an
+            image — which is exactly why it will be invisible until
+            someone embeds a broken repo. ADR-0030 has the context.
 OPEN:       terminal-*.png and tags-*.png SERVE DATASHEET BYTES today,
             because CARD_STYLE_DEFS maps every style to something and they
             are stand-ins. Nobody is served a wrong card — the site never
@@ -77,10 +88,22 @@ OPEN:       terminal-*.png and tags-*.png SERVE DATASHEET BYTES today,
             image, so this is "not a card request" territory like a bad
             filename, not a failure card.
 STYLES:     Every CardStyle needs an entry in lib/render/styles.ts.
-            Tiles/Terminal/Tags currently draw the Datasheet tree as
-            stand-ins. REPLACING A STAND-IN BUMPS RENDER_VERSION, or
-            PNGs cached under that style's key get served as the real
-            thing.
+            TERMINAL AND TAGS still draw the Datasheet tree as stand-ins.
+            REPLACING A STAND-IN BUMPS RENDER_VERSION, or PNGs cached
+            under that style's key get served as the real thing.
+            A style's HEIGHT IS `number | "content"` — never undefined,
+            which a default parameter turns back into 800 and clips the
+            card in silence (GOTCHAS 050).
+            THE FRAME IS THE STYLE'S OWN (ADR-0030): shared is the header
+            content, the domain line and the layer colours; per style is
+            the border, radius, accent bar and what shares the bottom row.
+            lib/render/chrome.tsx holds the shared pieces plus SheetFrame,
+            which is the DATASHEET's frame and the error card's.
+            TILES PAINTS ON TILES.surface (#FFFFFF / #12171C), NOT
+            COLORS.surface: the layer tints were drawn against white and
+            the tooling tint disappears on #EDEEEA. Mirrored in
+            globals.css as --tiles-surface, with tests/tokens.test.ts as
+            the seam.
 Deployed:   LIVE at https://stackshot-one.vercel.app (project "stackshot",
             org cybproms-projects, region iad1, plan hobby, fluid compute,
             platform function timeout 300s; both routes pin maxDuration 30).
@@ -111,53 +134,31 @@ SITE_ORIGIN: lib/site.ts is the single source for the origin in the card
             PORT`) or the preview points at production. Preview and snippet
             are the same absolute URLs, so the CDN entry is shared and
             same-origin `download` works.
-Last done:  PHASE 2 FIRST HALF — the 225 symbols, reviewed and FROZEN
-            (7d221d7). symbol is a required field on MapEntry;
-            tests/stack-map.test.ts enforces /^[A-Z][a-z0-9]$/ and
-            uniqueness. scripts/symbols.ts NO LONGER WRITES — a bulk
-            regenerate would undo the author's pass. Contact sheet and the
-            reasoning are in docs/spike/styles/.
-            P AND S ARE SATURATED (all 26 combinations taken), so any
-            future change on those initials is a trade, not a move.
-            Before it: the three-row Tiles cap + png: TTL 7d + eviction
-            recorded (5399bc7). PHASE 1 plumbing (c7349da) — CardStyle +
-            URL + cache key + snippet all carry the style; layer colours
-            are tokens in lib/tokens.ts AND globals.css with
-            tests/tokens.test.ts as the seam. ADR-0029 has the three
-            reversals.
-            Before it: PHASE 0 (fd72965) — Satori honours maxHeight+overflow;
-            Commit Mono has the box-drawing glyphs; Archivo Bold shipped and
-            byte-checked; Tiles measured at ~452KB/stack and portrait.
-            Evidence in docs/spike/styles/, written to be read on a phone.
-            Before it: M3 the one page (7056b76), plus the site route's other
-            deadline half (9559bf7). ERROR_COPY moved to lib/failure.ts so the
-            site can import it without pulling in Satori; /api/resolve returns
-            `cause: "per_ip"`.
-            Before it: M2 STEP 6 (1513fdf) — committed-hash determinism. Rendered bytes
-            are pinned per card in tests/fixtures/render-hashes.json and
-            checked by tests/render-hash.test.ts; verified able to fail on a
-            one-digit colour change. Rendered output is byte-identical across
-            linux-x64 and darwin-arm64 (measured), so the hashes need no
-            authority machine.
-            Before it: M2 STEP 4 (16a290e) POST /api/resolve, rate limited by
-            RESOLVE rather than request, IP from x-vercel-forwarded-for only
-            (spoofing verified ineffective live), unmapped logged not
-            returned.
-Next:       PHASE 2, SECOND HALF — the Tiles Satori tree. NOT STARTED, by
-            the author's instruction. Everything it needs exists:
-             - lib/render/tiles-layout.ts for the allocation (15 cells,
-               5 per row, every layer keeps >=1 item tile)
-             - entry.symbol for every tile
-             - LAYER_COLORS in lib/tokens.ts
-             - CARD.padding (32) NOT the design's 44 — five per row, not
-               four. GOTCHAS 048.
-             - the throwaway prototype's measurements in
-               docs/spike/styles/README.md (1200x869 dense, ~332KB/stack)
-            Then: replace the stand-in in lib/render/styles.ts, set its
-            height to undefined (content-height), BUMP RENDER_VERSION in
-            lib/tokens.ts, and regenerate tests/fixtures/render-hashes.json
-            IN THE SAME COMMIT. Production is serving Datasheet bytes under
-            png:v1:tiles:* right now; the bump is what retires them.
+Last done:  PHASE 2 SECOND HALF — THE TILES SATORI TREE (this session).
+            lib/render/tiles.tsx, wired in styles.ts at height "content".
+            RENDER_VERSION IS 2 and tests/fixtures/render-hashes.json was
+            regenerated: its keys are now {style}:{fixture}:{theme}, and
+            the Datasheet's and error cards' bytes came back IDENTICAL
+            across the chrome split, which was the requirement.
+            symbol is now a field on StackItem, so every stackHash moved
+            once and a future symbol edit needs no version bump (ADR-0030).
+            Measured: 443 units at one row, +208 per row, within 2% of the
+            prototype's bytes — ADR-0029's storage figures stand.
+            New: tests/tiles.test.ts (five across, three rows, the clamp,
+            the height per shape) and scripts/render-hashes.ts.
+            scripts/render-cards.ts <dir> <style> draws a style's nine
+            fixtures; do that FIRST next time, not last (GOTCHAS 050).
+Next:       PHASE 3 — TERMINAL. Content-height like Tiles, so its
+            styleDef height is "content" (NOT undefined). Commit Mono has
+            no 600: the design's two 600s become 700 (GOTCHAS 047). Box
+            glyphs verified present in both weights. Design file
+            docs/design/directions/terminal.dc.html at 600px: double every
+            value but RE-DERIVE anything that wraps, fits or divides
+            (GOTCHAS 048). Terminal gets its OWN FRAME, like Tiles did —
+            shared is CardHeader, the domain line and LAYER_COLORS.
+            Add "terminal" to STYLES in tests/render-hash.test.ts,
+            tests/render.test.ts and scripts/render-hashes.ts in the same
+            commit as its tree, and bump RENDER_VERSION to 3.
             Was: PHASE 2 — Tiles. Two halves: the 225 two-letter symbols
             (scripts/symbols.ts proposes on a ladder and REFUSES to
             auto-resolve collisions, because a symbol is baked into every

@@ -5,17 +5,23 @@ import { CARD } from "@/lib/tokens";
 import { FONTS } from "@/lib/render/fonts";
 
 /**
+ * A number, or `"content"` for Satori to size the canvas to the tree. Spelled rather than
+ * left as `undefined`, because a default parameter turns `undefined` back into 800 and
+ * every content-height card would silently render clipped. GOTCHAS 050.
+ */
+export type CardHeight = number | "content";
+
+/**
  * Rasterizes a Satori element tree to PNG bytes. Pure: same input, same bytes (I2), and
  * height is part of that input — the error card is shorter than a real card.
  *
- * `undefined` means content-height: Satori sizes the canvas to the tree. Tiles and
- * Terminal need it, and the fixed-band Datasheet must not have it, or a short stack
- * would leave its lower bands hanging in empty space.
+ * Tiles and Terminal are content-height; the fixed-band Datasheet must not be, or a short
+ * stack would leave its lower bands hanging in empty space.
  */
-export async function renderToPng(element: ReactNode, height: number | undefined = CARD.height): Promise<Buffer> {
+export async function renderToPng(element: ReactNode, height: CardHeight = CARD.height): Promise<Buffer> {
   const svg = await satori(element, {
     width: CARD.width,
-    ...(height === undefined ? {} : { height }),
+    ...(height === "content" ? {} : { height }),
     fonts: FONTS,
   });
 

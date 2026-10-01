@@ -29,7 +29,7 @@ function worstCaseDoc(): StackDoc {
       items: STACK_MAP.filter((e) => e.category === category)
         .sort((a, b) => b.display.length - a.display.length)
         .slice(0, 6)
-        .map((e) => ({ id: e.id, display: e.display, version: "10.20", description: e.description })),
+        .map((e) => ({ id: e.id, display: e.display, symbol: e.symbol, version: "10.20", description: e.description })),
       overflow: 99,
     })),
     unmapped: [],
@@ -62,6 +62,9 @@ async function deepestBottom(element: ReturnType<typeof Card>, height: number): 
 
 const THEMES = ["light", "dark"] as const;
 
+// Datasheet only, and deliberately: it is the style with a fixed canvas to overrun. A
+// content-height style's canvas is its content, so the equivalent question there is
+// whether the grid fits across and within three rows — `tests/tiles.test.ts`.
 describe("nothing is laid out past the canvas", () => {
   it.each(DOC_FIXTURES.flatMap((f) => THEMES.map((t) => [f, t] as const)))("%s, %s", async (fixture, theme) => {
     const doc = await fixtureDoc(fixture);

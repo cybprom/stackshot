@@ -87,7 +87,7 @@ function toItem({ entry, signals }: Candidate): StackItem {
     versioned.map((s) => s.rawVersion),
     entry.versionPrecision ?? "major",
   );
-  const base = { id: entry.id, display: entry.display, description: entry.description };
+  const base = { id: entry.id, display: entry.display, symbol: entry.symbol, description: entry.description };
   // No undefined keys: the doc is hashed, and the hash must not see absent-vs-undefined.
   return version ? { ...base, version } : base;
 }

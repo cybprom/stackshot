@@ -33,6 +33,8 @@ export const CACHE_TIMEOUT_MS = 500;
 const StackItemSchema = z.object({
   id: z.string(),
   display: z.string(),
+  // Required, so a doc written before symbols degrades to a miss and re-resolves.
+  symbol: z.string(),
   version: z.string().optional(),
   description: z.string(),
 });
