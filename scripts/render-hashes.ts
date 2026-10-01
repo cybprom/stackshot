@@ -16,7 +16,7 @@ import { fixtureDoc } from "@/tests/helpers/fixture-docs";
 const OUT = new URL("../tests/fixtures/render-hashes.json", import.meta.url);
 const DOCS = ["Grandbusta__spyde", "vercel__next.js", "mastodon__mastodon", "github__gitignore"];
 const THEMES = ["light", "dark"] satisfies Theme[];
-const STYLES = ["sheet", "tiles"] as const;
+const STYLES = ["sheet", "tiles", "terminal"] as const;
 
 const sha = (b: Buffer) => createHash("sha256").update(b).digest("hex");
 

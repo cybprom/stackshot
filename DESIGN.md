@@ -180,7 +180,7 @@ these are Tailwind's gray, slate, or zinc, and none are a pure desaturated neutr
 | `ink` | `#101615` | `#DDE2DD` | All primary text, all meaningful rules |
 | `ink-muted` | `#5A625E` | `#8B9490` | Versions, owner, footer metadata |
 | `rule` | `#C8CCC4` | `#242A2B` | Decorative hairlines only — see the warning below |
-| `accent` | `#C8461E` | `#FF6B3D` | One 4-unit bar at the card's top edge. Nothing else. |
+| `accent` | `#C8461E` | `#FF6B3D` | One 4-unit bar at the card's top edge, and Terminal's `$` (ADR-0031). Nothing else. |
 
 **The accent is a single hue expressed twice.** One hex cannot clear AA on both
 backgrounds, so light and dark carry different values of the same colour. This is a

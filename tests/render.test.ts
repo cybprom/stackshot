@@ -9,8 +9,8 @@ const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
 // A blank 2400x1600 PNG compresses to a few KB; a drawn card is far larger.
 const MIN_DRAWN_BYTES = 20_000;
 const THEMES = ["light", "dark"] as const;
-// Every style with a tree of its own. Terminal and Tags still draw the Datasheet.
-const STYLES = ["sheet", "tiles"] as const satisfies readonly CardStyle[];
+// Every style with a tree of its own. Tags still draws the Datasheet.
+const STYLES = ["sheet", "tiles", "terminal"] as const satisfies readonly CardStyle[];
 
 const render = (doc: StackDoc, theme: "light" | "dark", style: CardStyle = "sheet") => {
   const { element, height } = styleDef(style);
@@ -58,10 +58,11 @@ describe("shapes real docs produce that the spike never had", () => {
     expect(light.equals(dark)).toBe(false);
   });
 
-  it("draws the same doc differently in two styles, so neither is a stand-in", async () => {
+  it("draws the same doc differently in every style, so none is a stand-in", async () => {
     const doc = await fixtureDoc("Grandbusta__spyde");
-    const [sheet, tiles] = await Promise.all([render(doc, "light", "sheet"), render(doc, "light", "tiles")]);
-    expect(sheet.equals(tiles)).toBe(false);
+    const drawn = await Promise.all(STYLES.map((style) => render(doc, "light", style)));
+    const distinct = new Set(drawn.map((png) => png.toString("base64")));
+    expect(distinct.size).toBe(STYLES.length);
   });
 
 });

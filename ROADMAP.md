@@ -8,11 +8,11 @@ it is the only thing that survives one.*
 ```
 Milestone:  3 COMPLETE and committed. Now on the CARD STYLES direction
             (ADR-0029): the card becomes a choice of styles. Phases 0
-            (de-risk), 1 (plumbing) and 2 (TILES, BOTH HALVES) are done.
-            Phase 3, Terminal, is next.
-PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal ·
-            4 site generator (switcher, theme toggle, HTML preview +
-            crossfade) · 5 docs. Aiming at one
+            (de-risk), 1 (plumbing), 2 (TILES) and 3 (TERMINAL) are done.
+            Phase 4, the site generator, is next.
+PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal
+            DONE · 4 site generator (switcher, theme toggle, HTML preview
+            + crossfade) · 5 docs. Aiming at one
             weekend, nothing cut. The fallback cut order, if it runs long:
             per-style reveals, then the Light/Dark toggle, then
             Terminal, then the HTML preview LAST — it is the drift
@@ -41,16 +41,6 @@ AFTER P4:   TWO PAGE DESIGNS, built to be compared live, not one chosen on
                inner scrolling box.
              - Tiles previews use the three-row cap, the same allocation
                as the renderer (lib/render/tiles-layout.ts).
-P3 TERMINAL: Content-height like Tiles, so its styleDef height is
-            undefined. Commit Mono has NO 600 — the design's two 600s
-            become 700 (GOTCHAS 047, third time this font's weight set has
-            cost something). Box-drawing glyphs were verified present in
-            both weights, so it is not blocked. Design file
-            docs/design/directions/terminal.dc.html, drawn at 600px: double
-            every value, but RE-DERIVE anything that wraps, fits or
-            divides — doubling preserves proportion and not fit, which is
-            how Tiles lost a column (GOTCHAS 048). Bytes not measured yet;
-            it should be much cheaper than Tiles, being text.
 P4 GENERATOR: Style switcher + Light/Dark/System toggle on the preview.
             The TOGGLE IS PREVIEW-ONLY: the snippet always emits <picture>
             with both themes, so System is the real README behaviour and
@@ -88,7 +78,8 @@ OPEN:       terminal-*.png and tags-*.png SERVE DATASHEET BYTES today,
             image, so this is "not a card request" territory like a bad
             filename, not a failure card.
 STYLES:     Every CardStyle needs an entry in lib/render/styles.ts.
-            TERMINAL AND TAGS still draw the Datasheet tree as stand-ins.
+            ONLY TAGS still draws the Datasheet tree as a stand-in, and it
+            is post-launch.
             REPLACING A STAND-IN BUMPS RENDER_VERSION, or PNGs cached
             under that style's key get served as the real thing.
             A style's HEIGHT IS `number | "content"` — never undefined,
@@ -99,19 +90,29 @@ STYLES:     Every CardStyle needs an entry in lib/render/styles.ts.
             the border, radius, accent bar and what shares the bottom row.
             lib/render/chrome.tsx holds the shared pieces plus SheetFrame,
             which is the DATASHEET's frame and the error card's.
-            TILES PAINTS ON TILES.surface (#FFFFFF / #12171C), NOT
-            COLORS.surface: the layer tints were drawn against white and
-            the tooling tint disappears on #EDEEEA. Mirrored in
-            globals.css as --tiles-surface, with tests/tokens.test.ts as
-            the seam.
+            EACH STYLE PAINTS ON ITS OWN SURFACE: TILES.surface
+            (#FFFFFF / #12171C) because the tints were drawn against
+            white and the tooling tint disappears on #EDEEEA;
+            TERMINAL.surface (#FAFAF7 / #0A0D10) because a terminal sits
+            off the page. Tiles' is mirrored in globals.css as
+            --tiles-surface with tests/tokens.test.ts as the seam;
+            Terminal's needs the same when P4 draws its HTML preview.
+            ADR-0031 STATES THE SHARING RULE ONCE, FOR ALL FOUR STYLES:
+            shared are the facts (owner, repo, language, stars), the
+            domain line in TYPE.meta, LAYER_COLORS, the 1200 canvas and a
+            BOUNDED repo name. Everything else — frame, header
+            presentation, height — belongs to the style. Do not re-derive
+            this per style; it has been wrong twice already.
 Deployed:   LIVE at https://stackshot-one.vercel.app (project "stackshot",
             org cybproms-projects, region iad1, plan hobby, fluid compute,
             platform function timeout 300s; both routes pin maxDuration 30).
             stackshot.ilerioluwa.com IS LIVE (author-confirmed 2026-09-29),
             which is SITE_ORIGIN's default. MAIN HAS BEEN PUSHED and pushes
-            auto-deploy production, so production now serves the Phase 1
-            stand-ins: tiles-*.png currently draws a Datasheet and caches it
-            under png:v1:tiles:*. Phase 2's RENDER_VERSION bump retires those.
+            auto-deploy production. RENDER_VERSION IS 3: the bump retires
+            the Datasheet bytes that png:v1:tiles:* and png:v2:terminal:*
+            were serving while those styles were stand-ins. NOT YET PUSHED
+            as of this commit, so production still serves the stand-ins
+            until it is.
             Upstash EVICTION IS ON, so a full database drops old keys instead
             of failing writes.
             Measure against the stable alias, never the per-deployment URL:
@@ -134,31 +135,47 @@ SITE_ORIGIN: lib/site.ts is the single source for the origin in the card
             PORT`) or the preview points at production. Preview and snippet
             are the same absolute URLs, so the CDN entry is shared and
             same-origin `download` works.
-Last done:  PHASE 2 SECOND HALF — THE TILES SATORI TREE (this session).
-            lib/render/tiles.tsx, wired in styles.ts at height "content".
-            RENDER_VERSION IS 2 and tests/fixtures/render-hashes.json was
-            regenerated: its keys are now {style}:{fixture}:{theme}, and
-            the Datasheet's and error cards' bytes came back IDENTICAL
-            across the chrome split, which was the requirement.
-            symbol is now a field on StackItem, so every stackHash moved
-            once and a future symbol edit needs no version bump (ADR-0030).
-            Measured: 443 units at one row, +208 per row, within 2% of the
-            prototype's bytes — ADR-0029's storage figures stand.
-            New: tests/tiles.test.ts (five across, three rows, the clamp,
-            the height per shape) and scripts/render-hashes.ts.
-            scripts/render-cards.ts <dir> <style> draws a style's nine
-            fixtures; do that FIRST next time, not last (GOTCHAS 050).
-Next:       PHASE 3 — TERMINAL. Content-height like Tiles, so its
-            styleDef height is "content" (NOT undefined). Commit Mono has
-            no 600: the design's two 600s become 700 (GOTCHAS 047). Box
-            glyphs verified present in both weights. Design file
-            docs/design/directions/terminal.dc.html at 600px: double every
-            value but RE-DERIVE anything that wraps, fits or divides
-            (GOTCHAS 048). Terminal gets its OWN FRAME, like Tiles did —
-            shared is CardHeader, the domain line and LAYER_COLORS.
-            Add "terminal" to STYLES in tests/render-hash.test.ts,
-            tests/render.test.ts and scripts/render-hashes.ts in the same
-            commit as its tree, and bump RENDER_VERSION to 3.
+Last done:  PHASE 3 — TERMINAL (this session). lib/render/terminal.tsx at
+            height "content": prompt line, mono one-line repo ref with its
+            own clamps, the ├──/└── layer tree, domain. RENDER_VERSION 3,
+            hashes regenerated — NOTHING MOVED, eight terminal:* added.
+            ADR-0031 settles what styles share, after ADR-0029's claim was
+            amended twice; read it before building Tags.
+            Tree rows are 30u NOT the design's 27 (7.8px in the apps, under
+            the 8.75 floor, and Terminal has no symbols to carry it), and
+            the 240u label column was re-derived from that.
+            tests/terminal.test.ts: the label never wraps, └── is last,
+            the box glyphs advance as mono, a wrapped item row costs
+            exactly 46u, and a 100-char name stays in two lines.
+            Terminal is the CHEAP style: 608u/148KB for next.js against
+            Tiles' 859u/191KB — the lever if KV bytes ever bind.
+            TERMINAL.rowGap is 24, not the design's 12: the box glyphs'
+            ink is 51u in a 42u line box, so 12 left the stems 3u apart
+            and the tree read as one broken line (GOTCHAS 051).
+            PHONE CHECK PASSED (2026-10-01): every name on the densest
+            card reads in the GitHub app without zooming, which is what
+            the 30u decision was waiting on.
+            Before it: PHASE 2 — the Tiles tree (4521b65), symbol on
+            StackItem, the frame split out of chrome.tsx, ADR-0030, and
+            GOTCHAS 050 (a default parameter turned content-height back
+            into 800 and clipped every card; render FIRST, not last).
+Next:       PHASE 4 — THE SITE GENERATOR. Style switcher +
+            Light/Dark/System toggle on the preview; the TOGGLE IS
+            PREVIEW-ONLY, since the snippet always emits <picture> with
+            both themes. The switcher MUST feed the copied snippet —
+            pictureSnippet in lib/site.ts already takes a style and
+            tests/site.test.ts asserts it never emits card-*.png.
+            The preview draws in HTML first and the real PNG crossfades in
+            once decoded, so drift between a style's two implementations
+            is visible rather than theoretical — and that HTML preview is
+            ALSO what stops the switcher writing a PNG per flip (ADR-0029).
+            THREE styles now have HTML to write, not one: sheet, tiles,
+            terminal. symbol is on StackItem and reaches the client
+            through /api/resolve, so a tile needs no map in the browser.
+            TERMINAL.surface needs a --terminal-surface var in globals.css
+            and a tests/tokens.test.ts seam entry, the way Tiles got one.
+            Reveals, timings and the two loading phases are in
+            docs/design/directions/preview.dc.html.
             Was: PHASE 2 — Tiles. Two halves: the 225 two-letter symbols
             (scripts/symbols.ts proposes on a ladder and REFUSES to
             auto-resolve collisions, because a symbol is baked into every

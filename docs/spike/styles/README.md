@@ -198,3 +198,34 @@ is the number GOTCHAS 048 missed by four units.
 The card is painted on `#FFFFFF` light and `#12171C` dark rather than on `surface`: the
 tints were drawn against white, and on `#EDEEEA` the tooling tint is three points from the
 card and disappears. ADR-0030.
+
+---
+
+# Phase 3 — the Terminal renderer
+
+`lib/render/terminal.tsx`. The cheap style, as expected — text, no tints, no grid.
+
+| Repo | Height | PNG | Tiles, for comparison |
+|---|---|---|---|
+| vercel/next.js | 608 | 148 KB | 859 · 191 KB |
+| mastodon/mastodon | 608 | 163 KB | 859 · 186 KB |
+| pmndrs/zustand | 516 | 109 KB | 651 · 141 KB |
+| github/gitignore | 272 | 51 KB | 443 · 53 KB |
+
+Two numbers were re-derived rather than doubled, which is GOTCHAS 048's rule applied
+twice more. **Tree rows are 30 units, not the design's 27**: 27 is 7.8px in the GitHub
+apps, under DESIGN's 8.75px floor, and unlike Tiles this card has no symbols — the item
+names *are* the card. The fixed label column follows from that size: `├── frontend` is 12
+characters of Commit Mono at 30, so 219 units, and the column is 240.
+
+The row gap is 24 rather than the design's doubled 12, because the box glyphs' ink is 51
+units tall in a 42-unit line box and 12 left the stems 3 units apart — a broken line
+rather than four branches. GOTCHAS 051.
+
+### The phone check: passed
+
+**Read in the GitHub mobile app on 2026-10-01**, on the densest card: every technology
+name reads without zooming. That is the verdict the 30-unit decision was waiting on —
+it was taken from DESIGN's 8.75px floor, and the floor is only worth anything if the
+surface it describes agrees. Tiles passed the same check on its symbols; Terminal has no
+symbols, so this one was about the names themselves.

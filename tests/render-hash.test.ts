@@ -40,10 +40,9 @@ const sha = (b: Buffer) => createHash("sha256").update(b).digest("hex");
 
 const DOCS = ["Grandbusta__spyde", "vercel__next.js", "mastodon__mastodon", "github__gitignore"];
 const THEMES = ["light", "dark"] as const;
-// Named, not `CARD_STYLES`: Terminal and Tags are still stand-ins drawing the Datasheet,
-// and committing hashes for them would pin bytes to URLs that currently lie. Phase 3
-// adds "terminal" here in the same commit that gives it a tree.
-const STYLES = ["sheet", "tiles"] as const;
+// Named, not `CARD_STYLES`: Tags is still a stand-in drawing the Datasheet, and
+// committing hashes for it would pin bytes to a URL that currently lies.
+const STYLES = ["sheet", "tiles", "terminal"] as const;
 
 describe("rendered bytes match their committed hashes (I2)", () => {
   it.each(STYLES.flatMap((s) => DOCS.flatMap((d) => THEMES.map((t) => [s, d, t] as const))))(

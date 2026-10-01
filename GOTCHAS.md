@@ -1604,6 +1604,36 @@ parameter.
 last step before committing, the way it has been since Milestone 1. Doing it first would
 have cost five minutes and caught this before the hashes were committed to disk.
 
+## 051 — The box glyphs are taller than their line box, and the tree read as a broken line
+**Date:** 2026-10-01 · **Cost:** ~0.3h · **Status:** fixed
+**Writeup material:** yes — the author saw it in a render; no measurement would have asked
+
+Terminal's layer tree is `├──` and `└──`, one per row, at the design's doubled row gap of
+12 units. Rendered, the vertical stems formed a single line down the left with small nicks
+in it, which reads as a rendering artifact rather than as a tree.
+
+Measured from the glyph paths in the SVG, rather than from the line box:
+
+```
+glyph ink      51.0 units tall      (U+251C tiles a terminal cell; it overflows a 42u line box)
+row pitch      54.0 units           (42 line + 12 gap)
+stem gap        3.0 units           0.9px in the GitHub app
+```
+
+**A box-drawing glyph is designed to touch its neighbours** — that is what makes `tree`
+output continuous in a terminal — so the usual assumption that a line box bounds its ink
+is wrong for exactly this character class. Nothing in the layout was incorrect: the rows
+were 12 apart as drawn, and every geometry assertion passed.
+
+The fix is the row gap at 24, which gives 15 units of air and four discrete branches. The
+other direction — gap 0, letting the 51-unit ink overlap a 42-unit pitch into a genuinely
+continuous trunk — is the more faithful terminal, and it fails on the cards that matter:
+a layer whose items wrap is 84 units tall with a glyph only on its first line, so the
+trunk breaks on precisely the dense repos. It would need a `│` drawn per wrapped line.
+
+**Found by looking at a card, not by a test**, which is now five of the project's bugs
+found that way. GOTCHAS 050 was the same lesson one day earlier.
+
 ---
 
 *New entries go above this line as they happen.*

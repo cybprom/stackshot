@@ -11,8 +11,8 @@ export type Theme = "light" | "dark";
  * bytes move, and its message says to bump this and update the committed hashes in the
  * same commit. ADR-0005's amendment has the reasoning.
  */
-// 2: Tiles stopped being a stand-in that drew the Datasheet.
-export const RENDER_VERSION = 2;
+// 2: Tiles stopped being a stand-in. 3: Terminal did.
+export const RENDER_VERSION = 3;
 
 export const COLORS: Record<Theme, Record<string, string>> = {
   light: {
@@ -113,6 +113,32 @@ export const TILES = {
   swatchRadius: 4,
 } as const;
 
+/**
+ * Terminal's frame and tree. Same per-style surface as Tiles, for a different reason: a
+ * terminal sits slightly off the page rather than flush with it.
+ *
+ * `labelWidth` holds `├── frontend` — 12 characters of Commit Mono at 30 units, which
+ * advances at 0.609em, so 219 units plus a character of slack. It is fixed so the item
+ * columns line up down the card, and it must never wrap.
+ */
+export const TERMINAL = {
+  surface: { light: "#FAFAF7", dark: "#0A0D10" } satisfies Record<Theme, string>,
+  border: 2,
+  radius: 16,
+  // Prompt, title, tree, domain.
+  gap: 24,
+  // Between layer rows. 12 left the box glyphs 3 units apart — their ink is 51 units
+  // tall against a 42-unit line box, so the stems read as one broken line rather than as
+  // four branches. 24 gives 15. The alternative was a continuous trunk, which needs a
+  // `│` per wrapped line and breaks on exactly the dense cards. GOTCHAS 051.
+  rowGap: 24,
+  labelWidth: 240,
+  // About one space of Commit Mono at 30, on the spacing scale.
+  glyphGap: 16,
+  itemGap: 24,
+  itemRowGap: 4,
+} as const;
+
 // Commit Mono ships 400 and 700 only, and the scale is built on that. GOTCHAS 014.
 export const TYPE = {
   display: { size: 64, family: "Archivo", weight: 600, lineHeight: 1.0, tracking: -0.02 },
@@ -128,6 +154,13 @@ export const TYPE = {
   // symbol carries the card at thumbnail size and the name is for up close. ADR-0029.
   tileName: { size: 23, family: "Archivo", weight: 400, lineHeight: "26px", tracking: 0 },
   legend: { size: 24, family: "Archivo", weight: 400, lineHeight: 1.2, tracking: 0 },
+  // Terminal. The design's 600s become 700, which is all Commit Mono ships (GOTCHAS 047).
+  prompt: { size: 24, family: "Commit Mono", weight: 400, lineHeight: 1.2, tracking: 0 },
+  terminalName: { size: 36, family: "Commit Mono", weight: 700, lineHeight: 1.2, tracking: 0 },
+  // `item`'s size, deliberately: Terminal has no symbols, so these names are the whole
+  // card and the 8.75px floor applies to them. The design's 27 is 7.8px in the GitHub
+  // apps. Doubling preserves proportion, not legibility — GOTCHAS 048's lesson again.
+  tree: { size: 30, family: "Commit Mono", weight: 400, lineHeight: "42px", tracking: 0 },
   meta: { size: 16, family: "Commit Mono", weight: 400, lineHeight: 1.2, tracking: 0.04 },
 } as const;
 

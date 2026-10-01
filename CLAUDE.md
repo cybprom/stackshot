@@ -163,6 +163,7 @@ lib/
   render/
     card.tsx                     the Datasheet's Satori element tree
     tiles.tsx                    the Tiles tree: frame, grid, legend
+    terminal.tsx                 the Terminal tree: frame, prompt, layer tree
     tiles-layout.ts              StackLayer[] -> 15 cells, 5 per row, 3 rows
     styles.ts                    CardStyle -> element tree + canvas height
     chrome.tsx                   header, domain, gutter label, the Datasheet's frame
