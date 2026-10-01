@@ -98,12 +98,16 @@ as a rule being kept.
   itself from the card, and text inside it is scaled rather than reflowed. Both are what
   we want — it is a picture of a card — but it does mean the preview cannot be made
   responsive in its own right, only smaller.
-- **Four drift surfaces remain, and they are named.** Satori's `lineClamp` needs
-  `-webkit-line-clamp` in a browser; Satori's flex defaults are not the browser's; the
-  font family in `TYPE` is Satori's registered name, so the preview has to map it to the
-  `next/font` variable; and text shaping differs between harfbuzz and the browser, so wrap
-  points can land a character apart. The crossfade is what finds these, and `?draw=html`
-  holds the HTML layer up with the PNG suppressed so they can be read side by side.
+- **The drift surfaces are named, and they are spelling differences rather than shaping
+  ones.** Satori's `lineClamp` needs `-webkit-line-clamp` in a browser; its
+  `align-items: baseline` means a shared bottom edge where a browser means the first line
+  (GOTCHAS 055); a line box written as a ratio can never agree, because Satori rounds it
+  (GOTCHAS 052); and the font family in `TYPE` is Satori's registered name, so the preview
+  maps it to the `next/font` variable. **Text shaping itself agrees to about 0.1%** once
+  the same files are loaded — an earlier claim of 2.2% here was an instrument drawing in
+  Helvetica (GOTCHAS 053). Where the two engines genuinely disagree, **the preview copies
+  the renderer**, even where that means the preview's CSS reads oddly. The crossfade finds
+  these, and `?draw=html` holds the HTML layer up with the PNG suppressed.
 - **Two renders per generate instead of one**, warming both themes of the chosen style.
   Zero GitHub budget, by ADR-0029's split of the cache keys, and it buys an instant theme
   toggle. A style the visitor looks at and abandons inside `PNG_SETTLE_MS` costs nothing.

@@ -3,7 +3,7 @@
 // is the one you can read at a standstill. ADR-0032.
 //
 // Usage: pnpm tsx scripts/compare-styles.ts [outDir]
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
@@ -26,7 +26,10 @@ function pngSize(png: Buffer): { width: number; height: number } {
   return { width: png.readUInt32BE(16), height: png.readUInt32BE(20) };
 }
 
-type Row = { label: string; style: LaunchStyle; theme: Theme; file: string; units: number };
+// `src` is a data URI rather than a path: a browser that will not load a file:// image
+// beside a file:// page leaves every PNG pane blank, and the sheet is useless exactly
+// when it is needed. The .png files are still written, for looking at on their own.
+type Row = { label: string; style: LaunchStyle; theme: Theme; src: string; units: number };
 
 async function main(outDir: string) {
   mkdirSync(outDir, { recursive: true });
@@ -51,7 +54,7 @@ async function main(outDir: string) {
         // says so, and if shorter it leaves a gap.
         const units = Math.round((pixels * PREVIEW_WIDTH) / width);
         panes.push({
-          row: { label, style, theme, file, units },
+          row: { label, style, theme, src: `data:image/png;base64,${png.toString("base64")}`, units },
           html: renderToStaticMarkup(createElement(Preview, { doc, theme })),
         });
         console.log(
@@ -65,8 +68,9 @@ async function main(outDir: string) {
   writeFileSync(join(outDir, "compare.html"), page(panes), "utf8");
 
   // One pane per file as well, at a known size, so a headless screenshot of a single
-  // difference pane is readable rather than a wall of thumbnails.
-  for (const pane of panes) {
+  // difference pane is readable rather than a wall of thumbnails. Behind a flag: each
+  // carries its own copy of the faces.
+  for (const pane of process.argv.includes("--panes") ? panes : []) {
     const { style, label, theme } = pane.row;
     for (const kind of ["diff", "html"] as const) {
       writeFileSync(join(outDir, `${kind}-${style}-${label}-${theme}.html`), single(pane, kind), "utf8");
@@ -80,19 +84,19 @@ function page(panes: { row: Row; html: string }[]): string {
     .map(({ row, html }) => {
       const plate = PREVIEW.page[row.theme];
       return `
-<section class="row ${row.theme}" style="--uh:${row.units}">
+<section class="row ${row.theme}" style="--uh:${row.units};--png:url(${row.src})">
   <h2>${row.style} · ${row.label} · ${row.theme} · ${row.units}u</h2>
   <div class="cells">
     <figure><figcaption>HTML</figcaption>
       <div class="plate" style="background:${plate}"><div class="pane"><div class="tree">${html}</div></div></div>
     </figure>
     <figure><figcaption>PNG</figcaption>
-      <div class="plate" style="background:${plate}"><img src="./${row.file}" alt=""></div>
+      <div class="plate" style="background:${plate}"><div class="png"></div></div>
     </figure>
     <figure><figcaption>difference — black is identical</figcaption>
       <div class="plate diff" style="background:${plate}">
         <div class="pane"><div class="tree">${html}</div></div>
-        <img class="over" src="./${row.file}" alt="">
+        <div class="png over"></div>
       </div>
     </figure>
   </div>
@@ -103,7 +107,8 @@ function page(panes: { row: Row; html: string }[]): string {
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>Preview vs PNG</title>
 <style>
-${CSS}
+${FACES}
+${LAYOUT}
 </style></head>
 <body>
 <h1>HTML preview vs rendered PNG</h1>
@@ -120,14 +125,15 @@ function single({ row, html }: { row: Row; html: string }, kind: "diff" | "html"
   const plate = PREVIEW.page[row.theme];
   const body =
     kind === "diff"
-      ? `<div class="plate diff" style="background:${plate}"><div class="pane"><div class="tree">${html}</div></div><img class="over" src="./${row.file}" alt=""></div>`
+      ? `<div class="plate diff" style="background:${plate}"><div class="pane"><div class="tree">${html}</div></div><div class="png over"></div></div>`
       : `<div class="plate" style="background:${plate}"><div class="pane"><div class="tree">${html}</div></div></div>`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>${kind} ${row.style} ${row.label} ${row.theme}</title>
 <style>
-${CSS}
+${FACES}
+${LAYOUT}
 body{padding:0;background:${plate}}
-.plate{--uh:${row.units}}
+.plate{--uh:${row.units};--png:url(${row.src})}
 </style></head><body>${body}
 <script>
 // ?w=2400 reads the pair at the PNG's native resolution, where an offset of one unit is
@@ -155,16 +161,33 @@ if (q.get("measure")) {
 </body></html>`;
 }
 
-// The same two TTFs the renderer embeds and next/font serves, under the variable names
-// `lib/preview.ts` maps to, so this file resolves exactly what the site will.
-const CSS = `
-@font-face{font-family:Archivo;src:url(../public/fonts/Archivo-Regular.ttf);font-weight:400}
-@font-face{font-family:Archivo;src:url(../public/fonts/Archivo-SemiBold.ttf);font-weight:600}
-@font-face{font-family:Archivo;src:url(../public/fonts/Archivo-Bold.ttf);font-weight:700}
-@font-face{font-family:"Commit Mono";src:url(../public/fonts/CommitMono-400-Regular.ttf);font-weight:400}
-@font-face{font-family:"Commit Mono";src:url(../public/fonts/CommitMono-700-Regular.ttf);font-weight:700}
+/**
+ * The same TTFs the renderer embeds and `next/font` serves, under the variable names
+ * `lib/preview.ts` maps to, so this sheet resolves exactly what the site will.
+ *
+ * Inlined, not linked. A font is a CORS-restricted fetch, and these sit a directory above
+ * the page, so a browser can refuse them while loading everything else — and a comparison
+ * sheet silently drawn in Helvetica is worse than no sheet at all.
+ */
+const face = (file: string, family: string, weight: number): string =>
+  `@font-face{font-family:${family};font-weight:${weight};src:url(data:font/ttf;base64,${readFileSync(
+    join("public", "fonts", file),
+  ).toString("base64")})}`;
+
+const FACES = `
+${face("Archivo-Regular.ttf", "Archivo", 400)}
+${face("Archivo-SemiBold.ttf", "Archivo", 600)}
+${face("Archivo-Bold.ttf", "Archivo", 700)}
+${face("CommitMono-400-Regular.ttf", '"Commit Mono"', 400)}
+${face("CommitMono-700-Regular.ttf", '"Commit Mono"', 700)}
+`;
+
+const LAYOUT = `
 :root{--font-archivo:Archivo;--font-commit-mono:"Commit Mono";--w:1100;--scale:calc(var(--w)/${PREVIEW_WIDTH})}
-body{margin:0;padding:24px;background:#EDEEEA;font:14px/1.4 ui-sans-serif,system-ui,sans-serif;color:#101615}
+/* The site's <html> carries Tailwind's \`antialiased\`, so the sheet must too: without it
+   macOS renders live text with subpixel smoothing and stem darkening, which reads a weight
+   heavier than the PNG and than the real preview. GOTCHAS 054. */
+body{margin:0;padding:24px;background:#EDEEEA;font:14px/1.4 ui-sans-serif,system-ui,sans-serif;color:#101615;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 h1{font-size:18px;margin:0 0 4px}
 p{margin:0 0 20px;color:#5A625E}
 h2{font-size:13px;font-weight:600;margin:28px 0 8px;font-family:ui-monospace,monospace;color:#5A625E}
@@ -177,8 +200,8 @@ figcaption{font-family:ui-monospace,monospace;font-size:11px;color:#5A625E;margi
 .pane{position:absolute;inset:0}
 /* The one conversion: a 1200-unit tree, scaled by w/1200 from its top-left corner. */
 .tree{transform:scale(var(--scale));transform-origin:top left}
-img{display:block;width:calc(var(--w)*1px);height:auto}
-.diff img.over{position:absolute;top:0;left:0;mix-blend-mode:difference}
+.png{width:calc(var(--w)*1px);height:calc(var(--uh)*var(--scale)*1px);background-image:var(--png);background-size:100% 100%}
+.diff .over{position:absolute;top:0;left:0;mix-blend-mode:difference}
 .dark h2{color:#8B9490}
 `;
 

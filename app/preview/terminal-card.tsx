@@ -114,10 +114,14 @@ export function TerminalPreviewCard({ doc, theme }: { doc: PreviewDoc; theme: Th
         </div>
       </div>
 
+      {/* `flex-end` where the PNG says `baseline`, and this is not a mismatch to tidy up:
+          Satori resolves baseline on this row to the two boxes sharing a bottom edge, and
+          a browser aligns the meta to the name's *first* line instead — 46 units out on a
+          name that wraps. The preview copies what the renderer does. GOTCHAS 055. */}
       <div
         style={{
           display: "flex",
-          alignItems: "baseline",
+          alignItems: "flex-end",
           justifyContent: "space-between",
           marginTop: TERMINAL.gap,
         }}

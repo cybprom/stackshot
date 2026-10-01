@@ -1675,38 +1675,88 @@ before anyone "tidies up" a line height.
 
 ---
 
-## 053 — Satori rounds glyph advances, so the browser sets the same word 2% wider
-**Date:** 2026-10-01 · **Cost:** ~0.5h · **Status:** accepted, not fixed
-**Writeup material:** yes — the limit of how far two implementations can be made to agree
+## 053 — The comparison sheet drew in Helvetica for an hour, and every text measurement was wrong
+**Date:** 2026-10-01 · **Cost:** ~1h, all of it spent measuring the wrong thing
+**Status:** fixed · **Writeup material:** yes — the instrument was the bug
 
-With the line boxes pinned (052), the heights matched exactly and a ghost remained on the
-Archivo runs only: the repo name, the tile symbols and the tile names, growing from
-nothing at the first glyph to a visible doubling at the last. Mono runs were clean.
+With the line boxes pinned (052), a ghost remained on the Archivo runs only: the repo
+name, the tile symbols and the tile names, nothing at the first glyph and a clear doubling
+by the last. It was measured, attributed to Satori rounding glyph advances, written up as
+a 2.2% difference, and accepted as unfixable.
 
-Measured rather than guessed. The header's left column, which "zustand" at 64 units
-drives:
+All of that was wrong. `scripts/compare-styles.ts` linked the faces as
+`url(../public/fonts/…)` while writing itself to `cards/compare/`, which is **two**
+directories deep. The fonts 404'd, the `font-family` stack fell through to
+`"Helvetica Neue"` and `ui-monospace`, and the sheet went on looking entirely plausible —
+Helvetica has the same double-storey `a` as Archivo at a glance. The real numbers, once
+`document.fonts.check` was asked instead of my eyes:
 
 ```
-satori   228.0 units
-browser  232.91 units      +2.2%, accumulating left to right
+                                 satori    browser
+tiles "zustand" header column      228.0     232.91    in fallback — the claimed +2.2%
+tiles name-100 header column       964.0     964.0     exact
+terminal name-100 name block       824.0     824.8     +0.1%
 ```
 
-Ruled out first, each with a screenshot: kerning (`font-kerning: none` changes nothing),
-ligatures, `text-rendering`, and a vertical baseline offset (a ±1–3px compensation sweep
-made it worse in both directions). What is left is glyph advance rounding — Satori rounds
-each advance to a whole unit and a browser does not, so the error accumulates with the
-character count and shows up on proportional faces rather than on a monospace.
+**0.1% on the one case that is not exact, not 2.2%**, and at 2× magnification the display
+name difference-blends to near-black. Satori and the browser shape text almost
+identically; there was never anything to accept.
 
-**There is no CSS knob for this**, and the only "fix" would be a per-string compensation
-tuned to one font at one size, which is what ADR-0032 says not to do. So it is accepted
-and bounded instead: structure is exact (every card height, every wrap point, every clamp,
-every tile position and every colour), and proportional text can sit up to ~2% wide of the
-PNG, which at README width is about four pixels across a seven-letter word. In the
-crossfade it reads as a slight settle rather than a jump.
+Three lessons, in order of how much they cost:
 
-The number to watch is **a wrap point moving**, not the offset itself: the browser being
-wider means a name that fits on one line in the PNG could take two in the preview. The
-comparison sheet covers the longest cases in the map for exactly this reason.
+- **A missing font does not fail loudly.** It substitutes something with the same metrics
+  class and keeps rendering. Any instrument that compares *typography* has to assert its
+  fonts loaded before anyone reads a number off it — `document.fonts.check('600 64px
+  Archivo')` is one line.
+- **A relative path in generated output is relative to the output**, not to the script.
+- **The faces are inlined as data URIs now**, which removes the path and the
+  CORS-restricted font fetch together. It costs 1.9 MB a file and is worth it.
+
+---
+
+## 054 — The sheet rendered text a weight heavier than the site does
+**Date:** 2026-10-01 · **Cost:** ~0.2h · **Status:** fixed
+**Writeup material:** minor
+
+The author read the HTML pane as slightly thicker than the PNG. Partly 053, and partly
+this: `app/layout.tsx` puts Tailwind's `antialiased` on `<html>`, so the real site renders
+text with `-webkit-font-smoothing: antialiased`, and the comparison sheet did not. On
+macOS the default is subpixel smoothing with stem darkening, which is visibly heavier.
+
+So the sheet was showing a weight the site will never render. **A comparison surface has
+to match the surface it stands in for, down to the font smoothing**, or it reports
+differences that do not exist and hides ones that do.
+
+---
+
+## 055 — Satori reads `align-items: baseline` as a shared bottom edge
+**Date:** 2026-10-01 · **Cost:** ~0.4h · **Status:** fixed in the preview
+**Writeup material:** yes — the preview earning its keep on day one, found by eye
+
+Terminal's title row is `alignItems: "baseline"` with the repo name on the left and
+`TypeScript · 10 stars` on the right. On the 100-character fixture the author spotted the
+metadata sitting higher in the HTML than in the PNG. Measured:
+
+```
+                     satori (PNG)      Chrome (HTML)
+name block           y=87  h=86        y=87  h=86
+metadata             y=144             y=98        46 units apart
+```
+
+Satori resolves baseline on that row to **the two boxes sharing a bottom edge** — 87+86 =
+173 for both — where a browser aligns the metadata to the name's **first** line, because
+the baseline of a multi-line block container is its first line box. One line of
+divergence, and it only appears once a name wraps, which is why eight fixtures and a
+height assertion all passed over it.
+
+`align-items: flex-end` reproduces Satori exactly in both cases, single-line (meta y=101,
+bottom 130 = the name's) and wrapped (y=144). `last baseline` lands 3 units out. **The
+preview says `flex-end` where the renderer says `baseline`**, which looks like a
+discrepancy and is the opposite: the preview is a picture of the PNG, so where the two
+engines disagree it copies the one that ships.
+
+Found by a person looking at two cards side by side, which is now the seventh bug in this
+project found that way and the first the preview itself produced.
 
 ---
 
