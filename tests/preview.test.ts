@@ -14,7 +14,6 @@ import {
   legendDelay,
   plateHeight,
   plateScale,
-  resolveTheme,
   rowDelay,
   tileDelay,
 } from "@/lib/preview";
@@ -64,13 +63,6 @@ describe("the styles the site offers", () => {
 });
 
 describe("the preview theme toggle", () => {
-  it("follows the system only in System", () => {
-    expect(resolveTheme("system", true)).toBe("dark");
-    expect(resolveTheme("system", false)).toBe("light");
-    expect(resolveTheme("light", true)).toBe("light");
-    expect(resolveTheme("dark", false)).toBe("dark");
-  });
-
   it("offers exactly light, dark and system", () => {
     expect(THEME_MODES).toEqual(["light", "dark", "system"]);
   });

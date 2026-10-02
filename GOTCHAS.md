@@ -1760,4 +1760,39 @@ project found that way and the first the preview itself produced.
 
 ---
 
+## 056 — The theme toggle's System flashed the light card, and no script can fix that
+**Date:** 2026-10-02 · **Cost:** ~0.5h · **Status:** fixed
+**Writeup material:** yes — a server-rendered page cannot ask the browser anything
+
+The theme toggle resolved System through `matchMedia` in a `useSyncExternalStore` hook,
+with `false` as the server snapshot. On a machine set to dark the page loaded, painted the
+**light** card, hydrated, and swapped to dark a frame later. The author saw it immediately;
+nothing in the test suite could.
+
+The temptation is to reach for a blocking inline script that reads `matchMedia` before
+paint and sets an attribute on `<html>`. It does not help here. **The card's colours are
+props**, chosen in React from `COLORS[theme]` and rendered on the server, so a script that
+runs before paint still arrives after the server has already chosen the wrong ones. The
+page's own chrome never flashed, because it was CSS all along.
+
+So the preview stops asking:
+
+- **System renders both cards and lets CSS pick**, exactly as the `<picture>` in the
+  snippet does for the PNG — which is the honest shape, since System *is* the README
+  behaviour. A forced Light or Dark is one card and one inline colour, because then the
+  answer does not depend on the visitor.
+- **`visibility`, not `display`.** The hidden card keeps its layout box, so the in-flow
+  light card still gives the plate a height to measure whichever scheme is showing.
+  `display: none` measures zero and collapses the plate on dark machines only — the same
+  class of bug, one layer down.
+- `resolveTheme` and the `useSystemDark` hook are **deleted, not kept for later**. Nothing
+  in the preview resolves a colour scheme in JavaScript any more, and the absence is the
+  fix: a future caller would reintroduce the flash.
+
+Verified by emulating both schemes over CDP: at `prefers-color-scheme: dark` the light
+tree is `hidden`, the dark one `visible` and the plate `rgb(13, 17, 23)`; at light, the
+reverse. The measured card is 535px in both, so the height survived the change.
+
+---
+
 *New entries go above this line as they happen.*

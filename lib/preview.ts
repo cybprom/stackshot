@@ -1,6 +1,6 @@
 import { DEFAULT_STYLE, type CardStyle } from "@/lib/card-style";
 import type { StackDoc } from "@/lib/stack-map/types";
-import { CARD, TYPE, type Theme } from "@/lib/tokens";
+import { CARD, TYPE } from "@/lib/tokens";
 
 /**
  * What a preview draws from. `unmapped` is logged and never returned by `/api/resolve`,
@@ -39,16 +39,15 @@ export const DEFAULT_LAUNCH_STYLE: LaunchStyle = isLaunchStyle(DEFAULT_STYLE)
 /**
  * The toggle is preview-only: the snippet always emits `<picture>` with both themes, so
  * System is the real README behaviour and the other two are a convenience.
+ *
+ * There is deliberately no `resolveTheme` here. **System is answered by a media query in
+ * CSS**, never by script: a script cannot run before the first paint, so resolving it in
+ * JavaScript renders the light card and corrects it a frame later. The labels live in
+ * `lib/site.ts` with every other site string. GOTCHAS 056.
  */
 export const THEME_MODES = ["light", "dark", "system"] as const;
 
 export type ThemeMode = (typeof THEME_MODES)[number];
-
-// The labels live in `lib/site.ts` with every other site string, not here.
-export function resolveTheme(mode: ThemeMode, systemDark: boolean): Theme {
-  if (mode === "system") return systemDark ? "dark" : "light";
-  return mode;
-}
 
 /**
  * The HTML preview draws at the card's own 1200-unit canvas and is scaled by one number,

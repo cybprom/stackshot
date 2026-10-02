@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { COLORS, LAYER_COLORS, TERMINAL, TILES } from "@/lib/tokens";
+import { COLORS, LAYER_COLORS, PREVIEW, TERMINAL, TILES } from "@/lib/tokens";
 
 /**
  * The site's palette lives in CSS and the card's in TypeScript, because Satori does not
@@ -60,6 +60,16 @@ describe("the site's CSS palette matches the card's tokens", () => {
   it("--terminal-surface matches the token Terminal paints on", () => {
     expect(value(lightBlock, "terminal-surface")).toBe(TERMINAL.surface.light.toLowerCase());
     expect(value(darkBlock, "terminal-surface")).toBe(TERMINAL.surface.dark.toLowerCase());
+  });
+
+  /**
+   * The plate behind the previewed card. It is CSS and not an inline style because the
+   * theme toggle's System has to be answered by a media query rather than by script —
+   * which puts a third copy of these two values in play, hence the seam. GOTCHAS 056.
+   */
+  it("--preview-page matches the surface the card is previewed on", () => {
+    expect(value(lightBlock, "preview-page")).toBe(PREVIEW.page.light.toLowerCase());
+    expect(value(darkBlock, "preview-page")).toBe(PREVIEW.page.dark.toLowerCase());
   });
 
   // DESIGN.md COLOR: the card has no semantic colors at all, and these two are site-only.

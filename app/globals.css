@@ -35,6 +35,9 @@
      it, so it is deliberately absent from lib/tokens.ts and from the seam test. */
   --track: #e4e7e1;
 
+  /* GitHub's README surface, behind the previewed card. Mirrors PREVIEW.page. */
+  --preview-page: #ffffff;
+
   color-scheme: light;
 }
 
@@ -62,6 +65,8 @@
 
     --track: #1a1f21;
 
+    --preview-page: #0d1117;
+
     color-scheme: dark;
   }
 }
@@ -78,6 +83,7 @@
   --color-tiles-surface: var(--tiles-surface);
   --color-terminal-surface: var(--terminal-surface);
   --color-track: var(--track);
+  --color-preview-page: var(--preview-page);
 
   --color-layer-frontend: var(--layer-frontend);
   --color-layer-frontend-tint: var(--layer-frontend-tint);
@@ -196,4 +202,29 @@ body {
   transition-property: color, background-color, border-color;
   transition-duration: 120ms;
   transition-timing-function: var(--ease-standard);
+}
+
+/* System on the theme toggle: both cards are drawn and CSS picks, exactly as the
+   `<picture>` in the snippet does for the PNG. No script can know the visitor's scheme
+   before the first paint, so answering this in JavaScript renders the light card and
+   corrects it a frame later — a flash on the one element the page exists to show.
+   GOTCHAS 056.
+
+   `visibility`, not `display`: both keep their layout boxes, so the in-flow light card
+   still gives the plate its height to measure whichever scheme is showing. */
+.scheme-dark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  .scheme-light {
+    visibility: hidden;
+  }
+
+  .scheme-dark {
+    visibility: visible;
+  }
 }
