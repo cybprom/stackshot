@@ -26,12 +26,15 @@ AFTER P4:   TWO PAGE DESIGNS, built to be compared live, not one chosen on
             DIFFERS. An env var picks the live layout; ?layout=a and
             ?layout=c preview the other. Once the author chooses, THE
             OTHER IS DELETED — this is a fork with an expiry, not a
-            feature. Detailed page planning deliberately not started.
-            Behaviour already settled in that README, all of it the
-            generator's business rather than the hero's:
-             - C auto-generates cybprom/stackshot ~0.9s after load, SERVED
-               FROM CACHE so the intro costs no GitHub budget; under
-               reduced motion the page loads already expanded.
+            feature. The page is now SPECIFIED, not open: everything below
+            is decided, and what is still open says so.
+             - C auto-generates cybprom/stackshot ~0.9s after load: the
+               panel widens, the sweep runs, the card reveals. That card is
+               PREPARED AHEAD OF TIME — warmed at deploy, not merely "from
+               cache". A cache can be cold: stack: is 30d, png: is 7d and
+               eviction is on, so after an expiry the first visitor would
+               wait on GitHub for the one card that must never wait. Under
+               reduced motion the page loads already showing it.
              - The preview area animates its height (measure, set explicit
                height, transition). C's panel animates width the same way.
              - C's wall must be taller than the tallest hero: eight
@@ -51,6 +54,41 @@ AFTER P4:   TWO PAGE DESIGNS, built to be compared live, not one chosen on
                rebuilds it rather than inventing it.
              - Tiles previews use the three-row cap, the same allocation
                as the renderer (lib/render/tiles-layout.ts).
+             - PHONE LAYOUTS FOR BOTH, per a-playground-phone.dc.html and
+               c-gallery-wall-phone.dc.html. On C the panel cannot widen,
+               so the card appears inside it under the button. 390px.
+            C ONLY:
+             - GENERATE, OR A TRY BUTTON, WIDENS THE PANEL to two columns:
+               controls left, card right, Copy under the card. Width and
+               height both animate. The Try buttons are the second way in,
+               so they drive the same transition.
+               This is the one place "ONLY THE HERO DIFFERS" needs reading
+               carefully: the generator, preview and snippet are the same
+               COMPONENTS in both, but C arranges them in two columns and
+               moves Copy under the card. Shared parts, different
+               placement — so they must not assume their own stacking.
+             - TRY BUTTONS: vercel/next.js, pmndrs/zustand,
+               cybprom/stackshot.
+             - The wall's cards come from a FIXED LIST OF WELL-KNOWN REPOS,
+               PREPARED AT BUILD OR DEPLOY TIME, same rule as the intro
+               card: the homepage never waits on GitHub, on any path.
+               The intro card, the wall and the nav's star count are all
+               the same requirement — ONE DEPLOY-TIME STEP, not three ad
+               hoc ones. Phase 5 needs a script for it; nothing like it
+               exists yet.
+            SHARED BY A AND C, beyond the generator:
+             - NAV: the logo mark — 2x2 squares in the four layer colours —
+               and a GitHub link with the LIVE STAR COUNT. Fetched
+               SERVER-SIDE AND CACHED, never from the visitor's browser:
+               a per-visitor call would spend a shared quota on a number
+               nobody reads twice.
+             - "ONE SNIPPET. BOTH THEMES." section.
+             - FOOTER: the logo, "Open source. Built by Ilerioluwa.", the
+               GitHub link, and "Suggest a technology" pointing at GitHub
+               issues.
+             - A no-match in the technology index links to GitHub issues —
+               the same destination as the footer's suggest link.
+             - HEADLINES ARE ARCHIVO 800.
 P4 GENERATOR: Style switcher + Light/Dark/System toggle on the preview.
             The TOGGLE IS PREVIEW-ONLY: the snippet always emits <picture>
             with both themes, so System is the real README behaviour and
@@ -69,12 +107,13 @@ P5 DOCS:    DESIGN.md still describes only the Datasheet and needs the
             styles. ADR-0029 already exists and is current. ADR-0032
             is the site's motion and radius authority until that
             rewrite lands.
-            ARCHIVO 800: both page designs set headlines in it, and the
-            site loads 400/600/700 only (700 added in P4 for the Tiles
-            symbol, which the browser was synthesizing). Phase 5 either
-            ships Archivo-ExtraBold.ttf or steps the headlines back to
-            700 — do not add the file before the hero is built, because
-            nothing on the page uses it yet.
+            ARCHIVO 800 IS DECIDED: headlines are set in it, so Phase 5
+            SHIPS Archivo-ExtraBold.ttf in app/layout.tsx beside the
+            400/600/700 already loaded (700 was added in P4 for the Tiles
+            symbol, which the browser was synthesizing). Add the file when
+            the hero is built, not before — an unused face is bundle
+            weight. The CARD is unaffected: lib/render/fonts.ts carries
+            its own weights and no card step asks for 800.
 BLOCKS      A FAILING TILES URL RENDERS THE DATASHEET'S ERROR FRAME —
 LAUNCH:     accent bar, 3u ink border, radius 2 — because renderErrorCard
             takes no style and SheetFrame is the only frame it has. TILES
@@ -190,11 +229,12 @@ Next:       PHASE 4 — THE SITE GENERATOR. Style switcher +
             once decoded, so drift between a style's two implementations
             is visible rather than theoretical — and that HTML preview is
             ALSO what stops the switcher writing a PNG per flip (ADR-0029).
-            THREE styles now have HTML to write, not one: sheet, tiles,
-            terminal. symbol is on StackItem and reaches the client
-            through /api/resolve, so a tile needs no map in the browser.
-            TERMINAL.surface needs a --terminal-surface var in globals.css
-            and a tests/tokens.test.ts seam entry, the way Tiles got one.
+            TWO styles have HTML to write, not three: TILES AND TERMINAL
+            ONLY. The Datasheet's HTML preview waits until it ships as a
+            selectable style after launch (author, this session — an
+            earlier line here said three). symbol is on StackItem and
+            reaches the client through /api/resolve, so a tile needs no
+            map in the browser.
             Reveals, timings and the two loading phases are in
             docs/design/directions/preview.dc.html.
             Was: PHASE 2 — Tiles. Two halves: the 225 two-letter symbols

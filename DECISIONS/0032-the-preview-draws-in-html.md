@@ -70,6 +70,15 @@ the theme toggle costs nothing afterwards. This is what "stops the switcher writ
 per flip" has to mean in practice: loading each style's PNG on press would write one per
 flip whatever the HTML does.
 
+**The crossfade never runs during a reveal.** A PNG that decodes while tiles are still
+popping in or rows still printing waits for the reveal to finish, and fades only then.
+Decode time is a function of the network and the cache, so the overlap is arbitrary: a
+warm card could land 200ms in and dissolve a card mid-animation, which reads as a glitch
+rather than as a transition, and does it only for some visitors. The reveal is a fixed
+duration we control, so holding the fade behind it is both bounded and the same every
+time. The corollary is that `PNG_SETTLE_MS` is a floor on when the fade *starts*, never a
+promise about when it happens.
+
 **4. The plate is GitHub's page colour**, `PREVIEW.page`, not our `surface`. A card is
 rasterized on a transparent background, so its rounded corners show whatever is behind
 them; previewing it on `surface` judges the corners against a colour no reader sees.
