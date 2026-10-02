@@ -8,16 +8,14 @@ it is the only thing that survives one.*
 ```
 Milestone:  3 COMPLETE and committed. Now on the CARD STYLES direction
             (ADR-0029): the card becomes a choice of styles. Phases 0
-            (de-risk), 1 (plumbing), 2 (TILES) and 3 (TERMINAL) are done.
-            Phase 4, the site generator, is next.
+            (de-risk), 1 (plumbing), 2 (TILES), 3 (TERMINAL) and 4 steps
+            0-5 are done. PHASE 4 STEP 6 — the animated height between
+            card sizes — IS ALL THAT REMAINS BEFORE PHASE 5.
 PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal
-            DONE · 4 site generator (switcher, theme toggle, HTML preview
-            + crossfade) · 5 docs. Aiming at one weekend, nothing cut so
-            far. The fallback cut order, if P4 runs long: per-style
-            reveals first, then the Light/Dark toggle, then the HTML
-            preview LAST — it is the drift detector AND what stops the
-            switcher writing a PNG per flip. Terminal was third on this
-            list and is now built, so the list is shorter than it was.
+            DONE · 4 site generator: steps 0-5 DONE, step 6 (animated
+            height) LEFT · 5 docs and the page. Nothing cut.
+            The fallback cut order is spent: every item on it — per-style
+            reveals, the Light/Dark toggle, the HTML preview — is built.
 AFTER P4:   TWO PAGE DESIGNS, built to be compared live, not one chosen on
             paper. A (Playground) and C (Gallery wall) from
             docs/design/site/. Build them as THIN LAYOUT SHELLS around
@@ -89,19 +87,29 @@ AFTER P4:   TWO PAGE DESIGNS, built to be compared live, not one chosen on
              - A no-match in the technology index links to GitHub issues —
                the same destination as the footer's suggest link.
              - HEADLINES ARE ARCHIVO 800.
-P4 GENERATOR: Style switcher + Light/Dark/System toggle on the preview.
-            The TOGGLE IS PREVIEW-ONLY: the snippet always emits <picture>
-            with both themes, so System is the real README behaviour and
-            the toggle is a convenience, not a product capability.
-            The switcher MUST feed the copied snippet — pictureSnippet in
-            lib/site.ts already takes a style and tests/site.test.ts
-            asserts it never emits card-*.png.
-            The preview draws in HTML first and the real PNG crossfades in
-            once decoded, so a drift between the two implementations of a
-            style is visible rather than theoretical. That HTML preview is
-            ALSO what stops the switcher writing a PNG per flip — cutting
-            it has a storage cost, not just a polish cost (ADR-0029).
-            Reveals, timings and the two loading phases are in
+P4 GENERATOR: BUILT, except step 6. ADR-0032 is the record for all of it.
+            app/preview/ holds the plate, the two HTML cards, the
+            segmented control and the exhaustive PREVIEW_CARDS map;
+            lib/preview.ts holds every number, render-free and tested.
+            HOW IT HANGS TOGETHER, so step 6 does not undo any of it:
+             - The HTML card lays out at the card's own 1200-unit canvas
+               and the plate scales it by w/1200. ONE conversion. Every
+               value is a token used at 1:1 — app/preview/ contains no hex
+               and no size of its own, and tests/preview.test.ts enforces
+               both.
+             - ONE MEASUREMENT gives the scale AND the plate's height, so
+               step 6's animation already has its number: plateHeight(
+               units, scale). Do not add a second measurement.
+             - SYSTEM IS ANSWERED IN CSS, never in script: both cards are
+               rendered and a media query picks (GOTCHAS 056). A forced
+               theme is one card and one inline colour.
+             - THE FADE HAS TWO GATES: the PNG decoded, and the reveal
+               finished. The plate owns both and reports onSettled.
+             - Terminal's cursor is a LOADING indicator, not part of the
+               card: it fades before the crossfade so the settled card
+               matches the PNG exactly.
+            The switcher feeds the snippet and both download links.
+            Reveals, timings and the two loading phases came from
             docs/design/directions/preview.dc.html.
 P5 DOCS:    DESIGN.md still describes only the Datasheet and needs the
             styles. ADR-0029 already exists and is current. ADR-0032
@@ -195,67 +203,55 @@ SITE_ORIGIN: lib/site.ts is the single source for the origin in the card
             PORT`) or the preview points at production. Preview and snippet
             are the same absolute URLs, so the CDN entry is shared and
             same-origin `download` works.
-Last done:  PHASE 3 — TERMINAL (this session). lib/render/terminal.tsx at
-            height "content": prompt line, mono one-line repo ref with its
-            own clamps, the ├──/└── layer tree, domain. RENDER_VERSION 3,
-            hashes regenerated — NOTHING MOVED, eight terminal:* added.
-            ADR-0031 settles what styles share, after ADR-0029's claim was
-            amended twice; read it before building Tags.
-            Tree rows are 30u NOT the design's 27 (7.8px in the apps, under
-            the 8.75 floor, and Terminal has no symbols to carry it), and
-            the 240u label column was re-derived from that.
-            tests/terminal.test.ts: the label never wraps, └── is last,
-            the box glyphs advance as mono, a wrapped item row costs
-            exactly 46u, and a 100-char name stays in two lines.
-            Terminal is the CHEAP style: 608u/148KB for next.js against
-            Tiles' 859u/191KB — the lever if KV bytes ever bind.
-            TERMINAL.rowGap is 24, not the design's 12: the box glyphs'
-            ink is 51u in a 42u line box, so 12 left the stems 3u apart
-            and the tree read as one broken line (GOTCHAS 051).
-            PHONE CHECK PASSED (2026-10-01): every name on the densest
-            card reads in the GitHub app without zooming, which is what
-            the 30u decision was waiting on.
-            Before it: PHASE 2 — the Tiles tree (4521b65), symbol on
-            StackItem, the frame split out of chrome.tsx, ADR-0030, and
-            GOTCHAS 050 (a default parameter turned content-height back
-            into 800 and clipped every card; render FIRST, not last).
-Next:       PHASE 4 — THE SITE GENERATOR. Style switcher +
-            Light/Dark/System toggle on the preview; the TOGGLE IS
-            PREVIEW-ONLY, since the snippet always emits <picture> with
-            both themes. The switcher MUST feed the copied snippet —
-            pictureSnippet in lib/site.ts already takes a style and
-            tests/site.test.ts asserts it never emits card-*.png.
-            The preview draws in HTML first and the real PNG crossfades in
-            once decoded, so drift between a style's two implementations
-            is visible rather than theoretical — and that HTML preview is
-            ALSO what stops the switcher writing a PNG per flip (ADR-0029).
-            TWO styles have HTML to write, not three: TILES AND TERMINAL
-            ONLY. The Datasheet's HTML preview waits until it ships as a
-            selectable style after launch (author, this session — an
-            earlier line here said three). symbol is on StackItem and
-            reaches the client through /api/resolve, so a tile needs no
-            map in the browser.
-            Reveals, timings and the two loading phases are in
-            docs/design/directions/preview.dc.html.
-            Was: PHASE 2 — Tiles. Two halves: the 225 two-letter symbols
-            (scripts/symbols.ts proposes on a ladder and REFUSES to
-            auto-resolve collisions, because a symbol is baked into every
-            cached PNG and order-dependence would silently invalidate cards
-            nobody touched; then the author reviews a contact sheet of all
-            225; then the map-integrity test enforces unique /^[A-Z][a-z0-9]$/),
-            and the Satori tree. Use CARD.padding (32) NOT the design's 44 —
-            five tiles per row instead of four, GOTCHAS 048.
-            The contact sheet doubles as the name-fit check: longest display
-            is styled-components at 17 chars, so nothing should reach the
-            two-line clamp.
-            PHONE CHECK PASSED (2026-09-29): symbols legible in the GitHub
-            app, at the smaller-than-README size the spike README's side-by-side
-            table renders them.
-            M4 carries: the badge in your own README (the domain is live now,
-            so this can come forward), the global budget guard, ADR-0012's
-            amendment line for the separate bug counter, and monitoring KV
-            bytes — ~790 stacks in Tiles alone after the three-row cap and the
-            7-day png: TTL, ~430 if a repo is cached in two styles.
+Last done:  PHASE 4 STEPS 0-5 (this session). The generator is on the
+            page and working: switcher, Light/Dark/System toggle, HTML
+            preview, loading sequence, crossfade.
+            RENDER_VERSION IS 4. Four text runs now state their line box
+            in px instead of taking Satori's font default, because a
+            ratio can NEVER agree across the two engines — Satori rounds
+            every line box and a browser keeps the fraction (GOTCHAS 052).
+            No layout moved; the hashes are regenerated.
+            card/owner and card/meta therefore render at 26 and 18, not
+            DESIGN's 1.2. That is what they have always done; correcting
+            the card to the table is a separate bump and belongs with the
+            Phase 5 DESIGN rewrite.
+            THREE BUGS CAME FROM THE AUTHOR LOOKING, none from a test:
+            a theme flash on load (GOTCHAS 056), Terminal's metadata 46
+            units out on a wrapped name (GOTCHAS 055), and the comparison
+            sheet silently drawing in Helvetica, which invalidated an
+            hour of measurements and a GOTCHAS entry (053).
+            scripts/compare-styles.ts is the instrument: every style's
+            preview beside its PNG with a difference overlay, fonts and
+            images inlined so no browser can refuse them. RUN IT AFTER
+            ANY CHANGE TO A CARD OR A PREVIEW. `--panes` writes one pane
+            per file for headless screenshots; ?w=2400 reads them at
+            native resolution, ?measure=1 prints the HTML's geometry in
+            card units for --dump-dom.
+            Heights agree to the unit on all eight cases, including the
+            100-character name. What remains is edge antialiasing only.
+            Before it: PHASE 3 — TERMINAL. lib/render/terminal.tsx at
+            height "content", ADR-0031 on what styles share, and
+            GOTCHAS 051 (the box glyphs are taller than their line box).
+Next:       PHASE 4 STEP 6 — THE ANIMATED HEIGHT. The plate already
+            measures the card and sets an explicit height in px, so this
+            is a transition on that one value plus the reduced-motion
+            branch beside it. docs/design/site/README.md: "measure the
+            content, set an explicit height, transition it". C's panel
+            animates WIDTH the same way in Phase 5.
+            Watch two things. The height changes on a style flip, on a
+            new resolve and on a window resize — a resize must NOT ease,
+            or dragging the window lags behind the pointer. And the
+            crossfade must not start mid-height-change for the same
+            reason the reveal gates it; the plate already knows when it
+            is settled.
+            Then PHASE 5, whose decisions are all recorded above under
+            AFTER P4. Start with the Tiles error frame, which is the one
+            thing BLOCKING LAUNCH.
+M4 CARRIES: the badge in your own README (the domain is live now, so this
+            can come forward), the global budget guard, ADR-0012's amendment
+            line for the separate bug counter, and monitoring KV bytes —
+            ~790 stacks in Tiles alone after the three-row cap and the 7-day
+            png: TTL, ~430 if a repo is cached in two styles.
 ```
 
 ---
