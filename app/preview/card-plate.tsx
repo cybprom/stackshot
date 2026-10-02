@@ -10,7 +10,7 @@ import {
   type PreviewDoc,
   type ThemeMode,
 } from "@/lib/preview";
-import { PREVIEW, type Theme } from "@/lib/tokens";
+import { COLORS, PREVIEW, type Theme } from "@/lib/tokens";
 
 // A client component still renders once on the server, where there is no layout to read.
 const useMeasure = typeof window === "undefined" ? useEffect : useLayoutEffect;
@@ -33,12 +33,18 @@ export function CardPlate({
   style,
   mode,
   png,
+  busy = false,
+  reveal = false,
 }: {
   doc?: PreviewDoc;
   style: LaunchStyle;
   mode: ThemeMode;
   /** Shown when there is no doc to draw — the example card, which the page has as bytes. */
   png?: { light: string; dark: string; alt: string };
+  /** A resolve is in flight: the card on screen steps back and the sweep runs over it. */
+  busy?: boolean;
+  /** The card is arriving: its parts animate in on the style's own stagger. */
+  reveal?: boolean;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<HTMLDivElement>(null);
@@ -70,42 +76,53 @@ export function CardPlate({
   return (
     <div
       className="rounded-plate border-[1.5px] border-rule p-6"
-      // A forced theme is one value and says so; System is the page's own media query.
-      style={{ backgroundColor: system ? "var(--preview-page)" : PREVIEW.page[mode satisfies Theme] }}
+      style={{
+        // A forced theme is one value and says so; System is the page's own media query.
+        backgroundColor: system ? "var(--preview-page)" : PREVIEW.page[mode satisfies Theme],
+        // The sweep belongs to the card being previewed, not to the page, so a forced
+        // theme sweeps in its own accent.
+        ["--sweep-accent" as string]: system ? "var(--accent)" : COLORS[mode satisfies Theme].accent,
+      }}
     >
       <div
         ref={frameRef}
         className="relative w-full overflow-hidden"
         style={doc ? { height: plateHeight(units, scale) } : undefined}
       >
-        {doc ? (
-          <div
-            ref={treeRef}
-            className="absolute left-0 top-0 origin-top-left"
-            style={{ width: PREVIEW_WIDTH, transform: `scale(${scale})` }}
-          >
-            {system ? (
-              <>
-                <div className="scheme-light">
-                  <Card doc={doc} theme="light" />
-                </div>
-                <div className="scheme-dark">
-                  <Card doc={doc} theme="dark" />
-                </div>
-              </>
-            ) : (
-              <Card doc={doc} theme={mode} />
-            )}
-          </div>
-        ) : png ? (
-          // Our own PNG, at a height that depends on the stack and can change to the error
-          // card's. next/image wants dimensions we do not have and would re-encode bytes
-          // whose exactness is the product.
-          <picture>
-            {system ? <source media="(prefers-color-scheme: dark)" srcSet={png.dark} /> : null}
-            <img src={mode === "dark" ? png.dark : png.light} alt={png.alt} className="block w-full" />
-          </picture>
-        ) : null}
+        <div className={busy ? "card-dim" : "card-lit"}>
+          {doc ? (
+            <div
+              ref={treeRef}
+              className="absolute left-0 top-0 origin-top-left"
+              style={{ width: PREVIEW_WIDTH, transform: `scale(${scale})` }}
+            >
+              {system ? (
+                <>
+                  <div className="scheme-light">
+                    <Card doc={doc} theme="light" reveal={reveal} />
+                  </div>
+                  <div className="scheme-dark">
+                    <Card doc={doc} theme="dark" reveal={reveal} />
+                  </div>
+                </>
+              ) : (
+                <Card doc={doc} theme={mode} reveal={reveal} />
+              )}
+            </div>
+          ) : png ? (
+            // Our own PNG, at a height that depends on the stack and can change to the
+            // error card's. next/image wants dimensions we do not have and would re-encode
+            // bytes whose exactness is the product.
+            <picture>
+              {system ? <source media="(prefers-color-scheme: dark)" srcSet={png.dark} /> : null}
+              <img src={mode === "dark" ? png.dark : png.light} alt={png.alt} className="block w-full" />
+            </picture>
+          ) : null}
+        </div>
+
+        {/* Over the card, inside the plate's own rounding, so the line is clipped by the
+            frame rather than crossing the page. */}
+        {busy ? <div className="sweep" aria-hidden /> : null}
       </div>
     </div>
   );

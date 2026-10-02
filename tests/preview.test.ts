@@ -7,11 +7,13 @@ import {
   LAUNCH_STYLES,
   PNG_SETTLE_MS,
   PREVIEW_WIDTH,
+  REVEAL,
   THEME_MODES,
-  cursorDelay,
   family,
   isLaunchStyle,
   legendDelay,
+  revealCount,
+  revealDuration,
   plateHeight,
   plateScale,
   rowDelay,
@@ -93,9 +95,32 @@ describe("the reveal", () => {
     expect(legendDelay(10)).toBeGreaterThan(tileDelay(9));
   });
 
-  it("prints terminal rows in order and blinks the cursor after the last", () => {
+  it("prints terminal rows in order", () => {
     expect(rowDelay(0)).toBeLessThan(rowDelay(3));
-    expect(cursorDelay(4)).toBeGreaterThan(rowDelay(3));
+  });
+
+  /**
+   * What step 5's crossfade waits for. A fade that starts mid-reveal dissolves a card that
+   * is still drawing itself, and decode time is the network's business rather than ours,
+   * so the overlap would be arbitrary. ADR-0032.
+   */
+  it("lasts until the last thing on the card has arrived", () => {
+    // Tiles: the legend and the domain land after the final cell.
+    expect(revealDuration("tiles", 10)).toBeGreaterThan(tileDelay(9) + REVEAL.tile.duration - 1);
+    expect(revealDuration("tiles", 10)).toBeGreaterThanOrEqual(legendDelay(10) + REVEAL.row.duration);
+    // Terminal: the domain line lands a step after the last layer row.
+    expect(revealDuration("terminal", 4)).toBeGreaterThan(rowDelay(3) + REVEAL.row.duration);
+  });
+
+  it("grows with the number of things to reveal", () => {
+    expect(revealDuration("tiles", 15)).toBeGreaterThan(revealDuration("tiles", 5));
+    expect(revealDuration("terminal", 4)).toBeGreaterThan(revealDuration("terminal", 1));
+  });
+
+  // A card with nothing on it still has a frame, so the duration must stay a real number.
+  it("survives an empty card", () => {
+    expect(revealDuration("tiles", 0)).toBeGreaterThan(0);
+    expect(revealDuration("terminal", 0)).toBeGreaterThan(0);
   });
 
   // Long enough that flipping through the switcher writes nothing, short enough that
@@ -138,5 +163,33 @@ describe("the font seam", () => {
   it("maps both card faces to a loaded variable", () => {
     expect(family(TYPE.display.family)).toContain("--font-archivo");
     expect(family(TYPE.item.family)).toContain("--font-commit-mono");
+  });
+});
+
+describe("what a style reveals one at a time", () => {
+  const doc = {
+    owner: "pmndrs",
+    repo: "zustand",
+    language: "TypeScript",
+    stars: 59000,
+    layers: [
+      { category: "frontend" as const, items: [{ id: "react", display: "React", symbol: "Re", description: "" }], overflow: 0 },
+      { category: "tooling" as const, items: [{ id: "vitest", display: "Vitest", symbol: "Vt", description: "" }], overflow: 3 },
+    ],
+  };
+
+  /** Cells for Tiles, from the renderer's own allocator; layer rows for Terminal. */
+  it("counts cells for Tiles, including the overflow tile", () => {
+    expect(revealCount("tiles", doc)).toBe(3);
+  });
+
+  it("counts layer rows for Terminal", () => {
+    expect(revealCount("terminal", doc)).toBe(2);
+  });
+
+  // I4: at most four layers, whatever a doc claims.
+  it("never counts more than four Terminal rows", () => {
+    const many = { ...doc, layers: [...doc.layers, ...doc.layers, ...doc.layers] };
+    expect(revealCount("terminal", many)).toBe(4);
   });
 });

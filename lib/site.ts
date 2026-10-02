@@ -46,7 +46,10 @@ export const COPY = {
   inputLabel: "GitHub repo",
   placeholder: "github.com/owner/repo",
   generate: "Generate card",
-  generating: "Generating card",
+  // Two phases, both real: one while /api/resolve runs, one while the card draws. The
+  // button and the live region say the same thing, so a screen reader hears the page.
+  reading: "Reading repo",
+  drawing: "Drawing card",
   copyMarkdown: "Copy markdown",
   copied: "Markdown copied",
   copyFailed: "Select the snippet to copy it",

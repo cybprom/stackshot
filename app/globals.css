@@ -165,34 +165,12 @@ body {
   outline-offset: 2px;
 }
 
-/* MOTION: the closed list. Item 1 — the card's arrival. */
-@keyframes card-arrival {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* MOTION item 1, the card's arrival, is now the per-style reveal below: the card arrives
+   by drawing itself rather than by fading in as a block. ADR-0032. */
 
-.card-arrival {
-  animation: card-arrival 200ms var(--ease-standard);
-}
-
-/* A real branch, not a global animation:none sledgehammer: arrival becomes opacity-only
-   with no rise, and the state transitions become instant. */
+/* A real branch, not a global animation:none sledgehammer: state transitions become
+   instant, and the reveal's own branch is beside its keyframes below. */
 @media (prefers-reduced-motion: reduce) {
-  @keyframes card-arrival {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
   .motion-state {
     transition-duration: 0ms;
   }
@@ -202,6 +180,101 @@ body {
   transition-property: color, background-color, border-color;
   transition-duration: 120ms;
   transition-timing-function: var(--ease-standard);
+}
+
+/* The loading sequence and the per-style reveals, from
+   docs/design/directions/preview.dc.html. ADR-0032 added these four to MOTION's closed
+   list; everything else on that list still stands.
+
+   Delays are per item and come from lib/preview.ts; durations are here, because a duration
+   is the same for every item. */
+@keyframes tile-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sweep {
+  from {
+    top: -48px;
+  }
+  to {
+    top: 100%;
+  }
+}
+
+.reveal-tile {
+  animation: tile-in 460ms var(--ease-standard) both;
+}
+
+.reveal-row {
+  animation: row-in 320ms var(--ease-standard) both;
+}
+
+/* The sweep: a line crossing the card with a soft wake behind it. The glow is a transient
+   motion effect rather than a surface, which is why SURFACE's "shadows: none" does not
+   reach it (ADR-0032). `--sweep-accent` is the previewed card's accent, not the page's,
+   so a forced theme sweeps in its own colour. */
+.sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 48px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--sweep-accent) 13%, transparent));
+  border-bottom: 2px solid var(--sweep-accent);
+  box-shadow: 0 8px 18px -6px var(--sweep-accent);
+  animation: sweep 1250ms cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* The card being replaced stays visible and steps back, rather than vanishing: what is on
+   screen is still true until the new one arrives. */
+.card-dim {
+  opacity: 0.28;
+  filter: saturate(0.25);
+}
+
+.card-dim,
+.card-lit {
+  transition:
+    opacity 240ms var(--ease-standard),
+    filter 240ms var(--ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-tile,
+  .reveal-row {
+    animation: none;
+  }
+
+  .sweep {
+    display: none;
+  }
+
+  .card-dim,
+  .card-lit {
+    transition: none;
+  }
 }
 
 /* System on the theme toggle: both cards are drawn and CSS picks, exactly as the

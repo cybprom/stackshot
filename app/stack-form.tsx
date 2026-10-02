@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { CardPlate } from "@/app/preview/card-plate";
 import { Segmented } from "@/app/preview/segmented";
@@ -10,6 +10,8 @@ import {
   DEFAULT_LAUNCH_STYLE,
   LAUNCH_STYLES,
   THEME_MODES,
+  revealCount,
+  revealDuration,
   type LaunchStyle,
   type ThemeMode,
 } from "@/lib/preview";
@@ -48,11 +50,13 @@ type Doc = z.infer<typeof DocSchema>;
 // header. A bad URL names no repo at all, so it stays optional.
 type Failure = { ref?: string; reason: string; detail: string };
 
-type State =
-  | { kind: "idle" }
-  | { kind: "pending" }
-  | { kind: "done"; doc: Doc }
-  | { kind: "failed"; failure: Failure };
+/**
+ * Two loading phases, both real: `reading` while `/api/resolve` runs, `drawing` while the
+ * card arrives on its own stagger. The doc and the failure sit outside the phase because
+ * the card on screen outlives both — it dims and stays, rather than vanishing, since what
+ * is showing is still true until something replaces it.
+ */
+type Phase = "idle" | "reading" | "drawing";
 
 const isFailureReason = (value: string): value is FailureReason =>
   FAILURE_REASONS.some((reason) => reason === value);
@@ -70,15 +74,39 @@ function failureFor(body: z.infer<typeof FailedSchema>, ref?: string): Failure {
 
 export function StackForm() {
   const [url, setUrl] = useState("");
-  const [state, setState] = useState<State>({ kind: "idle" });
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [doc, setDoc] = useState<Doc | undefined>(undefined);
+  const [failure, setFailure] = useState<Failure | undefined>(undefined);
   const [copied, setCopied] = useState<"idle" | "done" | "failed">("idle");
   const [style, setStyle] = useState<LaunchStyle>(DEFAULT_LAUNCH_STYLE);
   const [mode, setMode] = useState<ThemeMode>("system");
   // Two submissions in flight would otherwise let the slower one win.
   const latest = useRef(0);
+  const revealTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const shown = state.kind === "done" ? state.doc : EXAMPLE_REPO;
+  const shown = doc ?? EXAMPLE_REPO;
   const snippet = pictureSnippet(shown.owner, shown.repo, style);
+
+  /**
+   * The reveal runs whenever a card arrives — a new resolve, or the same stack redrawn in
+   * another style. Its length is the style's own stagger, which is also what step 5's
+   * crossfade waits for: a PNG must never dissolve a card that is still drawing itself.
+   */
+  const draw = useCallback((card: Doc, named: LaunchStyle) => {
+    clearTimeout(revealTimer.current);
+    setPhase("drawing");
+    revealTimer.current = setTimeout(
+      () => setPhase("idle"),
+      revealDuration(named, revealCount(named, card)),
+    );
+  }, []);
+
+  useEffect(() => () => clearTimeout(revealTimer.current), []);
+
+  function pickStyle(next: LaunchStyle) {
+    setStyle(next);
+    if (doc) draw(doc, next);
+  }
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -87,7 +115,7 @@ export function StackForm() {
     // Answered here so a typo costs neither a request nor one of the hourly resolves.
     const parsed = parseRepoUrl(url);
     if (!parsed) {
-      setState({ kind: "failed", failure: { reason: COPY.badUrl, detail: "" } });
+      setFailure({ reason: COPY.badUrl, detail: "" });
       return;
     }
     // What the user asked for, which is what a failure has to name. A success names the
@@ -95,7 +123,8 @@ export function StackForm() {
     const ref = `${parsed.owner}/${parsed.repo}`;
 
     const ticket = ++latest.current;
-    setState({ kind: "pending" });
+    setFailure(undefined);
+    setPhase("reading");
     try {
       const response = await fetch("/api/resolve", {
         method: "POST",
@@ -107,16 +136,17 @@ export function StackForm() {
 
       const ok = OkSchema.safeParse(body);
       if (response.ok && ok.success) {
-        setState({ kind: "done", doc: ok.data.doc });
+        setDoc(ok.data.doc);
+        draw(ok.data.doc, style);
         return;
       }
       const failed = FailedSchema.safeParse(body);
-      setState({
-        kind: "failed",
-        failure: failureFor(failed.success ? failed.data : { error: "unavailable" }, ref),
-      });
+      setPhase("idle");
+      setFailure(failureFor(failed.success ? failed.data : { error: "unavailable" }, ref));
     } catch {
-      if (ticket === latest.current) setState({ kind: "failed", failure: failureFor({ error: "unavailable" }, ref) });
+      if (ticket !== latest.current) return;
+      setPhase("idle");
+      setFailure(failureFor({ error: "unavailable" }, ref));
     }
   }
 
@@ -148,15 +178,15 @@ export function StackForm() {
             value={url}
             onChange={(event) => setUrl(event.target.value)}
             placeholder={COPY.placeholder}
-            aria-describedby={state.kind === "failed" ? "resolve-status" : undefined}
+            aria-describedby={failure ? "resolve-status" : undefined}
             className="site-data motion-state min-w-0 flex-1 rounded-control border-[1.5px] border-ink bg-transparent px-4 py-3 text-ink placeholder:text-ink-muted"
           />
           <button
             type="submit"
-            disabled={state.kind === "pending"}
+            disabled={phase === "reading"}
             className="site-label motion-state rounded-control border-[1.5px] border-ink bg-ink px-6 py-3 text-surface disabled:opacity-60"
           >
-            {state.kind === "pending" ? COPY.generating : COPY.generate}
+            {phase === "reading" ? COPY.reading : phase === "drawing" ? COPY.drawing : COPY.generate}
           </button>
         </div>
       </form>
@@ -168,19 +198,17 @@ export function StackForm() {
         role="status"
         aria-live="polite"
         className="site-body mt-4 max-w-[68ch]"
-        hidden={state.kind !== "pending" && state.kind !== "failed"}
+        hidden={phase === "idle" && !failure}
       >
-        {state.kind === "pending" ? (
-          <span className="text-ink-muted">{COPY.generating}</span>
-        ) : state.kind === "failed" ? (
+        {phase !== "idle" ? (
+          <span className="text-ink-muted">{phase === "reading" ? COPY.reading : COPY.drawing}</span>
+        ) : failure ? (
           <>
             {/* The repo above the reason, the way the card's header sits above its
                 message. DESIGN.md QUALITY FLOOR: every error names the repo. */}
-            {state.failure.ref ? (
-              <span className="site-data block text-ink-muted">{state.failure.ref}</span>
-            ) : null}
-            <span className="text-error">{state.failure.reason}</span>
-            {state.failure.detail ? <span className="text-ink-muted"> {state.failure.detail}</span> : null}
+            {failure.ref ? <span className="site-data block text-ink-muted">{failure.ref}</span> : null}
+            <span className="text-error">{failure.reason}</span>
+            {failure.detail ? <span className="text-ink-muted"> {failure.detail}</span> : null}
           </>
         ) : null}
       </p>
@@ -190,7 +218,7 @@ export function StackForm() {
           label={COPY.styleGroup}
           options={LAUNCH_STYLES.map((name) => ({ value: name, label: COPY.style[name] }))}
           value={style}
-          onChange={setStyle}
+          onChange={pickStyle}
         />
         <Segmented
           label={COPY.themeGroup}
@@ -207,12 +235,17 @@ export function StackForm() {
         {COPY.themeNote}
       </p>
 
-      <figure key={`${shown.owner}/${shown.repo}`} className="card-arrival mt-4 w-full">
+      {/* No key and no arrival animation: the per-style reveal is the arrival now (ADR-0032
+          amended MOTION's list), and remounting on a new repo would throw away the plate's
+          measurement and collapse its height for a frame. */}
+      <figure className="mt-4 w-full">
         {/* One slot, contents swapped — the page does not move when it answers you. Before
             a resolve there is no doc in the browser, so the example is its own bytes.
             DESIGN.md SELF-CRITIQUE, Milestone 3 #4. */}
         <CardPlate
-          doc={state.kind === "done" ? state.doc : undefined}
+          doc={doc}
+          busy={phase === "reading"}
+          reveal={phase === "drawing"}
           style={style}
           mode={mode}
           png={{
@@ -222,10 +255,10 @@ export function StackForm() {
           }}
         />
         <figcaption className="mt-4 max-w-[68ch]">
-          {state.kind === "done" ? (
+          {doc ? (
             // The full name, never truncated: the card's header may have had to clip it.
             <span className="site-data text-ink-muted">
-              {state.doc.owner}/{state.doc.repo}
+              {doc.owner}/{doc.repo}
             </span>
           ) : (
             <span className="site-body text-ink-muted">{COPY.exampleCaption}</span>
@@ -233,7 +266,7 @@ export function StackForm() {
         </figcaption>
       </figure>
 
-      {state.kind === "done" ? (
+      {doc ? (
         <>
           <section className="mt-16 w-full">
             <h2 className="site-title">{COPY.snippetTitle}</h2>
@@ -251,14 +284,14 @@ export function StackForm() {
               {/* Same-origin by construction — SITE_ORIGIN serves this page too — which is
                   what makes `download` save rather than navigate. */}
               <a
-                href={cardUrl(state.doc.owner, state.doc.repo, style, "light")}
+                href={cardUrl(doc.owner, doc.repo, style, "light")}
                 download
                 className="site-label motion-state rounded-control border-[1.5px] border-ink px-6 py-3 text-ink"
               >
                 {COPY.downloadLight}
               </a>
               <a
-                href={cardUrl(state.doc.owner, state.doc.repo, style, "dark")}
+                href={cardUrl(doc.owner, doc.repo, style, "dark")}
                 download
                 className="site-label motion-state rounded-control border-[1.5px] border-ink px-6 py-3 text-ink"
               >
@@ -272,7 +305,7 @@ export function StackForm() {
 
           <section className="mt-16 w-full">
             <h2 className="site-title">{COPY.stackTitle}</h2>
-            {state.doc.layers.map((layer) => (
+            {doc.layers.map((layer) => (
               <div key={layer.category} className="mt-8">
                 {/* Sentence case. The card's gutter is the only all-caps in the project. */}
                 <h3 className="site-label text-ink-muted">{COPY.layer[layer.category satisfies Category]}</h3>

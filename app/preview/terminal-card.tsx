@@ -1,5 +1,5 @@
 import { DOMAIN, starsLabel } from "@/lib/card-text";
-import { family, PREVIEW_WIDTH, type PreviewDoc } from "@/lib/preview";
+import { family, PREVIEW_WIDTH, rowDelay, type PreviewDoc } from "@/lib/preview";
 import { COLORS, LAYER_COLORS, TERMINAL, TYPE, type Theme } from "@/lib/tokens";
 import type { StackItem, StackLayer } from "@/lib/stack-map/types";
 
@@ -21,12 +21,26 @@ function Item({ item, c }: { item: StackItem; c: Colors }) {
   );
 }
 
-function Row({ layer, last, theme, c }: { layer: StackLayer; last: boolean; theme: Theme; c: Colors }) {
+function Row({
+  layer,
+  last,
+  theme,
+  c,
+  reveal,
+}: {
+  layer: StackLayer;
+  last: boolean;
+  theme: Theme;
+  c: Colors;
+  reveal?: number;
+}) {
   return (
     <div
+      className={reveal === undefined ? undefined : "reveal-row"}
       style={{
         display: "flex",
         alignItems: "flex-start",
+        animationDelay: reveal === undefined ? undefined : `${reveal}ms`,
         fontFamily: family(TYPE.tree.family),
         fontSize: TYPE.tree.size,
         fontWeight: TYPE.tree.weight,
@@ -68,7 +82,15 @@ function Row({ layer, last, theme, c }: { layer: StackLayer; last: boolean; them
   );
 }
 
-export function TerminalPreviewCard({ doc, theme }: { doc: PreviewDoc; theme: Theme }) {
+export function TerminalPreviewCard({
+  doc,
+  theme,
+  reveal = false,
+}: {
+  doc: PreviewDoc;
+  theme: Theme;
+  reveal?: boolean;
+}) {
   const c = COLORS[theme];
   const layers = doc.layers.slice(0, MAX_LAYERS);
   const ref = `${doc.owner}/${doc.repo}`;
@@ -89,6 +111,7 @@ export function TerminalPreviewCard({ doc, theme }: { doc: PreviewDoc; theme: Th
       }}
     >
       <div
+        className={reveal ? "reveal-row" : undefined}
         style={{
           display: "flex",
           fontSize: TYPE.prompt.size,
@@ -119,11 +142,14 @@ export function TerminalPreviewCard({ doc, theme }: { doc: PreviewDoc; theme: Th
           a browser aligns the meta to the name's *first* line instead — 46 units out on a
           name that wraps. The preview copies what the renderer does. GOTCHAS 055. */}
       <div
+        className={reveal ? "reveal-row" : undefined}
         style={{
           display: "flex",
           alignItems: "flex-end",
           justifyContent: "space-between",
           marginTop: TERMINAL.gap,
+          // A beat after the prompt, as drawn.
+          animationDelay: reveal ? "90ms" : undefined,
         }}
       >
         <div
@@ -173,13 +199,23 @@ export function TerminalPreviewCard({ doc, theme }: { doc: PreviewDoc; theme: Th
         }}
       >
         {layers.map((layer, i) => (
-          <Row key={layer.category} layer={layer} last={i === layers.length - 1} theme={theme} c={c} />
+          <Row
+            key={layer.category}
+            layer={layer}
+            last={i === layers.length - 1}
+            theme={theme}
+            c={c}
+            reveal={reveal ? rowDelay(i) : undefined}
+          />
         ))}
       </div>
 
+      {/* Last, after the tree has printed — the way a command's final line arrives. */}
       <div
+        className={reveal ? "reveal-row" : undefined}
         style={{
           marginTop: TERMINAL.gap,
+          animationDelay: reveal ? `${rowDelay(layers.length)}ms` : undefined,
           fontSize: TYPE.meta.size,
           fontWeight: TYPE.meta.weight,
           lineHeight: TYPE.meta.lineHeight,

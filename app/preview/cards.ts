@@ -4,7 +4,7 @@ import { TilesPreviewCard } from "@/app/preview/tiles-card";
 import type { LaunchStyle, PreviewDoc } from "@/lib/preview";
 import type { Theme } from "@/lib/tokens";
 
-export type PreviewCardProps = { doc: PreviewDoc; theme: Theme };
+export type PreviewCardProps = { doc: PreviewDoc; theme: Theme; reveal?: boolean };
 
 /**
  * Exhaustive by construction, the way `CARD_STYLE_DEFS` is for the renderer: adding a name

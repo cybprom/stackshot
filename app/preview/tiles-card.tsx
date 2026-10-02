@@ -1,6 +1,6 @@
 import { PreviewCardHeader } from "@/app/preview/card-header";
 import { DOMAIN, LAYER_NAME, starsLabel } from "@/lib/card-text";
-import { family, PREVIEW_WIDTH, type PreviewDoc } from "@/lib/preview";
+import { family, legendDelay, PREVIEW_WIDTH, tileDelay, type PreviewDoc } from "@/lib/preview";
 import { layoutTiles } from "@/lib/render/tiles-layout";
 import { CARD, COLORS, LAYER_COLORS, TILES, TYPE, type Theme } from "@/lib/tokens";
 import type { Category, StackItem } from "@/lib/stack-map/types";
@@ -16,14 +16,37 @@ type Colors = Record<string, string>;
  * the price of the two implementations not drifting by arithmetic. ADR-0032.
  */
 
-function Tile({ item, color, tint, c }: { item: StackItem; color: string; tint: string; c: Colors }) {
+/** The reveal is a class plus a per-item delay; absent, the card is simply there. */
+type Reveal = { className: string; delay: number } | undefined;
+
+const revealProps = (reveal: Reveal) => ({
+  className: reveal?.className,
+  animationDelay: reveal ? `${reveal.delay}ms` : undefined,
+});
+
+function Tile({
+  item,
+  color,
+  tint,
+  c,
+  reveal,
+}: {
+  item: StackItem;
+  color: string;
+  tint: string;
+  c: Colors;
+  reveal: Reveal;
+}) {
+  const { className, animationDelay } = revealProps(reveal);
   return (
     <div
+      className={className}
       style={{
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
         boxSizing: "border-box",
+        animationDelay,
         width: TILES.tile.width,
         height: TILES.tile.height,
         borderRadius: TILES.tile.radius,
@@ -81,14 +104,27 @@ function Tile({ item, color, tint, c }: { item: StackItem; color: string; tint: 
   );
 }
 
-function MoreTile({ hidden, color, c }: { hidden: number; color: string; c: Colors }) {
+function MoreTile({
+  hidden,
+  color,
+  c,
+  reveal,
+}: {
+  hidden: number;
+  color: string;
+  c: Colors;
+  reveal: Reveal;
+}) {
+  const { className, animationDelay } = revealProps(reveal);
   return (
     <div
+      className={className}
       style={{
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
         boxSizing: "border-box",
+        animationDelay,
         width: TILES.tile.width,
         height: TILES.tile.height,
         borderRadius: TILES.tile.radius,
@@ -162,12 +198,25 @@ function Legend({ categories, theme, c }: { categories: Category[]; theme: Theme
   );
 }
 
-export function TilesPreviewCard({ doc, theme }: { doc: PreviewDoc; theme: Theme }) {
+export function TilesPreviewCard({
+  doc,
+  theme,
+  reveal = false,
+}: {
+  doc: PreviewDoc;
+  theme: Theme;
+  reveal?: boolean;
+}) {
   const c = COLORS[theme];
   // The renderer's own allocator, not a second three-row cap: the preview shows the same
   // fifteen cells the PNG will, or the crossfade is a jump rather than a check.
   const layers = layoutTiles(doc.layers.slice(0, 4));
   const meta = [doc.language, starsLabel(doc.stars)].filter((line): line is string => line !== null);
+
+  // One running index across the layers, because the grid wraps as one flow and the
+  // stagger follows the eye rather than the data.
+  let cell = 0;
+  const tileReveal = (): Reveal => (reveal ? { className: "reveal-tile", delay: tileDelay(cell++) } : undefined);
 
   return (
     <div
@@ -183,28 +232,40 @@ export function TilesPreviewCard({ doc, theme }: { doc: PreviewDoc; theme: Theme
         padding: CARD.padding,
       }}
     >
-      <PreviewCardHeader owner={doc.owner} repo={doc.repo} meta={meta} c={c} />
+      <div className={reveal ? "reveal-row" : undefined}>
+        <PreviewCardHeader owner={doc.owner} repo={doc.repo} meta={meta} c={c} />
+      </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: TILES.gap, marginTop: TILES.section }}>
         {layers.flatMap((layer) => {
           const { color, tint } = LAYER_COLORS[theme][layer.category];
           return [
             ...layer.items.map((item) => (
-              <Tile key={item.id} item={item} color={color} tint={tint} c={c} />
+              <Tile key={item.id} item={item} color={color} tint={tint} c={c} reveal={tileReveal()} />
             )),
             ...(layer.hidden > 0
-              ? [<MoreTile key={`${layer.category}-more`} hidden={layer.hidden} color={color} c={c} />]
+              ? [
+                  <MoreTile
+                    key={`${layer.category}-more`}
+                    hidden={layer.hidden}
+                    color={color}
+                    c={c}
+                    reveal={tileReveal()}
+                  />,
+                ]
               : []),
           ];
         })}
       </div>
 
       <div
+        className={reveal ? "reveal-row" : undefined}
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           marginTop: TILES.section,
+          animationDelay: reveal ? `${legendDelay(cell)}ms` : undefined,
         }}
       >
         <Legend categories={layers.map((l) => l.category)} theme={theme} c={c} />
