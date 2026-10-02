@@ -1795,4 +1795,43 @@ reverse. The measured card is 535px in both, so the height survived the change.
 
 ---
 
+## 057 — A ResizeObserver tells you the size you just measured, which silently un-eases the first change
+**Date:** 2026-10-02 · **Cost:** ~0.2h, caught while writing rather than debugged · **Status:** avoided
+**Writeup material:** yes — the bug that does nothing is the hard kind
+
+The plate's height has to ease on a style flip and **not** ease on a window resize, or the
+frame trails the pointer for 400ms while the window edge is dragged. So the ease is decided
+at the measurement: the one call made when a card changed carries it, and every call the
+`ResizeObserver` makes afterwards does not.
+
+Except `observe()` delivers an initial notification for the current size. The sequence is
+`measure(eased: true)` → `observe()` → the observer fires with the size that measurement
+just read → `measure(eased: false)` → the flag is cleared before a single frame is painted.
+**The transition would never have run, on any path, and nothing would have reported a
+problem** — the height is still correct, the card still arrives, the test suite is green
+because none of it is a pure function. It would have looked like a CSS transition that does
+not work, which is a long afternoon.
+
+The fix is not to count deliveries. `measure` returns the previous state object unchanged
+when neither the scale nor the measured units moved, so the observer's echo is a no-op by
+construction rather than by a `first` flag someone can later "simplify" away. That also
+drops a re-render on every resize that does not change the rounded height.
+
+Two things fell out of it worth keeping:
+
+- **The move has to be real, not just claimed.** Guarding on "a card changed" is not
+  enough: the measure effect also re-runs on a Light/Dark flip, where both schemes lay out
+  identically, so the gates would reopen and the card would crossfade again on a toggle
+  press. Easing requires the height to actually differ.
+- **The React Compiler lint forbids `setState` in an effect body**
+  (`react-hooks/set-state-in-effect`), which rules out closing the height gate from the
+  measurement. It is closed during render beside the other two gates instead, which is
+  shorter and matches them. A conservative gate was the right answer anyway, because
+  `PLATE_HEIGHT_MS` is asserted to sit under the shortest reveal.
+
+**Phase 5 writes this code again**: C's panel animates its width from the same kind of
+measurement, and every word above applies with `width` substituted.
+
+---
+
 *New entries go above this line as they happen.*

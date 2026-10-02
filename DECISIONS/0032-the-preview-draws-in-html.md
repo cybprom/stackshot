@@ -90,6 +90,34 @@ duration we control, so holding the fade behind it is both bounded and the same 
 time. The corollary is that `PNG_SETTLE_MS` is a floor on when the fade *starts*, never a
 promise about when it happens.
 
+**The eased height is a third gate, and only a card change eases it.** Two constraints, and
+both of them are silent when broken — the card still arrives, it just arrives wrong.
+
+The plate's height changes for three reasons and only two of them are the card: a style
+flip, a new resolve, and a window resize. **A resize must land instantly.** The scale is a
+function of the measured width, so an eased height would trail the pointer for the whole
+duration as the window edge is dragged, which reads as the page struggling rather than as a
+transition. So easing is decided at the measurement, not in CSS: the first measurement after
+a card change carries the ease, everything the `ResizeObserver` reports afterwards does not,
+and the class that holds the transition is committed in the same render as the height it
+applies to. The height also has to actually move, which keeps out the first card — nothing
+to grow from — and a Light/Dark flip, where both schemes lay out identically.
+
+**And the fade waits for the frame to stop moving**, for the same reason it waits for the
+reveal: dissolving one card into another while the frame is still opening shows them at a
+size neither of them is. This is also what makes `onSettled` honest, since the page stops
+saying "Drawing card" on it. The gate is held for every card change rather than only the
+ones that move, because it is bounded under the reveal either way: in practice
+`PNG_SETTLE_MS` already outlasts it, so it is a floor rather than a thing that binds.
+
+`PLATE_HEIGHT_MS` is **400**, not the dim's 240: the dim does not travel and this does —
+two styles of the same stack differ by hundreds of pixels, and a change that size reads as a
+jump at 240. That buys two ceilings, both asserted in `tests/preview.test.ts`. It is under
+the shortest reveal any card can have (520ms, Terminal with nothing to print), so it never
+becomes what the crossfade is waiting for. And it is done before the last row of a dense
+Tiles grid begins to reveal (570ms, cell 10), because the bottom row is the one the growth
+is making space for and the frame clips what has not opened yet.
+
 **4. The plate is GitHub's page colour**, `PREVIEW.page`, not our `surface`. A card is
 rasterized on a transparent background, so its rounded corners show whatever is behind
 them; previewing it on `surface` judges the corners against a colour no reader sees.

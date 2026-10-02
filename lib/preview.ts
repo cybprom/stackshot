@@ -102,6 +102,19 @@ export const CROSSFADE_MS = 200;
 export const CURSOR_FADE_MS = 160;
 
 /**
+ * The plate's height between two card sizes. Longer than the dim's 240 because this one
+ * travels: two styles of the same stack differ by hundreds of pixels, and a change that
+ * size reads as a jump at 240.
+ *
+ * It is a gate as well as a duration, so it has two ceilings and `tests/preview.test.ts`
+ * asserts both: under the shortest reveal any card can have, so it never becomes what the
+ * crossfade is waiting for, and done before the last row of tiles begins, so no tile pops
+ * in where the frame is still opening. The duration itself lives in `globals.css`; this is
+ * the number the gate waits for, exactly as `CURSOR_FADE_MS` is.
+ */
+export const PLATE_HEIGHT_MS = 400;
+
+/**
  * Per-style reveal timings, as drawn. Tiles pop in staggered across the grid; Terminal
  * prints its rows in order. Durations live in CSS, delays here, because a delay is per
  * item and a duration is not.

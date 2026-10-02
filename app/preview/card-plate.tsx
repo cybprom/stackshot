@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { PREVIEW_CARDS } from "@/app/preview/cards";
 import {
   CURSOR_FADE_MS,
+  PLATE_HEIGHT_MS,
   PNG_SETTLE_MS,
   PREVIEW_WIDTH,
   plateHeight,
@@ -55,8 +56,9 @@ export function CardPlate({
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  const [units, setUnits] = useState(0);
+  // One piece of state, so the scale and the height it multiplies can never be a frame
+  // apart, and so whether a height eases travels with the height itself.
+  const [frame, setFrame] = useState({ scale: 1, units: 0, eased: false });
   const pngLight = png?.light;
   const pngDark = png?.dark;
   // Only a resolved card crossfades. The example card is already its own bytes.
@@ -65,6 +67,7 @@ export function CardPlate({
   const [pngReady, setPngReady] = useState(!wantsPng);
   const [revealDone, setRevealDone] = useState(!reveal);
   const [cursorClosed, setCursorClosed] = useState(false);
+  const [heightSettled, setHeightSettled] = useState(true);
 
   // A different card — a new resolve, or the same stack in another style — starts the
   // sequence over. Adjusted during render rather than in an effect, so the page never
@@ -75,6 +78,7 @@ export function CardPlate({
     setPngReady(!wantsPng);
     setRevealDone(!reveal);
     setCursorClosed(false);
+    setHeightSettled(false);
   }
 
   /**
@@ -113,7 +117,20 @@ export function CardPlate({
     return () => clearTimeout(timer);
   }, [reveal, style, doc]);
 
-  const ready = pngReady && revealDone;
+  /**
+   * The third gate: a fade that starts while the frame is still opening shows the two
+   * cards at a size neither of them is, and `onSettled` would tell the page the card had
+   * arrived while it was still moving. Held for every card change rather than only the
+   * ones that move, which is a ceiling the other way — `PLATE_HEIGHT_MS` is asserted to
+   * sit under the shortest reveal, so this gate never decides anything on its own.
+   */
+  useEffect(() => {
+    if (!doc) return;
+    const timer = setTimeout(() => setHeightSettled(true), PLATE_HEIGHT_MS);
+    return () => clearTimeout(timer);
+  }, [doc, style]);
+
+  const ready = pngReady && revealDone && heightSettled;
   // Terminal's cursor fades out first, so the two transitions never overlap.
   const closing = ready && wantsPng && style === "terminal" && !cursorClosed;
   const layer = !ready ? "html" : closing ? "closing" : "png";
@@ -130,20 +147,35 @@ export function CardPlate({
   }, [settled, onSettled]);
 
   useMeasure(() => {
-    const frame = frameRef.current;
-    if (!frame) return;
+    const frameEl = frameRef.current;
+    if (!frameEl) return;
 
-    const measure = () => {
-      setScale(plateScale(frame.clientWidth));
-      // offsetHeight is the laid-out height: a transform does not change it, so this is
-      // the card's height in its own units whatever the plate is currently scaled to.
-      // Both schemes lay out identically, so the in-flow one answers for both.
-      if (treeRef.current) setUnits(treeRef.current.offsetHeight);
+    /**
+     * `eased` is the caller's claim that a card changed. The height also has to actually
+     * move, which is what keeps two cases out: the first card has nothing to grow from,
+     * and a Light/Dark flip re-runs this effect while both schemes lay out identically,
+     * so easing there would reopen the gates on a card that had already settled.
+     */
+    const measure = (eased: boolean) => {
+      setFrame((previous) => {
+        const scale = plateScale(frameEl.clientWidth);
+        // offsetHeight is the laid-out height: a transform does not change it, so this is
+        // the card's height in its own units whatever the plate is currently scaled to.
+        // Both schemes lay out identically, so the in-flow one answers for both.
+        const units = treeRef.current?.offsetHeight ?? previous.units;
+        // Nothing moved, so keep the object — the observer's own first delivery reports
+        // the size measure(true) just read, and would otherwise clear the ease it set.
+        if (scale === previous.scale && units === previous.units) return previous;
+        const moved = plateHeight(units, scale) !== plateHeight(previous.units, previous.scale);
+        return { scale, units, eased: eased && moved && previous.units > 0 };
+      });
     };
 
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(frame);
+    measure(true);
+    // Everything the observer reports afterwards is a resize or a reflow, and must land
+    // instantly: an eased resize trails the pointer as the window edge is dragged.
+    const observer = new ResizeObserver(() => measure(false));
+    observer.observe(frameEl);
     if (treeRef.current) observer.observe(treeRef.current);
     return () => observer.disconnect();
   }, [doc, style, mode]);
@@ -167,15 +199,15 @@ export function CardPlate({
     >
       <div
         ref={frameRef}
-        className="relative w-full overflow-hidden"
-        style={doc ? { height: plateHeight(units, scale) } : undefined}
+        className={`relative w-full overflow-hidden${frame.eased ? " plate-height" : ""}`}
+        style={doc ? { height: plateHeight(frame.units, frame.scale) } : undefined}
       >
         <div className={busy ? "card-dim" : "card-lit"}>
           {doc ? (
             <div
               ref={treeRef}
               className="absolute left-0 top-0 origin-top-left"
-              style={{ width: PREVIEW_WIDTH, transform: `scale(${scale})` }}
+              style={{ width: PREVIEW_WIDTH, transform: `scale(${frame.scale})` }}
             >
               {system ? (
                 <>

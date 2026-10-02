@@ -306,9 +306,18 @@ body {
 
   .card-dim,
   .card-lit,
-  .png-layer {
+  .png-layer,
+  .plate-height {
     transition: none;
   }
+}
+
+/* The plate's height follows the card it holds, so a style flip or a new resolve glides
+   between two sizes instead of jumping. Only a card change carries this class: a resize
+   sets the height without it, or the frame would ease behind the pointer as the window
+   edge is dragged. lib/preview.ts holds the same number for the gate. ADR-0032. */
+.plate-height {
+  transition: height 400ms var(--ease-standard);
 }
 
 /* The real PNG, over the HTML that stood in for it. Same card, same width, same height, so

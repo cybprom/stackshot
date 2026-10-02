@@ -8,12 +8,11 @@ it is the only thing that survives one.*
 ```
 Milestone:  3 COMPLETE and committed. Now on the CARD STYLES direction
             (ADR-0029): the card becomes a choice of styles. Phases 0
-            (de-risk), 1 (plumbing), 2 (TILES), 3 (TERMINAL) and 4 steps
-            0-5 are done. PHASE 4 STEP 6 — the animated height between
-            card sizes — IS ALL THAT REMAINS BEFORE PHASE 5.
+            (de-risk), 1 (plumbing), 2 (TILES), 3 (TERMINAL) and 4 ARE
+            ALL DONE. PHASE 5 IS NEXT AND IS THE LAST PHASE.
 PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal
-            DONE · 4 site generator: steps 0-5 DONE, step 6 (animated
-            height) LEFT · 5 docs and the page. Nothing cut.
+            DONE · 4 site generator DONE · 5 docs and the page. Nothing
+            cut.
             The fallback cut order is spent: every item on it — per-style
             reveals, the Light/Dark toggle, the HTML preview — is built.
 AFTER P4:   TWO PAGE DESIGNS, built to be compared live, not one chosen on
@@ -87,7 +86,7 @@ AFTER P4:   TWO PAGE DESIGNS, built to be compared live, not one chosen on
              - A no-match in the technology index links to GitHub issues —
                the same destination as the footer's suggest link.
              - HEADLINES ARE ARCHIVO 800.
-P4 GENERATOR: BUILT, except step 6. ADR-0032 is the record for all of it.
+P4 GENERATOR: BUILT, all seven steps. ADR-0032 is the record for all of it.
             app/preview/ holds the plate, the two HTML cards, the
             segmented control and the exhaustive PREVIEW_CARDS map;
             lib/preview.ts holds every number, render-free and tested.
@@ -103,8 +102,18 @@ P4 GENERATOR: BUILT, except step 6. ADR-0032 is the record for all of it.
              - SYSTEM IS ANSWERED IN CSS, never in script: both cards are
                rendered and a media query picks (GOTCHAS 056). A forced
                theme is one card and one inline colour.
-             - THE FADE HAS TWO GATES: the PNG decoded, and the reveal
-               finished. The plate owns both and reports onSettled.
+             - THE FADE HAS THREE GATES: the PNG decoded, the reveal
+               finished, and the height settled. The plate owns all three
+               and reports onSettled.
+             - THE EASED HEIGHT IS DECIDED AT THE MEASUREMENT, not in CSS:
+               the one measure call made when a card changed carries the
+               ease, every ResizeObserver call afterwards does not, so a
+               window resize snaps. The height must also actually move, or
+               a Light/Dark flip reopens the gates. PLATE_HEIGHT_MS is 400
+               and has two asserted ceilings — under the shortest reveal
+               (520ms) and before the last Tiles row reveals (570ms).
+               GOTCHAS 057 is the trap, and PHASE 5 WRITES THIS AGAIN for
+               C's panel width.
              - Terminal's cursor is a LOADING indicator, not part of the
                card: it fades before the crossfade so the settled card
                matches the PNG exactly.
@@ -203,7 +212,14 @@ SITE_ORIGIN: lib/site.ts is the single source for the origin in the card
             PORT`) or the preview points at production. Preview and snippet
             are the same absolute URLs, so the CDN entry is shared and
             same-origin `download` works.
-Last done:  PHASE 4 STEPS 0-5 (this session). The generator is on the
+Last done:  PHASE 4 STEP 6 — THE ANIMATED HEIGHT, which COMPLETES PHASE
+            4. The plate eases its own measured height on a card change
+            and snaps it on a resize; the crossfade waits for it. 400ms,
+            not the dim's 240, because this one travels: next.js is 859u
+            in Tiles against 608u in Terminal, ~230px of plate on a style
+            flip. Folded into ADR-0032's existing section, no new ADR.
+            GOTCHAS 057. Nothing in the eight compare-styles cases moved.
+            Before it: PHASE 4 STEPS 0-5. The generator is on the
             page and working: switcher, Light/Dark/System toggle, HTML
             preview, loading sequence, crossfade.
             RENDER_VERSION IS 4. Four text runs now state their line box
@@ -232,21 +248,12 @@ Last done:  PHASE 4 STEPS 0-5 (this session). The generator is on the
             Before it: PHASE 3 — TERMINAL. lib/render/terminal.tsx at
             height "content", ADR-0031 on what styles share, and
             GOTCHAS 051 (the box glyphs are taller than their line box).
-Next:       PHASE 4 STEP 6 — THE ANIMATED HEIGHT. The plate already
-            measures the card and sets an explicit height in px, so this
-            is a transition on that one value plus the reduced-motion
-            branch beside it. docs/design/site/README.md: "measure the
-            content, set an explicit height, transition it". C's panel
-            animates WIDTH the same way in Phase 5.
-            Watch two things. The height changes on a style flip, on a
-            new resolve and on a window resize — a resize must NOT ease,
-            or dragging the window lags behind the pointer. And the
-            crossfade must not start mid-height-change for the same
-            reason the reveal gates it; the plate already knows when it
-            is settled.
-            Then PHASE 5, whose decisions are all recorded above under
-            AFTER P4. Start with the Tiles error frame, which is the one
-            thing BLOCKING LAUNCH.
+Next:       PHASE 5, the last phase. Its decisions are all recorded above
+            under AFTER P4 — the page is SPECIFIED, not open. START WITH
+            THE TILES ERROR FRAME, the one thing BLOCKING LAUNCH (see
+            BLOCKS LAUNCH below). Then the deploy-time warm script, which
+            the intro card, the wall and the nav's star count all need and
+            which does not exist yet; then the two layout shells.
 M4 CARRIES: the badge in your own README (the domain is live now, so this
             can come forward), the global budget guard, ADR-0012's amendment
             line for the separate bug counter, and monitoring KV bytes —

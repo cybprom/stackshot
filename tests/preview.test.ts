@@ -5,6 +5,7 @@ import { CARD_STYLES, DEFAULT_STYLE, type CardStyle } from "@/lib/card-style";
 import {
   DEFAULT_LAUNCH_STYLE,
   LAUNCH_STYLES,
+  PLATE_HEIGHT_MS,
   PNG_SETTLE_MS,
   PREVIEW_WIDTH,
   REVEAL,
@@ -19,6 +20,7 @@ import {
   rowDelay,
   tileDelay,
 } from "@/lib/preview";
+import { TILES_PER_ROW, TILE_BUDGET, TILE_ROWS } from "@/lib/render/tiles-layout";
 import { COPY } from "@/lib/site";
 import { CARD, TYPE } from "@/lib/tokens";
 
@@ -128,6 +130,38 @@ describe("the reveal", () => {
   it("waits before asking for a PNG", () => {
     expect(PNG_SETTLE_MS).toBeGreaterThanOrEqual(400);
     expect(PNG_SETTLE_MS).toBeLessThanOrEqual(1200);
+  });
+});
+
+/**
+ * The plate's height is a gate as well as a motion, so it has two ceilings. Both are
+ * silent if broken — the card still arrives, it just arrives wrong — which is why they are
+ * asserted rather than noted. ADR-0032.
+ */
+describe("the eased height between card sizes", () => {
+  // The shortest reveal any card can have: Terminal with nothing to print. Past this the
+  // height, not the reveal, would be what the crossfade waits for.
+  it("finishes inside the shortest reveal", () => {
+    const shortest = Math.min(
+      revealDuration("terminal", 0),
+      revealDuration("tiles", 0),
+      ...LAUNCH_STYLES.flatMap((style) => [1, 4, TILE_BUDGET].map((n) => revealDuration(style, n))),
+    );
+    expect(PLATE_HEIGHT_MS).toBeLessThan(shortest);
+  });
+
+  /**
+   * The constraint the author named: on a dense Tiles card the frame is still opening
+   * while the grid reveals, and a tile must not pop in below the clip. The last row is the
+   * one the growth is making space for, so it is the row that governs.
+   */
+  it("finishes before the last row of tiles begins", () => {
+    expect(PLATE_HEIGHT_MS).toBeLessThan(tileDelay(TILES_PER_ROW * (TILE_ROWS - 1)));
+  });
+
+  // It travels hundreds of pixels, so it is deliberately slower than the dim's 240.
+  it("is slow enough to read as a glide", () => {
+    expect(PLATE_HEIGHT_MS).toBeGreaterThan(240);
   });
 });
 
