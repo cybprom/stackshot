@@ -1,6 +1,6 @@
 import { DOMAIN, starsLabel } from "@/lib/card-text";
 import { family, PREVIEW_WIDTH, rowDelay, type PreviewDoc } from "@/lib/preview";
-import { COLORS, LAYER_COLORS, TERMINAL, TYPE, type Theme } from "@/lib/tokens";
+import { COLORS, LAYER_COLORS, TERMINAL, TYPE, lineBox, type Theme } from "@/lib/tokens";
 import type { StackItem, StackLayer } from "@/lib/stack-map/types";
 
 type Colors = Record<string, string>;
@@ -86,10 +86,13 @@ export function TerminalPreviewCard({
   doc,
   theme,
   reveal = false,
+  cursor,
 }: {
   doc: PreviewDoc;
   theme: Theme;
   reveal?: boolean;
+  /** The loading cursor: "on" while the PNG is coming, "out" as it fades before the fade. */
+  cursor?: "on" | "out";
 }) {
   const c = COLORS[theme];
   const layers = doc.layers.slice(0, MAX_LAYERS);
@@ -210,20 +213,47 @@ export function TerminalPreviewCard({
         ))}
       </div>
 
-      {/* Last, after the tree has printed — the way a command's final line arrives. */}
+      {/* Last, after the tree has printed — the way a command's final line arrives. The
+          cursor sits beside it in a flex row whose height is the domain's own line box, so
+          a loading indicator can never change the card's measured height. */}
       <div
         className={reveal ? "reveal-row" : undefined}
         style={{
+          display: "flex",
+          alignItems: "center",
           marginTop: TERMINAL.gap,
           animationDelay: reveal ? `${rowDelay(layers.length)}ms` : undefined,
-          fontSize: TYPE.meta.size,
-          fontWeight: TYPE.meta.weight,
-          lineHeight: TYPE.meta.lineHeight,
-          letterSpacing: TYPE.meta.tracking * TYPE.meta.size,
-          color: c.inkMuted,
         }}
       >
-        {DOMAIN}
+        <div
+          style={{
+            fontSize: TYPE.meta.size,
+            fontWeight: TYPE.meta.weight,
+            lineHeight: TYPE.meta.lineHeight,
+            letterSpacing: TYPE.meta.tracking * TYPE.meta.size,
+            color: c.inkMuted,
+          }}
+        >
+          {DOMAIN}
+        </div>
+        {cursor ? (
+          <div className={`cursor-hold${cursor === "out" ? " cursor-out" : ""}`} style={{ marginLeft: 12 }}>
+            {/* One mono cell at TYPE.meta, in accent — the prompt's colour, and like the
+                prompt it is quoting something real. It is on no PNG. ADR-0031, ADR-0032.
+
+                The blink waits for the row it sits in. Started at mount it would spend its
+                first half-second dark behind an invisible row and appear to be missing. */}
+            <div
+              className="cursor-blink"
+              style={{
+                width: 10,
+                height: lineBox(TYPE.meta),
+                backgroundColor: c.accent,
+                animationDelay: reveal ? `${rowDelay(layers.length)}ms` : undefined,
+              }}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );

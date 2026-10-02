@@ -4,7 +4,13 @@ import { TilesPreviewCard } from "@/app/preview/tiles-card";
 import type { LaunchStyle, PreviewDoc } from "@/lib/preview";
 import type { Theme } from "@/lib/tokens";
 
-export type PreviewCardProps = { doc: PreviewDoc; theme: Theme; reveal?: boolean };
+export type PreviewCardProps = {
+  doc: PreviewDoc;
+  theme: Theme;
+  reveal?: boolean;
+  /** Terminal's loading cursor. Tiles has none and ignores it. */
+  cursor?: "on" | "out";
+};
 
 /**
  * Exhaustive by construction, the way `CARD_STYLE_DEFS` is for the renderer: adding a name

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { z } from "zod";
 import { CardPlate } from "@/app/preview/card-plate";
 import { Segmented } from "@/app/preview/segmented";
@@ -10,8 +10,6 @@ import {
   DEFAULT_LAUNCH_STYLE,
   LAUNCH_STYLES,
   THEME_MODES,
-  revealCount,
-  revealDuration,
   type LaunchStyle,
   type ThemeMode,
 } from "@/lib/preview";
@@ -82,30 +80,20 @@ export function StackForm() {
   const [mode, setMode] = useState<ThemeMode>("system");
   // Two submissions in flight would otherwise let the slower one win.
   const latest = useRef(0);
-  const revealTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const shown = doc ?? EXAMPLE_REPO;
   const snippet = pictureSnippet(shown.owner, shown.repo, style);
 
   /**
-   * The reveal runs whenever a card arrives — a new resolve, or the same stack redrawn in
-   * another style. Its length is the style's own stagger, which is also what step 5's
-   * crossfade waits for: a PNG must never dissolve a card that is still drawing itself.
+   * The card is arriving — a new resolve, or the same stack redrawn in another style. The
+   * phase ends when the plate says so, not on a timer here: it is the one that knows when
+   * the reveal has finished and the real PNG is up, and two timers would disagree.
    */
-  const draw = useCallback((card: Doc, named: LaunchStyle) => {
-    clearTimeout(revealTimer.current);
-    setPhase("drawing");
-    revealTimer.current = setTimeout(
-      () => setPhase("idle"),
-      revealDuration(named, revealCount(named, card)),
-    );
-  }, []);
-
-  useEffect(() => () => clearTimeout(revealTimer.current), []);
+  const onSettled = useCallback(() => setPhase("idle"), []);
 
   function pickStyle(next: LaunchStyle) {
     setStyle(next);
-    if (doc) draw(doc, next);
+    if (doc) setPhase("drawing");
   }
 
   async function onSubmit(event: React.FormEvent) {
@@ -137,7 +125,7 @@ export function StackForm() {
       const ok = OkSchema.safeParse(body);
       if (response.ok && ok.success) {
         setDoc(ok.data.doc);
-        draw(ok.data.doc, style);
+        setPhase("drawing");
         return;
       }
       const failed = FailedSchema.safeParse(body);
@@ -246,6 +234,7 @@ export function StackForm() {
           doc={doc}
           busy={phase === "reading"}
           reveal={phase === "drawing"}
+          onSettled={onSettled}
           style={style}
           mode={mode}
           png={{

@@ -70,6 +70,17 @@ the theme toggle costs nothing afterwards. This is what "stops the switcher writ
 per flip" has to mean in practice: loading each style's PNG on press would write one per
 flip whatever the HTML does.
 
+**Terminal's cursor belongs to the loading, not to the card.** The rows print, the cursor
+blinks at the end while the PNG is still coming, and it fades out just before the fade
+begins. So the settled card has no cursor, the crossfade compares like with like, and the
+one element that would otherwise read as permanent drift becomes the thing that tells you
+the sequence has finished — the cursor stopping *is* the done signal. Under reduced motion
+there is no cursor at all, hidden in CSS rather than decided in script.
+
+This is the general rule the preview follows wherever the two implementations could
+differ: **anything the PNG does not have is part of arriving at the card, never part of
+it.**
+
 **The crossfade never runs during a reveal.** A PNG that decodes while tiles are still
 popping in or rows still printing waits for the reveal to finish, and fades only then.
 Decode time is a function of the network and the cache, so the overlap is arbitrary: a

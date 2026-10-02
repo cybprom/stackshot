@@ -92,6 +92,16 @@ export function family(name: CardFamily): string {
 export const PNG_SETTLE_MS = 700;
 
 /**
+ * DESIGN's `motion/arrival`. The HTML and the PNG are the same card, so this is a
+ * dissolve between two things that should already agree — a long one would be a feature
+ * film of our own correctness.
+ */
+export const CROSSFADE_MS = 200;
+
+/** Terminal's cursor fades before the crossfade starts, so the two never overlap. */
+export const CURSOR_FADE_MS = 160;
+
+/**
  * Per-style reveal timings, as drawn. Tiles pop in staggered across the grid; Terminal
  * prints its rows in order. Durations live in CSS, delays here, because a delay is per
  * item and a duration is not.
