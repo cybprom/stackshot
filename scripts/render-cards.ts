@@ -3,7 +3,7 @@
 // Usage: pnpm tsx scripts/render-cards.ts <outDir> [style]
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { CARD_STYLES, type CardStyle } from "@/lib/card-style";
+import { SERVED_STYLES, type ServedStyle } from "@/lib/card-style";
 import { FAILURE_REASONS } from "@/lib/failure";
 import { renderErrorCard } from "@/lib/render/error-card";
 import { renderToPng } from "@/lib/render/render";
@@ -11,7 +11,7 @@ import { styleDef } from "@/lib/render/styles";
 import type { Theme } from "@/lib/tokens";
 import { DOC_FIXTURES, fixtureDoc } from "@/tests/helpers/fixture-docs";
 
-async function main(outDir: string, style: CardStyle) {
+async function main(outDir: string, style: ServedStyle) {
   mkdirSync(outDir, { recursive: true });
   const { element, height } = styleDef(style);
   const draw = (doc: Parameters<typeof element>[0]["doc"], theme: Theme) =>
@@ -60,6 +60,6 @@ async function main(outDir: string, style: CardStyle) {
 }
 
 const requested = process.argv[3] ?? "sheet";
-const style = CARD_STYLES.find((name) => name === requested);
-if (!style) throw new Error(`unknown style: ${requested}. One of ${CARD_STYLES.join(", ")}`);
+const style = SERVED_STYLES.find((name) => name === requested);
+if (!style) throw new Error(`no renderer for: ${requested}. One of ${SERVED_STYLES.join(", ")}`);
 main(process.argv[2] ?? "cards", style);

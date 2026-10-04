@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { CardStyle } from "@/lib/card-style";
+import type { ServedStyle } from "@/lib/card-style";
 import { Card } from "@/lib/render/card";
 import { TerminalCard } from "@/lib/render/terminal";
 import { TilesCard } from "@/lib/render/tiles";
@@ -16,21 +16,20 @@ export type CardStyleDef = {
 };
 
 /**
- * Exhaustive by construction: adding a name to `CARD_STYLES` is a type error here until
- * it has a renderer, which is the only thing stopping a URL from resolving to nothing.
+ * Exhaustive over `SERVED_STYLES`, and deliberately **not** over `CARD_STYLES`: a style
+ * earns a URL by having a renderer, so adding a name here is how Tags starts being served.
  *
- * Tags still draws the Datasheet tree until it is built; it is post-launch. The URL
- * surface and the cache key are final now; the pixels catch up. **Each replacement bumps
- * RENDER_VERSION**, or the PNGs cached under a style's key while it was a stand-in would
- * be served as the real thing.
+ * There are no stand-ins left. Tags drew the Datasheet's tree until ADR-0034, which meant
+ * `tags-dark.png` returned a card its URL did not name; it 404s in `parseCardFile` now, so
+ * nothing reaches this map that it cannot answer honestly. Shipping Tags is one line here,
+ * one in `SERVED_STYLES`, and a `RENDER_VERSION` bump.
  */
-export const CARD_STYLE_DEFS: Record<CardStyle, CardStyleDef> = {
+export const CARD_STYLE_DEFS: Record<ServedStyle, CardStyleDef> = {
   tiles: { element: TilesCard, height: "content" },
   terminal: { element: TerminalCard, height: "content" },
-  tags: { element: Card, height: CARD.height },
   sheet: { element: Card, height: CARD.height },
 };
 
-export function styleDef(style: CardStyle): CardStyleDef {
+export function styleDef(style: ServedStyle): CardStyleDef {
   return CARD_STYLE_DEFS[style];
 }

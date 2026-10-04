@@ -425,7 +425,9 @@ These hold at all times. A change that breaks one requires an ADR.
   smaller font or a scroll.
 - **I5** — The card route always returns HTTP 200 with `content-type: image/png`. Every
   failure path renders an error card. A broken-image icon in a stranger's README is the
-  worst outcome this project can produce.
+  worst outcome this project can produce. **This governs a card request that fails, not a
+  request that was never a card request**: an unparseable filename, a reserved owner, or a
+  style with no renderer is a plain 404, refused before any resolve or render (ADR-0034).
 - **I6** — No request path makes more than **2 authenticated GitHub API calls**: one
   GraphQL query and one REST tree call, and the counter counts both. Manifest contents come
   from `raw.githubusercontent.com` pinned to the resolved commit, which consumes neither
@@ -483,6 +485,12 @@ The card lives at `/{owner}/{repo}/{file}` where `file` is `{style}-{theme}.png`
 example `tiles-dark.png` — plus the legacy `card-{theme}.png`, which is pinned to one
 named style forever so an embedded badge can never restyle itself (ADR-0029). Owner is a
 root-level dynamic segment, which collides with any future site route.
+
+**Only a style with a renderer has a URL.** `{style}` must be in `SERVED_STYLES`, not
+merely in `CARD_STYLES`: `tags-dark.png` 404s until Tags is drawn, rather than serving
+another style's pixels under a name that lies. This does not weaken I5 — a filename the
+route does not recognise is not a card request, which is the same answer `tiles-light.jpg`
+gets, and it is refused before any resolve, render or budget. ADR-0034.
 
 Mitigations, both required:
 1. A reserved-word deny list for `owner`: `api`, `_next`, `favicon.ico`, `robots.txt`,

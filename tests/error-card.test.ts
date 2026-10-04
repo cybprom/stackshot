@@ -4,7 +4,7 @@ import { ROOT_MANIFESTS } from "@/lib/github/tree";
 import { ERROR_COPY } from "@/lib/failure";
 import { renderErrorCard } from "@/lib/render/error-card";
 import { isRepoRef } from "@/lib/repo-ref";
-import type { CardStyle } from "@/lib/card-style";
+import { SERVED_STYLES, type ServedStyle } from "@/lib/card-style";
 import { CARD, ERROR_CARD_HEIGHT, TYPE, displaySize, lineBox } from "@/lib/tokens";
 
 const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
@@ -12,8 +12,8 @@ const MIN_DRAWN_BYTES = 20_000;
 const THEMES = ["light", "dark"] as const;
 // resvg renders at zoom 2, so a PNG's pixel dimensions are twice the card's units.
 const ZOOM = 2;
-const STYLES = ["sheet", "tiles", "terminal"] as const satisfies readonly CardStyle[];
-const render = (reason: FailureReason, theme: "light" | "dark", repo = "hello-world", style: CardStyle = "sheet") =>
+const STYLES = SERVED_STYLES;
+const render = (reason: FailureReason, theme: "light" | "dark", repo = "hello-world", style: ServedStyle = "sheet") =>
   renderErrorCard({ reason, owner: "octocat", repo, style, theme });
 
 // IHDR is the first chunk: width and height as big-endian u32 at bytes 16 and 20.
@@ -71,17 +71,15 @@ describe("the error card wears the requested style's frame", () => {
     expect(sheet.equals(terminal)).toBe(false);
   });
 
-  // Tags has no renderer of its own, so it borrows the Datasheet's — including here.
-  it("gives tags the Datasheet's error card, as its real card is", async () => {
-    const [tags, sheet] = await Promise.all([
-      render("not_found", "light", "hello-world", "tags"),
-      render("not_found", "light", "hello-world", "sheet"),
-    ]);
-    expect(tags.equals(sheet)).toBe(true);
+  // Tags has no renderer and no URL, so there is no error card for it to be asked for
+  // either — `parseCardFile` refuses the request before the card path is reached.
+  // ADR-0034. Covered as a URL fact in tests/site.test.ts.
+  it("has an error card for every style a URL can ask for, and no others", () => {
+    expect([...STYLES].sort()).toEqual(["sheet", "terminal", "tiles"]);
   });
 
   // Content-height, as their real cards are: there is no band system to leave hanging.
-  it.each(["tiles", "terminal"] satisfies CardStyle[])("sizes %s to its content", async (style) => {
+  it.each(["tiles", "terminal"] satisfies ServedStyle[])("sizes %s to its content", async (style) => {
     const { width, height } = pngSize(await render("no_manifests", "light", "hello-world", style));
     expect(width).toBe(CARD.width * ZOOM);
     expect(height).toBeLessThan(ERROR_CARD_HEIGHT * ZOOM);

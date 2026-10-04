@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_STYLE, type CardStyle } from "@/lib/card-style";
+import { DEFAULT_STYLE, type ServedStyle } from "@/lib/card-style";
 import {
   NEGATIVE_TTL_S,
   POINTER_TTL_S,
@@ -62,7 +62,7 @@ const serve = (
   owner: string,
   repo: string,
   theme: Theme = "light",
-  style: CardStyle = DEFAULT_STYLE,
+  style: ServedStyle = DEFAULT_STYLE,
 ) =>
   serveCard(
     { cache: deps.cache, createClient: deps.client ? () => (deps.client as GitHubClient) : undefined },

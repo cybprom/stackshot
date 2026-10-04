@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { StackDoc } from "@/lib/stack-map/types";
-import type { CardStyle } from "@/lib/card-style";
+import { SERVED_STYLES, type ServedStyle } from "@/lib/card-style";
 import { renderToPng } from "@/lib/render/render";
 import { styleDef } from "@/lib/render/styles";
 import { DOC_FIXTURES, fixtureDoc } from "@/tests/helpers/fixture-docs";
@@ -9,10 +9,11 @@ const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
 // A blank 2400x1600 PNG compresses to a few KB; a drawn card is far larger.
 const MIN_DRAWN_BYTES = 20_000;
 const THEMES = ["light", "dark"] as const;
-// Every style with a tree of its own. Tags still draws the Datasheet.
-const STYLES = ["sheet", "tiles", "terminal"] as const satisfies readonly CardStyle[];
+// Every style with a tree of its own, which since ADR-0034 is every style a URL can
+// ask for: Tags has no renderer and 404s rather than borrowing one.
+const STYLES = SERVED_STYLES;
 
-const render = (doc: StackDoc, theme: "light" | "dark", style: CardStyle = "sheet") => {
+const render = (doc: StackDoc, theme: "light" | "dark", style: ServedStyle = "sheet") => {
   const { element, height } = styleDef(style);
   return renderToPng(element({ doc, theme }), height);
 };

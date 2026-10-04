@@ -3,9 +3,11 @@ import {
   CARD_STYLES,
   DEFAULT_STYLE,
   LEGACY_STYLE,
+  SERVED_STYLES,
   cardFileName,
+  isServedStyle,
   parseCardFile,
-  type CardStyle,
+  type ServedStyle,
 } from "@/lib/card-style";
 import { cardUrl, pictureSnippet, SITE_ORIGIN } from "@/lib/site";
 
@@ -31,7 +33,7 @@ describe("card URLs and the README snippet", () => {
    * forever, so a card already in someone's README cannot be restyled by a change to the
    * site's default — which is the whole reason the style is explicit here. ADR-0029.
    */
-  it.each(CARD_STYLES)("writes the style explicitly: %s", (style: CardStyle) => {
+  it.each(SERVED_STYLES)("writes the style explicitly: %s", (style: ServedStyle) => {
     const snippet = pictureSnippet("octocat", "hello-world", style);
     expect(snippet).toContain(`${style}-light.png`);
     expect(snippet).toContain(`${style}-dark.png`);
@@ -62,9 +64,28 @@ describe("card URLs and the README snippet", () => {
 });
 
 describe("the card file name", () => {
-  it.each(CARD_STYLES)("round-trips %s in both themes", (style: CardStyle) => {
+  it.each(SERVED_STYLES)("round-trips %s in both themes", (style: ServedStyle) => {
     expect(parseCardFile(cardFileName(style, "light"))).toEqual({ style, theme: "light" });
     expect(parseCardFile(cardFileName(style, "dark"))).toEqual({ style, theme: "dark" });
+  });
+
+  /**
+   * ADR-0034. Tags keeps its name in `CARD_STYLES` because the URL grammar and the cache
+   * key space are final, but it has no renderer — so the request is refused here rather
+   * than answered with a card the URL does not name. The route turns `undefined` into a
+   * plain 404, which is "not a card request" and so outside I5, exactly as a bad filename
+   * is. Serving Tags means adding it to `SERVED_STYLES` and to `CARD_STYLE_DEFS`.
+   */
+  it.each(["tags-light.png", "tags-dark.png"])("refuses %s: a style with no renderer", (file) => {
+    expect(parseCardFile(file)).toBeUndefined();
+  });
+
+  it("refuses every style that has no renderer, not just the one we know about", () => {
+    const unserved = CARD_STYLES.filter((style) => !isServedStyle(style));
+    expect(unserved).toEqual(["tags"]);
+    for (const style of unserved) {
+      expect(parseCardFile(cardFileName(style, "light")), style).toBeUndefined();
+    }
   });
 
   /**

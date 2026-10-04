@@ -147,7 +147,7 @@ lib/
     deny.ts                      known noise, namespaced globs, never logged
     index.ts                     assembled map + lookup (exact alias, then longest prefix)
     types.ts
-  card-style.ts                  the style names, URL parsing; render-free, client-safe
+  card-style.ts                  style names, SERVED_STYLES, URL parsing; client-safe
   manifest-paths.ts              path filters shared by tree selection and detection
   site.ts                        SITE_ORIGIN, card URLs, the snippet, every site string
   normalize.ts                   RawSignal[] -> StackDoc

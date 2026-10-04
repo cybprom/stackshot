@@ -1,6 +1,6 @@
 import { CARD, COLORS, ERROR_CARD_HEIGHT, TERMINAL, TILES, TYPE, type Theme } from "@/lib/tokens";
 import { ERROR_COPY, type FailureReason } from "@/lib/failure";
-import { DEFAULT_STYLE, type CardStyle } from "@/lib/card-style";
+import { DEFAULT_STYLE, type ServedStyle } from "@/lib/card-style";
 import {
   CardHeader,
   DomainLine,
@@ -21,7 +21,7 @@ export type ErrorCardProps = {
   repo: string;
   theme: Theme;
   /** The style that was asked for. Its frame is the one a failing embed should show. */
-  style?: CardStyle;
+  style?: ServedStyle;
 };
 
 type Colors = Record<string, string>;
@@ -41,7 +41,7 @@ export function renderErrorCard(props: ErrorCardProps): Promise<Buffer> {
  * draw their real cards at content height draw their error cards the same way. GOTCHAS 050
  * is why this is spelled rather than defaulted.
  */
-function errorHeight(style: CardStyle): CardHeight {
+function errorHeight(style: ServedStyle): CardHeight {
   return style === "tiles" || style === "terminal" ? "content" : ERROR_CARD_HEIGHT;
 }
 

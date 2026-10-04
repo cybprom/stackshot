@@ -18,7 +18,7 @@ P5 PLAN:    ** READ THE "Phase 5" SECTION BELOW, DIRECTLY UNDER THIS
             WHAT THE PAGE CONTAINS; the Phase 5 section owns ORDER AND
             MECHANISM and does not repeat it. Those two together are
             enough to resume with no other context.
-            CURRENT STEP: 2, THE tags-*.png 404. Step 1 is DONE.
+            CURRENT STEP: 3, prepare-home. Steps 1-2 are DONE.
 PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal
             DONE · 4 site generator DONE · 5 docs and the page. Nothing
             cut.
@@ -151,16 +151,22 @@ LAUNCH:     accent bar, 3u ink border, radius 2 — because renderErrorCard
             FIXED by ADR-0033, Phase 5 step 1. Every style frames its own
             error card; the Datasheet's bytes are unchanged. LAUNCH IS NO
             LONGER BLOCKED by this.
-OPEN:       nothing is open. tags-*.png SERVES DATASHEET BYTES today — the
-            last stand-in, because CARD_STYLE_DEFS maps every style to
-            something. Nobody is served a wrong card (the site never
-            offers it) but the URL lies. DECIDED: it 404s until Tags
-            ships — see D3, Phase 5 step 2.
-STYLES:     Every CardStyle needs an entry in lib/render/styles.ts.
-            ONLY TAGS still draws the Datasheet tree as a stand-in, and it
-            is post-launch.
-            REPLACING A STAND-IN BUMPS RENDER_VERSION, or PNGs cached
-            under that style's key get served as the real thing.
+OPEN:       nothing is open, and NO STAND-INS REMAIN. tags-*.png used to
+            serve Datasheet bytes; ADR-0034 made it 404. A style earns a
+            URL by having a renderer: SERVED_STYLES is the subset of
+            CARD_STYLES with one, CARD_STYLE_DEFS is exhaustive over THAT,
+            and parseCardFile refuses the rest. Shipping Tags is three
+            edits — SERVED_STYLES, CARD_STYLE_DEFS, RENDER_VERSION.
+STYLES:     Every SERVED style needs an entry in lib/render/styles.ts —
+            that map is exhaustive over SERVED_STYLES, not CARD_STYLES
+            (ADR-0034). THERE ARE NO STAND-INS; a style with no renderer
+            404s instead of borrowing one. ADDING A RENDERER BUMPS
+            RENDER_VERSION, or PNGs cached under that style's key get
+            served as the real thing.
+            THREE STYLE SETS, each with a reason: CARD_STYLES is what the
+            URL grammar knows, SERVED_STYLES what has a renderer,
+            LAUNCH_STYLES (lib/preview) what the switcher offers because
+            it also has an HTML preview.
             A style's HEIGHT IS `number | "content"` — never undefined,
             which a default parameter turns back into 800 and clips the
             card in silence (GOTCHAS 050).
@@ -322,11 +328,14 @@ Author-decided. Do not re-open them; they were asked and answered.
      that actually have a gutter.
    - DESIGN's "the card's gutter labels are the only all-caps in the project" needs an
      amendment line: a gutter-less frame carries the same signage in its body.
-2. **The `tags-*.png` 404, per D3. ← CURRENT STEP.** Still in the render layer, so it is
-   cheap here. A few lines in the route plus the ADR line (ADR-0034).
-3. **The deploy-time preparation step, per D4.** `scripts/prepare-home.ts` → one committed
-   JSON. The build renders the intro card's PNG from it. Both layouts depend on this and
-   NOTHING LIKE IT EXISTS YET, so it comes before either hero.
+2. **THE `tags-*.png` 404 — DONE.** ADR-0034. Done in `parseCardFile` rather than the
+   route: a style with no renderer is refused exactly as an unknown name is, so the route
+   needed no change and I5 is not in play — it is not a card request. The stand-in is
+   deleted rather than flagged, and the type system found all nine places that had assumed
+   Tags was renderable. No `RENDER_VERSION` bump: nothing that renders changed.
+3. **The deploy-time preparation step, per D4. ← CURRENT STEP.** `scripts/prepare-home.ts`
+   → one committed JSON. The build renders the intro card's PNG from it. Both layouts
+   depend on this and NOTHING LIKE IT EXISTS YET, so it comes before either hero.
 4. **The shared components.** Nav (the 2×2 layer-colour logo mark, GitHub link with D5's
    star count), the snippet block, "One snippet. Both themes.", the rebuilt "What
    Stackshot found", the technology index, the footer. The generator and plate are done

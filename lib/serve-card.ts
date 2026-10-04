@@ -2,7 +2,7 @@ import type { Cache } from "@/lib/cache";
 import { countBug, countCacheHit } from "@/lib/counters";
 import { BUG_REASON, isTransient, type FailureReason } from "@/lib/failure";
 import type { GitHubClient } from "@/lib/github/client";
-import type { CardStyle } from "@/lib/card-style";
+import type { ServedStyle } from "@/lib/card-style";
 import { styleDef } from "@/lib/render/styles";
 import { renderErrorCard } from "@/lib/render/error-card";
 import { renderToPng } from "@/lib/render/render";
@@ -46,7 +46,7 @@ export async function serveCard(
   deps: CardDeps,
   owner: string,
   repo: string,
-  style: CardStyle,
+  style: ServedStyle,
   theme: Theme,
 ): Promise<CardResult> {
   try {
@@ -63,7 +63,7 @@ async function run(
   deps: CardDeps,
   owner: string,
   repo: string,
-  style: CardStyle,
+  style: ServedStyle,
   theme: Theme,
 ): Promise<CardResult> {
   const result = await resolveCached(deps, owner, repo);
@@ -82,7 +82,7 @@ async function run(
 async function render(
   cache: Cache,
   doc: StackDoc,
-  style: CardStyle,
+  style: ServedStyle,
   stackHash: string,
   theme: Theme,
 ): Promise<Buffer> {
@@ -98,7 +98,7 @@ async function errorCard(
   reason: FailureReason,
   owner: string,
   repo: string,
-  style: CardStyle,
+  style: ServedStyle,
   theme: Theme,
 ): Promise<CardResult> {
   try {
