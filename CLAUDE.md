@@ -275,6 +275,19 @@ Invariants that drift out of date are worse than no invariants.
 When unsure which destination: a choice goes in `DECISIONS/`, a surprise goes in
 `GOTCHAS.md`.
 
+When a decision is needed, stop and present it as: at most three
+options, each with its cost, and your recommendation with the
+reason. Under 200 words. Never bundle more than two decisions in
+one message.
+
+For every proposal, state what it would make irreversible, what it
+would make slower to change later, and which failure direction is
+recoverable if the choice is wrong.
+
+Before any visual change ships, render it and show me. Tests pass
+on wrong-looking output — four of five bugs in M1 and several in
+M4 were found by looking.
+
 ---
 
 ## Session protocol

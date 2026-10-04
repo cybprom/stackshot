@@ -1881,4 +1881,49 @@ frame, so the tree is the one that already shipped and the hashes prove it.
 
 ---
 
+## 059 — A library's own card never names the library
+**Date:** 2026-10-04 · **Cost:** ~0.3h, and it would have been a launch-day embarrassment · **Status:** curated around
+**Writeup material:** YES — this is the best finding in the project and it is one sentence
+
+Picking sixteen well-known repos for the homepage's wall, I chose the obvious ones:
+`facebook/react`, `tailwindlabs/tailwindcss`, `django/django`. Then I rendered them.
+
+```
+facebook/react            frontend:Zod  backend:Node,Rust  infra:GitHub Actions  tooling:Jest,Yarn…
+tailwindlabs/tailwindcss  backend:Rust,Node  infra:GitHub Actions  tooling:Turborepo,pnpm…
+django/django             backend:Python  infra:GitHub Actions  tooling:Biome
+```
+
+**React's card does not mention React. Tailwind's has no frontend layer. Django's is three
+cells and one of them is Biome**, from a `biome.json` sitting in the admin assets.
+
+The reason is obvious once seen and invisible before: **Stackshot reads dependencies, and
+a project does not depend on itself.** `django/django`'s `pyproject.toml` declares Django
+as the *project*, not as a requirement. Every library on earth has this shape. It is the
+same root as the already-known "next.js's root package.json is all devDependencies"
+(GOTCHAS, M1) but with a worse symptom, because there the devDependencies at least
+described a real stack.
+
+So the product has a blind spot with a clean edge:
+
+- **Applications resolve beautifully** — mastodon 23 cells, grafana 27, supabase 20,
+  immich 20. They depend on their whole stack, so the card is the stack.
+- **Libraries resolve to their own toolchain** — the test runner, the bundler, the linter.
+  Technically correct and useless as a portrait.
+
+**This is not a bug and there is no fix in the code.** Detecting "the repo is the thing
+named in its own manifest" and injecting it would mean rendering something no manifest
+declares as a dependency, which is a different product. What it is, is a thing to know
+when choosing what to show: the wall is applications now, and `tests/home.test.ts` asserts
+a six-tile floor so the next library added fails the suite rather than appearing as a
+near-blank card drifting in the background.
+
+**It also predicts who Stackshot is for.** The best cards come from applications and
+services — exactly the repos whose READMEs most want a "what's this built with" badge, and
+exactly the repos that cannot answer that question from their own source. A library author
+gets less out of it. That is worth saying out loud in the writeup rather than discovering
+it from a confused issue.
+
+---
+
 *New entries go above this line as they happen.*
