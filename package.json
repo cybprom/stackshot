@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "tsx scripts/check-env.ts && next build",
+    "build": "tsx scripts/check-env.ts && tsx scripts/check-home.ts && tsx scripts/render-intro.ts && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run"

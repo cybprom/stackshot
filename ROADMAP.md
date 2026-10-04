@@ -18,7 +18,7 @@ P5 PLAN:    ** READ THE "Phase 5" SECTION BELOW, DIRECTLY UNDER THIS
             WHAT THE PAGE CONTAINS; the Phase 5 section owns ORDER AND
             MECHANISM and does not repeat it. Those two together are
             enough to resume with no other context.
-            CURRENT STEP: 3, prepare-home. Steps 1-2 are DONE.
+            CURRENT STEP: 4, the shared components. Steps 1-3 DONE.
 PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal
             DONE · 4 site generator DONE · 5 docs and the page. Nothing
             cut.
@@ -75,13 +75,14 @@ AFTER P4:   TWO PAGE DESIGNS, built to be compared live, not one chosen on
                placement — so they must not assume their own stacking.
              - TRY BUTTONS: vercel/next.js, pmndrs/zustand,
                cybprom/stackshot.
-             - The wall's cards come from a FIXED LIST OF WELL-KNOWN REPOS,
-               PREPARED AT BUILD OR DEPLOY TIME, same rule as the intro
-               card: the homepage never waits on GitHub, on any path.
-               The intro card, the wall and the nav's star count are all
-               the same requirement — ONE DEPLOY-TIME STEP, not three ad
-               hoc ones. Phase 5 needs a script for it; nothing like it
-               exists yet.
+             - The wall's cards come from a FIXED LIST OF 16 REPOS in
+               lib/home.ts, resolved into the committed lib/home-data.json
+               by scripts/prepare-home.ts. BUILT in step 3, ADR-0035. The
+               homepage makes NO GitHub call on any path. Mini-cards are
+               HTML from those docs — no PNGs. The intro card's PNGs are
+               rendered at BUILD from the committed doc into public/.
+               ADDING A REPO: run the script and READ THE SUMMARY. A
+               library's own card never names the library.
             SHARED BY A AND C, beyond the generator:
              - NAV: the logo mark — 2x2 squares in the four layer colours —
                and a GitHub link with the LIVE STAR COUNT. Fetched
@@ -333,10 +334,17 @@ Author-decided. Do not re-open them; they were asked and answered.
    needed no change and I5 is not in play — it is not a card request. The stand-in is
    deleted rather than flagged, and the type system found all nine places that had assumed
    Tags was renderable. No `RENDER_VERSION` bump: nothing that renders changed.
-3. **The deploy-time preparation step, per D4. ← CURRENT STEP.** `scripts/prepare-home.ts`
-   → one committed JSON. The build renders the intro card's PNG from it. Both layouts
-   depend on this and NOTHING LIKE IT EXISTS YET, so it comes before either hero.
-4. **The shared components.** Nav (the 2×2 layer-colour logo mark, GitHub link with D5's
+3. **THE PREPARE-HOME DATA STEP — DONE.** ADR-0035. `scripts/prepare-home.ts` resolves
+   the 16-repo list and writes `lib/home-data.json` (docs + star count + generatedAt),
+   committed. `scripts/check-home.ts` runs before `next build`: schema drift and a missing
+   doc FAIL, age PRINTS and warns past 30 days. `scripts/render-intro.ts` writes the four
+   intro PNGs into `public/` at build, gitignored. `StackDocSchema` moved to
+   `lib/stack-doc.ts`, shared with `lib/cache.ts`.
+   THE CURATION RULE, learned by looking: **a library's card never names the library**,
+   because Stackshot reads dependencies and a repo does not depend on itself. react
+   rendered `frontend: Zod`, tailwindcss had no frontend layer, django was 3 cells and one
+   was Biome. All three cut for applications. tests/home.test.ts asserts a 6-tile floor.
+4. **The shared components. ← CURRENT STEP.** Nav (the 2×2 layer-colour logo mark, GitHub link with D5's
    star count), the snippet block, "One snippet. Both themes.", the rebuilt "What
    Stackshot found", the technology index, the footer. The generator and plate are done
    (Phase 4). Two of these are REBUILDS, not inventions:

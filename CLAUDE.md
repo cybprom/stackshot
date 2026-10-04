@@ -150,6 +150,9 @@ lib/
   card-style.ts                  style names, SERVED_STYLES, URL parsing; client-safe
   manifest-paths.ts              path filters shared by tree selection and detection
   site.ts                        SITE_ORIGIN, card URLs, the snippet, every site string
+  home.ts                        the fixed repo list + the committed data's reader
+  home-data.json                 committed StackDocs + star count; scripts/prepare-home
+  stack-doc.ts                   StackDocSchema, shared by lib/cache and lib/home
   normalize.ts                   RawSignal[] -> StackDoc
   version.ts                     version specs -> display version (ADR-0017, 0018)
   resolve.ts                     the full chain for one repo, client injected
@@ -174,6 +177,9 @@ lib/
   result.ts                      Result<T, E>, types only
 scripts/
   check-env.ts                   runs before `next build`; missing config fails the deploy
+  check-home.ts                  also pre-build; schema fails, age only warns (ADR-0035)
+  prepare-home.ts                resolves the homepage's 16 repos -> lib/home-data.json
+  render-intro.ts                the intro card's PNGs into public/, at build time
   record-github.ts               records GitHub responses into tests/fixtures/github/
   symbols.ts                     proposes the Tiles two-letter symbols; --write applies
   symbol-sheet.ts                every map entry as a tile, for reading them as a stranger

@@ -47,3 +47,8 @@ docs/spike/*.mp4
 
 # scripts/render-cards.ts output, for looking at rather than for keeping
 /cards
+
+# Rendered into public/ by scripts/render-intro.ts during the build, from the
+# committed doc in lib/home-data.json. Bytes in the repo would go stale the moment a
+# token moved. ADR-0035.
+/public/intro-*.png

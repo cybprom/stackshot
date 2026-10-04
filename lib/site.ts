@@ -1,4 +1,4 @@
-import { cardFileName, type CardStyle } from "@/lib/card-style";
+import { cardFileName, type ServedStyle } from "@/lib/card-style";
 import { LAYER_NAME } from "@/lib/card-text";
 import type { LaunchStyle, ThemeMode } from "@/lib/preview";
 import type { Theme } from "@/lib/tokens";
@@ -13,8 +13,26 @@ export const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://stack
 /** The repo whose card stands in the empty state. One line to change. */
 export const EXAMPLE_REPO = { owner: "cybprom", repo: "stackshot" };
 
-export function cardUrl(owner: string, repo: string, style: CardStyle, theme: Theme): string {
+export function cardUrl(owner: string, repo: string, style: ServedStyle, theme: Theme): string {
   return `${SITE_ORIGIN}/${owner}/${repo}/${cardFileName(style, theme)}`;
+}
+
+/**
+ * The intro card's static bytes, rendered into `public/` at build time from the committed
+ * doc (ADR-0035). The homepage shows these rather than `cardUrl(INTRO_REPO, …)`, because
+ * the card route hits GitHub on a cold cache and the homepage must never wait on it.
+ *
+ * **The cost, stated because it is a real one:** M3's pre-warm — preview URL and snippet
+ * URL byte-identical, so loading the preview warms the CDN entry the snippet hands out —
+ * does not hold for this one card. The snippet still names the route URL. Every card a
+ * visitor actually generates is unaffected.
+ */
+export function introCardFile(style: ServedStyle, theme: Theme): string {
+  return `intro-${cardFileName(style, theme)}`;
+}
+
+export function introCardUrl(style: ServedStyle, theme: Theme): string {
+  return `/${introCardFile(style, theme)}`;
 }
 
 /**
@@ -27,7 +45,7 @@ export function cardUrl(owner: string, repo: string, style: CardStyle, theme: Th
  * card's 1200×518, and Tiles' content height — so a snippet copied while a repo worked
  * would distort when it later fails.
  */
-export function pictureSnippet(owner: string, repo: string, style: CardStyle): string {
+export function pictureSnippet(owner: string, repo: string, style: ServedStyle): string {
   return [
     `<picture>`,
     `  <source media="(prefers-color-scheme: dark)" srcset="${cardUrl(owner, repo, style, "dark")}">`,

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { countBug } from "@/lib/counters";
 import { deployEnv, isProduction, upstashConfig } from "@/lib/env";
 import { FAILURE_REASONS, isTransient } from "@/lib/failure";
+import { StackDocSchema } from "@/lib/stack-doc";
 import type { StackDoc } from "@/lib/stack-map/types";
 import type { CardStyle } from "@/lib/card-style";
 import { RENDER_VERSION, type Theme } from "@/lib/tokens";
@@ -29,30 +30,6 @@ export const PNG_TTL_S = 7 * 24 * 3600;
 // Well inside the 4s resolve deadline: a slow cache must never cost more than the work
 // it was there to skip.
 export const CACHE_TIMEOUT_MS = 500;
-
-const StackItemSchema = z.object({
-  id: z.string(),
-  display: z.string(),
-  // Required, so a doc written before symbols degrades to a miss and re-resolves.
-  symbol: z.string(),
-  version: z.string().optional(),
-  description: z.string(),
-});
-
-const StackDocSchema = z.object({
-  owner: z.string(),
-  repo: z.string(),
-  language: z.string().nullable(),
-  stars: z.number(),
-  layers: z.array(
-    z.object({
-      category: z.enum(["frontend", "backend", "infra", "tooling"]),
-      items: z.array(StackItemSchema),
-      overflow: z.number(),
-    }),
-  ),
-  unmapped: z.array(z.string()),
-});
 
 // One lookup answers both "have we resolved this?" and "did it fail?", so a 404 repo
 // costs the same as a hit.
