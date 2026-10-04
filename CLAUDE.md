@@ -123,7 +123,9 @@ one line wherever a classification is contestable (e.g. why Prisma is `backend` 
 app/
   layout.tsx
   page.tsx                       one page, the whole site
-  stack-form.tsx                 the page's only client island
+  stack-form.tsx                 the generator; one of two client islands
+  site/                          nav, footer, marks, snippet-pitch, stack-found,
+                                 tech-index (+ its island). Components, not a route.
   globals.css                    site tokens; the card's live in lib/tokens.ts
   api/resolve/route.ts           POST { url } -> StackDoc
   [owner]/[repo]/[file]/route.ts {style}-{theme}.png, plus legacy card-{theme}.png
@@ -151,6 +153,8 @@ lib/
   manifest-paths.ts              path filters shared by tree selection and detection
   site.ts                        SITE_ORIGIN, card URLs, the snippet, every site string
   home.ts                        the fixed repo list + the committed data's reader
+  stars.ts                       the nav's star count, cached 1h, committed fallback
+  tech-index.ts                  the map as a searchable index; the matcher (ADR-0036)
   home-data.json                 committed StackDocs + star count; scripts/prepare-home
   stack-doc.ts                   StackDocSchema, shared by lib/cache and lib/home
   normalize.ts                   RawSignal[] -> StackDoc

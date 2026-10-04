@@ -18,7 +18,7 @@ P5 PLAN:    ** READ THE "Phase 5" SECTION BELOW, DIRECTLY UNDER THIS
             WHAT THE PAGE CONTAINS; the Phase 5 section owns ORDER AND
             MECHANISM and does not repeat it. Those two together are
             enough to resume with no other context.
-            CURRENT STEP: 4, the shared components. Steps 1-3 DONE.
+            CURRENT STEP: 5, the two layout shells. Steps 1-4 DONE.
 PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal
             DONE · 4 site generator DONE · 5 docs and the page. Nothing
             cut.
@@ -344,7 +344,17 @@ Author-decided. Do not re-open them; they were asked and answered.
    because Stackshot reads dependencies and a repo does not depend on itself. react
    rendered `frontend: Zod`, tailwindcss had no frontend layer, django was 3 cells and one
    was Biome. All three cut for applications. tests/home.test.ts asserts a 6-tile floor.
-4. **The shared components. ← CURRENT STEP.** Nav (the 2×2 layer-colour logo mark, GitHub link with D5's
+4. **THE SHARED COMPONENTS — DONE.** ADR-0036 for the index. `app/site/` holds nav,
+   footer, marks, snippet-pitch, stack-found, tech-index (+ its client island);
+   `lib/tech-index.ts` is the render-free matcher, `lib/stars.ts` the cached star count.
+   Archivo-ExtraBold shipped; `site-section` is the 800 step. The footer's byline links
+   to x.com/cybprom in BOTH layouts.
+   TWO THINGS LEARNED BY LOOKING: `bg-ink` INVERTS, so the snippet block was pale-on-pale
+   in dark mode — it now uses site-only `--code-*` tokens that are dark in BOTH themes
+   (the design drew it that way and its syntax colours assume a dark ground). And the
+   React Compiler REFUSES DOM mutation from a component, which killed the
+   render-once-filter-the-DOM index; see ADR-0036 for why 5.8KB beat a lint suppression.
+   ORIGINAL STEP 4 SCOPE, for reference: Nav (the 2×2 layer-colour logo mark, GitHub link with D5's
    star count), the snippet block, "One snippet. Both themes.", the rebuilt "What
    Stackshot found", the technology index, the footer. The generator and plate are done
    (Phase 4). Two of these are REBUILDS, not inventions:
@@ -356,7 +366,7 @@ Author-decided. Do not re-open them; they were asked and answered.
      search and the layer filter as the navigation, a no-match linking to GitHub issues.
      Server-rendered from the map, filtered on the client.
    - **Archivo-ExtraBold ships HERE**, with the hero that uses it, not before.
-5. **The two layout shells.** A and C as thin shells around step 4, ONLY THE HERO
+5. **The two layout shells. ← CURRENT STEP.** A and C as thin shells around step 4, ONLY THE HERO
    DIFFERING. An env var picks the live one; `?layout=a` and `?layout=c` preview the other.
    C additionally: the panel widens to two columns on Generate or a Try button, with WIDTH
    AND HEIGHT both animating — that is **GOTCHAS 057 again with `width` substituted**,
@@ -368,6 +378,17 @@ Author-decided. Do not re-open them; they were asked and answered.
    site's motion and radius authority until this lands. This is also where `card/owner` and
    `card/meta` are corrected to the table at 26 and 18 — **the only `RENDER_VERSION` bump
    in Phase 5**, and it regenerates the hashes in the same commit.
+
+### The monthly refresh PR
+
+`.github/workflows/refresh-home-data.yml`, added during step 4 at the author's request:
+on the 1st of each month it runs `prepare-home`, `check-home` and the suite, and **opens
+a PR** with the refreshed `lib/home-data.json` and the layer summaries in the body. It
+never pushes to main — a refreshed stack changes the first thing every visitor sees, and
+a card that has decayed into noise is a judgement call no test makes. One rolling branch,
+force-pushed, so a quiet month updates the open PR rather than opening a second. This is
+the mechanism ADR-0035 named as the answer if the 30-day warning went unread; it arrived
+early because a PR email is a thing the author will actually see.
 
 ### What Phase 5 must leave true
 

@@ -38,6 +38,16 @@
   /* GitHub's README surface, behind the previewed card. Mirrors PREVIEW.page. */
   --preview-page: #ffffff;
 
+  /* The illustrative snippet block, which is DARK IN BOTH THEMES — a code block reads as
+     a terminal, and the design draws it that way. So its ink and its two syntax colours
+     are the DARK palette's values whatever the page is doing: `ink` would invert to pale
+     and leave pale text on a pale box, and `layer-frontend` at #2458c4 is unreadable on
+     #101615. Site-only, like --track, and deliberately absent from lib/tokens.ts. */
+  --code-surface: #101615;
+  --code-ink: #c9d1cb;
+  --code-tag: #7faeff;
+  --code-string: #e5ae58;
+
   color-scheme: light;
 }
 
@@ -67,6 +77,11 @@
 
     --preview-page: #0d1117;
 
+    /* Only the ground moves, and it moves UP: #101615 against a #0e1113 page is two
+       near-blacks and the block disappears. The ink and the syntax colours do not change,
+       because they were already the dark ones. */
+    --code-surface: #1a1f21;
+
     color-scheme: dark;
   }
 }
@@ -84,6 +99,10 @@
   --color-terminal-surface: var(--terminal-surface);
   --color-track: var(--track);
   --color-preview-page: var(--preview-page);
+  --color-code-surface: var(--code-surface);
+  --color-code-ink: var(--code-ink);
+  --color-code-tag: var(--code-tag);
+  --color-code-string: var(--code-string);
 
   --color-layer-frontend: var(--layer-frontend);
   --color-layer-frontend-tint: var(--layer-frontend-tint);
@@ -106,6 +125,10 @@
   --radius-segment-item: 7px;
   --radius-plate: 12px;
   --radius-snippet: 12px;
+  /* The index's chips and the nav's star link. A pill is the one shape on the site that
+     is not on the radius ladder, because it is not a radius — it is "fully round". */
+  --radius-pill: 999px;
+  --radius-tile: 6px;
 
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 }
@@ -145,6 +168,16 @@
   font-weight: 400;
   line-height: 1.5;
 }
+/* Section headlines, Archivo 800. The site's only use of ExtraBold and the card's
+   never — lib/render/fonts.ts carries its own weights and no card step asks for 800.
+   ROADMAP, Phase 5 step 4. */
+@utility site-section {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
 @utility site-label {
   font-family: var(--font-mono);
   font-size: 14px;
@@ -156,6 +189,21 @@
 body {
   background: var(--color-surface);
   color: var(--color-ink);
+}
+
+/* Visible to a screen reader, not to the eye. The index's result count and the row names
+   in "What Stackshot found" are read this way, because both are carried visually by
+   something — a grid redrawing, a two-letter symbol — that announces nothing. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* QUALITY FLOOR: a 2-unit accent outline at 2-unit offset, on everything focusable.

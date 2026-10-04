@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { z } from "zod";
 import { CardPlate } from "@/app/preview/card-plate";
+import { StackFound } from "@/app/site/stack-found";
 import { Segmented } from "@/app/preview/segmented";
 import { ERROR_COPY, FAILURE_REASONS, type FailureReason } from "@/lib/failure";
 import { parseRepoUrl } from "@/lib/github-url";
@@ -14,7 +15,7 @@ import {
   type ThemeMode,
 } from "@/lib/preview";
 import { cardUrl, COPY, EXAMPLE_REPO, pictureSnippet } from "@/lib/site";
-import type { Category, StackDoc } from "@/lib/stack-map/types";
+import type { StackDoc } from "@/lib/stack-map/types";
 
 // Our own route, but still a boundary the page parses rather than trusts.
 const DocSchema = z.object({
@@ -292,34 +293,10 @@ export function StackForm() {
             </p>
           </section>
 
-          <section className="mt-16 w-full">
-            <h2 className="site-title">{COPY.stackTitle}</h2>
-            {doc.layers.map((layer) => (
-              <div key={layer.category} className="mt-8">
-                {/* Sentence case. The card's gutter is the only all-caps in the project. */}
-                <h3 className="site-label text-ink-muted">{COPY.layer[layer.category satisfies Category]}</h3>
-                <dl className="mt-3 border-t-[1.5px] border-rule">
-                  {layer.items.map((item) => (
-                    // Baseline, not top: the name is site/data at 15 and the description
-                    // site/body at 17, so aligning boxes leaves the description sitting low.
-                    <div
-                      key={item.id}
-                      className="flex flex-col gap-1 border-b-[1.5px] border-rule py-3 sm:flex-row sm:items-baseline sm:gap-6"
-                    >
-                      <dt className="site-data w-full shrink-0 text-ink sm:w-64">
-                        {item.display}
-                        {item.version ? <span className="text-ink-muted"> {item.version}</span> : null}
-                      </dt>
-                      <dd className="site-body max-w-[68ch] text-ink-muted">{item.description}</dd>
-                    </div>
-                  ))}
-                </dl>
-                {layer.overflow > 0 ? (
-                  <p className="site-data mt-3 text-ink-muted">{COPY.overflow(layer.overflow)}</p>
-                ) : null}
-              </div>
-            ))}
-          </section>
+          {/* Rebuilt in Phase 5 step 4: the symbol leads the row, two columns on
+              desktop. It is the key to the Tiles symbols as much as it is the home of
+              the descriptions. */}
+          <StackFound doc={doc} />
         </>
       ) : null}
     </>

@@ -21,6 +21,9 @@ const archivo = localFont({
     { path: "../public/fonts/Archivo-Regular.ttf", weight: "400", style: "normal" },
     { path: "../public/fonts/Archivo-SemiBold.ttf", weight: "600", style: "normal" },
     { path: "../public/fonts/Archivo-Bold.ttf", weight: "700", style: "normal" },
+    // 800 is the site's headlines and the site's alone — the card never asks for it, and
+    // lib/render/fonts.ts carries its own weights. Shipped with the hero that uses it.
+    { path: "../public/fonts/Archivo-ExtraBold.ttf", weight: "800", style: "normal" },
   ],
   variable: "--font-archivo",
   display: "swap",

@@ -13,6 +13,16 @@ export const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://stack
 /** The repo whose card stands in the empty state. One line to change. */
 export const EXAMPLE_REPO = { owner: "cybprom", repo: "stackshot" };
 
+/** Every outbound link the site has. Collected for the same reason the copy is. */
+export const LINKS = {
+  repo: "https://github.com/cybprom/stackshot",
+  // Where a missing technology goes, from the footer and from a no-match in the index —
+  // one destination, so a stranger who searched and found nothing lands where the backlog
+  // already is.
+  issues: "https://github.com/cybprom/stackshot/issues",
+  author: "https://x.com/cybprom",
+} as const;
+
 export function cardUrl(owner: string, repo: string, style: ServedStyle, theme: Theme): string {
   return `${SITE_ORIGIN}/${owner}/${repo}/${cardFileName(style, theme)}`;
 }
@@ -91,4 +101,29 @@ export const COPY = {
   // The card's own legend strings, not a second set: the description list is a key to the
   // card above it, so a layer renamed on one has to be renamed on both.
   layer: LAYER_NAME,
+
+  // Nav and footer.
+  wordmark: "stackshot",
+  starOnGitHub: "Star on GitHub",
+  github: "GitHub",
+  builtBy: { before: "Open source. Built by ", name: "Ilerioluwa", after: "." },
+  suggest: "Suggest a technology",
+
+  // "One snippet. Both themes." — two lines in the design, and the break is deliberate.
+  snippetPitchTitle: ["One snippet.", "Both themes."],
+  snippetPitch:
+    "Paste it into your README. GitHub shows the light card or the dark one to match each reader, and the card updates when your stack changes.",
+
+  // The technology index.
+  indexTitle: "Does it know your stack?",
+  indexIntro: (n: number) => `Stackshot recognises ${n} technologies across four layers. Search for yours.`,
+  indexSearchLabel: "Search technologies",
+  indexSearchPlaceholder: "Search, e.g. prisma",
+  indexShowAll: (n: number) => `Show all ${n}`,
+  indexShowFewer: "Show fewer",
+  indexNoMatch: (q: string) => `No match for "${q}".`,
+  indexSuggest: "Suggest it on GitHub",
+  indexSuggestAfter: " and it can join the map.",
+  // Announced to a screen reader as the grid filters, since the change is visual only.
+  indexCount: (n: number) => `${n} ${n === 1 ? "technology" : "technologies"} shown`,
 } as const;
