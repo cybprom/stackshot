@@ -189,6 +189,10 @@ export const TYPE = {
   // apps. Doubling preserves proportion, not legibility — GOTCHAS 048's lesson again.
   tree: { size: 30, family: "Commit Mono", weight: 400, lineHeight: "42px", tracking: 0 },
   meta: { size: 16, family: "Commit Mono", weight: 400, lineHeight: "18px", tracking: 0.04 },
+  // The error card's second line. `version`'s size, but its own step: `card/version` is an
+  // inline string after a name, and this is the one place on any card where a line of mono
+  // prose WRAPS. At 1.1 the two lines set solid. ADR-0033.
+  errorDetail: { size: 22, family: "Commit Mono", weight: 400, lineHeight: "28px", tracking: 0 },
 } as const;
 
 /** A step's line box in units, whichever way it is written. */

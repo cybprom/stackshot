@@ -166,8 +166,8 @@ lib/
     terminal.tsx                 the Terminal tree: frame, prompt, layer tree
     tiles-layout.ts              StackLayer[] -> 15 cells, 5 per row, 3 rows
     styles.ts                    CardStyle -> element tree + canvas height
-    chrome.tsx                   header, domain, gutter label, the Datasheet's frame
-    error-card.tsx               five reasons, 1200x518
+    chrome.tsx                   every frame, plus header, domain and gutter label
+    error-card.tsx               five reasons, one body, a frame per style (ADR-0033)
     fonts.ts                     read at module scope
     render.ts                    (StackDoc, theme) -> PNG bytes
   tokens.ts                      design tokens, single source

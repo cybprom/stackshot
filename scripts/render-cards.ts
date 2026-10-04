@@ -20,8 +20,10 @@ async function main(outDir: string, style: CardStyle) {
 
   for (const reason of FAILURE_REASONS) {
     for (const theme of ["light", "dark"] satisfies Theme[]) {
-      const png = await renderErrorCard({ reason, owner: "octocat", repo: "hello-world", theme });
-      writeFileSync(join(outDir, `error-${reason}-${theme}.png`), png);
+      // The error card wears the requested style's frame now, so it is drawn per style
+      // like every other card here rather than once. ADR-0033.
+      const png = await renderErrorCard({ reason, owner: "octocat", repo: "hello-world", style, theme });
+      writeFileSync(join(outDir, `error-${style}-${reason}-${theme}.png`), png);
       console.log(`error:${reason.padEnd(30)} ${theme.padEnd(5)} ${(png.byteLength / 1024).toFixed(0).padStart(4)}KB`);
     }
   }

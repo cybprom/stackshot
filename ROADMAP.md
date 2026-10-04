@@ -9,7 +9,16 @@ it is the only thing that survives one.*
 Milestone:  3 COMPLETE and committed. Now on the CARD STYLES direction
             (ADR-0029): the card becomes a choice of styles. Phases 0
             (de-risk), 1 (plumbing), 2 (TILES), 3 (TERMINAL) and 4 ARE
-            ALL DONE. PHASE 5 IS NEXT AND IS THE LAST PHASE.
+            ALL DONE. PHASE 5 IS ACTIVE AND IS THE LAST PHASE.
+P5 PLAN:    ** READ THE "Phase 5" SECTION BELOW, DIRECTLY UNDER THIS
+            BLOCK. ** It is the authority on how Phase 5 is built: all
+            eight steps in order, the five decisions the author has
+            already taken (D1-D5), which step is current, and what the
+            phase must leave true. AFTER P4 below stays the authority on
+            WHAT THE PAGE CONTAINS; the Phase 5 section owns ORDER AND
+            MECHANISM and does not repeat it. Those two together are
+            enough to resume with no other context.
+            CURRENT STEP: 2, THE tags-*.png 404. Step 1 is DONE.
 PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal
             DONE · 4 site generator DONE · 5 docs and the page. Nothing
             cut.
@@ -136,21 +145,17 @@ LAUNCH:     accent bar, 3u ink border, radius 2 — because renderErrorCard
             takes no style and SheetFrame is the only frame it has. TILES
             IS THE DEFAULT AND card-*.png IS PINNED TO IT, so most failing
             embeds in the wild would show a frame from a style the reader
-            never asked for. Fix in Phase 5 at the latest: either give
-            renderErrorCard the style and a frame per style, or decide
-            that the error card is deliberately one object and say so in
-            ADR-0007. NOT a correctness bug — I5 holds, it is 200 and an
-            image — which is exactly why it will be invisible until
+            never asked for. NOT a correctness bug — I5 holds, it is 200
+            and an image — which is exactly why it will be invisible until
             someone embeds a broken repo. ADR-0030 has the context.
-OPEN:       tags-*.png SERVES DATASHEET BYTES today — the last stand-in,
-            because CARD_STYLE_DEFS maps every style to something. Nobody
-            is served a wrong card (the site never offers it) but the URL
-            lies, and Tags is post-launch so it will lie for a while.
-            DECIDE BEFORE LAUNCH: 404 the styles that have no renderer, or
-            ship Tags. A 404 needs care: the card route's I5 says a card
-            request always returns 200 with an image, so this is "not a
-            card request" territory like a bad filename, not a failure
-            card.
+            FIXED by ADR-0033, Phase 5 step 1. Every style frames its own
+            error card; the Datasheet's bytes are unchanged. LAUNCH IS NO
+            LONGER BLOCKED by this.
+OPEN:       nothing is open. tags-*.png SERVES DATASHEET BYTES today — the
+            last stand-in, because CARD_STYLE_DEFS maps every style to
+            something. Nobody is served a wrong card (the site never
+            offers it) but the URL lies. DECIDED: it 404s until Tags
+            ships — see D3, Phase 5 step 2.
 STYLES:     Every CardStyle needs an entry in lib/render/styles.ts.
             ONLY TAGS still draws the Datasheet tree as a stand-in, and it
             is post-launch.
@@ -248,18 +253,112 @@ Last done:  PHASE 4 STEP 6 — THE ANIMATED HEIGHT, which COMPLETES PHASE
             Before it: PHASE 3 — TERMINAL. lib/render/terminal.tsx at
             height "content", ADR-0031 on what styles share, and
             GOTCHAS 051 (the box glyphs are taller than their line box).
-Next:       PHASE 5, the last phase. Its decisions are all recorded above
-            under AFTER P4 — the page is SPECIFIED, not open. START WITH
-            THE TILES ERROR FRAME, the one thing BLOCKING LAUNCH (see
-            BLOCKS LAUNCH below). Then the deploy-time warm script, which
-            the intro card, the wall and the nav's star count all need and
-            which does not exist yet; then the two layout shells.
+Next:       PHASE 5 STEP 1, THE PER-STYLE ERROR FRAME. The plan and the
+            decisions are in the Phase 5 section below — work from it,
+            not from this line.
 M4 CARRIES: the badge in your own README (the domain is live now, so this
             can come forward), the global budget guard, ADR-0012's amendment
             line for the separate bug counter, and monitoring KV bytes —
             ~790 stacks in Tiles alone after the three-row cap and the 7-day
             png: TTL, ~430 if a repo is cached in two styles.
 ```
+
+---
+
+## Phase 5 — docs and the page · THE LAST PHASE · ACTIVE
+
+**This section is how Phase 5 is built: the eight steps, in order, with the decisions
+already taken.** `AFTER P4` in Current state stays the authority on **what the page
+contains** and is not repeated here. Where the two overlap, AFTER P4 wins on content, this
+section wins on order and mechanism. A fresh session should be able to work from these two
+and nothing else.
+
+### Decisions taken 2026-10-02, before step 1 started
+
+Author-decided. Do not re-open them; they were asked and answered.
+
+- **D1 — The error card is ONE CONTENT TREE IN THE REQUESTED STYLE'S FRAME.** Not three
+  trees, and not "deliberately one object" either. ADR-0030's own title is "the frame is
+  the style" and the whole complaint was the frame: a failing repo has no layers, so the
+  content genuinely is one object. `renderErrorCard` takes a `CardStyle`.
+- **D2 — THE REASON LABEL GOES UNDER THE HEADER**, as the first line of the body with the
+  explanation beneath it. NOT in the bottom row. The bottom row is metadata — legend,
+  domain — and the failure is the card's whole message, so it is read first. (Rejected:
+  the bottom-row left slot, which was the cheaper option and the wrong one.)
+- **D3 — `tags-*.png` 404s until Tags ships.** A style with no renderer is "not a card
+  request", like a bad filename, so I5 is not in play. Record it as an ADR line.
+- **D4 — COMMIT THE DATA, NOT THE PNGs.** `scripts/prepare-home.ts` writes the StackDocs
+  for the fixed repo list plus the star count as ONE SMALL COMMITTED JSON. The wall's
+  mini-cards are HTML in the design, so they render straight from that data and need no
+  PNGs at all. The intro card's PNG is rendered DURING THE BUILD from the committed doc —
+  rendering needs no GitHub, so the build can never fail on GitHub and no binaries land in
+  the repo. Refreshing the data is a script run.
+- **D5 — The star count is SERVER-CACHED with roughly hourly revalidation, falling back to
+  the committed number**, so the page never waits and never calls from the visitor's
+  browser.
+
+### The eight steps
+
+1. **THE PER-STYLE ERROR FRAME — DONE.** ADR-0033. The extraction was verified pure
+   first — all 30 committed hashes byte-identical — then one deliberate change on top:
+   `card/error-detail`, a new type step giving the wrapping detail a 28px line box
+   instead of `card/version`'s 1.10. That moves the 6 Datasheet error hashes and no real
+   card. 42 hashes. GOTCHAS 058 (satori hangs on a fragment). Cards for all three styles
+   in `docs/spike/error-frames/`.
+   `renderErrorCard` and `ErrorCard` take `style`. Extract `TilesFrame` and
+   `TerminalFrame` out of their card trees into `lib/render/chrome.tsx`, for the same
+   reason `SheetFrame` already lives there and is shared with the error card — one
+   definition per frame, never two. Per D2 the body is `label` (at `TYPE.gutter`, the
+   gutter label's own step, unrotated — same object, placed differently), then `reason`,
+   then `detail`. The Datasheet keeps its rotated gutter label and its derived 518; Tiles
+   and Terminal are content-height like their real cards.
+   - **NO `RENDER_VERSION` BUMP.** Error cards are never stored under a `png:` key —
+     `lib/serve-card.ts`'s `errorCard` renders and returns without `setPng` — so nothing
+     cached is at stake. This is the one card change in the project that does not bump.
+   - **The five SHEET error hashes must come back BYTE-IDENTICAL.** That is what proves
+     the frame extraction was pure rather than a quiet redesign. Tiles and Terminal error
+     entries are added to `render-hashes.json`.
+   - `tests/fit.test.ts` keeps its rotated-label clearance assertion scoped to the frames
+     that actually have a gutter.
+   - DESIGN's "the card's gutter labels are the only all-caps in the project" needs an
+     amendment line: a gutter-less frame carries the same signage in its body.
+2. **The `tags-*.png` 404, per D3. ← CURRENT STEP.** Still in the render layer, so it is
+   cheap here. A few lines in the route plus the ADR line (ADR-0034).
+3. **The deploy-time preparation step, per D4.** `scripts/prepare-home.ts` → one committed
+   JSON. The build renders the intro card's PNG from it. Both layouts depend on this and
+   NOTHING LIKE IT EXISTS YET, so it comes before either hero.
+4. **The shared components.** Nav (the 2×2 layer-colour logo mark, GitHub link with D5's
+   star count), the snippet block, "One snippet. Both themes.", the rebuilt "What
+   Stackshot found", the technology index, the footer. The generator and plate are done
+   (Phase 4). Two of these are REBUILDS, not inventions:
+   - *What Stackshot found* — symbol first, then name, version, description, grouped by
+     layer, two columns on desktop and one on a phone. Exists today as a one-column
+     definition list with no symbol in `app/stack-form.tsx`. `symbol` is already on
+     `StackItem`, so there is no plumbing to do.
+   - *Technology index* — every `STACK_MAP` entry (223), 2–3 rows then "Show all N",
+     search and the layer filter as the navigation, a no-match linking to GitHub issues.
+     Server-rendered from the map, filtered on the client.
+   - **Archivo-ExtraBold ships HERE**, with the hero that uses it, not before.
+5. **The two layout shells.** A and C as thin shells around step 4, ONLY THE HERO
+   DIFFERING. An env var picks the live one; `?layout=a` and `?layout=c` preview the other.
+   C additionally: the panel widens to two columns on Generate or a Try button, with WIDTH
+   AND HEIGHT both animating — that is **GOTCHAS 057 again with `width` substituted**,
+   which is why it was written down. Plus C's intro auto-generate at ~0.9s and the wall.
+6. **Phone, both layouts, 390px.** On C the panel cannot widen, so the card appears inside
+   it under the button.
+7. **Choose one layout and DELETE THE OTHER.** A fork with an expiry, not a feature.
+8. **The DESIGN.md rewrite.** It still describes only the Datasheet. ADR-0032 is the
+   site's motion and radius authority until this lands. This is also where `card/owner` and
+   `card/meta` are corrected to the table at 26 and 18 — **the only `RENDER_VERSION` bump
+   in Phase 5**, and it regenerates the hashes in the same commit.
+
+### What Phase 5 must leave true
+
+- No failing embed shows a frame from a style nobody asked for.
+- No URL under `/{owner}/{repo}/` lies about what it serves.
+- The homepage makes no GitHub call on any path — cold cache, evicted key or GitHub
+  outage included.
+- DESIGN.md describes every style that ships, and one page exists, not two.
 
 ---
 

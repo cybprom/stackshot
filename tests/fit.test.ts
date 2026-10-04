@@ -71,8 +71,10 @@ describe("nothing is laid out past the canvas", () => {
     expect(await deepestBottom(Card({ doc, theme }), CARD.height)).toBeLessThanOrEqual(CARD.height);
   });
 
+  // The Datasheet's error card, which is the one with a fixed height to overflow. Tiles'
+  // and Terminal's are content-height, so there is no canvas for them to spill out of.
   it.each(FAILURE_REASONS.flatMap((r) => THEMES.map((t) => [r, t] as const)))("error %s, %s", async (reason, theme) => {
-    const element = ErrorCard({ reason, owner: "octocat", repo: "hello-world", theme });
+    const element = ErrorCard({ reason, owner: "octocat", repo: "hello-world", style: "sheet", theme });
     expect(await deepestBottom(element, ERROR_CARD_HEIGHT)).toBeLessThanOrEqual(ERROR_CARD_HEIGHT);
   });
 
@@ -140,8 +142,15 @@ describe("every band clears its rotated gutter label", () => {
     }
   });
 
+  /**
+   * Only the Datasheet's error card: the clearance exists because the label is ROTATED and
+   * absolutely positioned inside a fixed band. Tiles and Terminal carry the same label flat
+   * in the body (ADR-0033), where it is an ordinary line box that grows its own card. A
+   * version of this asserted against them measured the label's unrotated width against a
+   * band it does not sit in, and failed by claiming 1132 ≤ 240.
+   */
   it.each(FAILURE_REASONS)("error %s", async (reason) => {
-    const element = ErrorCard({ reason, owner: "octocat", repo: "hello-world", theme: "light" });
+    const element = ErrorCard({ reason, owner: "octocat", repo: "hello-world", style: "sheet", theme: "light" });
     const wanted = new Set(Object.values(ERROR_COPY).map((c) => c.label));
     const labels = await labelLengths(element, ERROR_CARD_HEIGHT, wanted);
     expect(labels).toHaveLength(1);

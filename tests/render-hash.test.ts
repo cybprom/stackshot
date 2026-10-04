@@ -54,21 +54,30 @@ describe("rendered bytes match their committed hashes (I2)", () => {
     },
   );
 
-  it.each(FAILURE_REASONS)("error %s, light", async (reason: FailureReason) => {
-    const png = await renderErrorCard({ reason, owner: "octocat", repo: "hello-world", theme: "light" });
-    expect(sha(png), `error:${reason}:light${HOW_TO_FIX}`).toBe(hashes[`error:${reason}:light`]);
-  });
+  /**
+   * Per style now, because the error card wears the requested style's frame (ADR-0033).
+   * **The `sheet` rows must not move**: they are the proof that pulling `TilesFrame`,
+   * `TerminalFrame`, `TerminalHead` and `DomainLine` out into `chrome.tsx` was a pure
+   * extraction rather than a quiet redesign of the cards that already shipped.
+   */
+  it.each(STYLES.flatMap((s) => FAILURE_REASONS.map((r) => [s, r] as const)))(
+    "error %s %s, light",
+    async (style, reason: FailureReason) => {
+      const png = await renderErrorCard({ reason, owner: "octocat", repo: "hello-world", style, theme: "light" });
+      expect(sha(png), `error:${style}:${reason}:light${HOW_TO_FIX}`).toBe(hashes[`error:${style}:${reason}:light`]);
+    },
+  );
 
-  it("error not_found, dark", async () => {
-    const png = await renderErrorCard({ reason: "not_found", owner: "octocat", repo: "hello-world", theme: "dark" });
-    expect(sha(png), `error:not_found:dark${HOW_TO_FIX}`).toBe(hashes["error:not_found:dark"]);
+  it.each(STYLES)("error %s not_found, dark", async (style) => {
+    const png = await renderErrorCard({ reason: "not_found", owner: "octocat", repo: "hello-world", style, theme: "dark" });
+    expect(sha(png), `error:${style}:not_found:dark${HOW_TO_FIX}`).toBe(hashes[`error:${style}:not_found:dark`]);
   });
 
   it("covers every committed hash, so none can rot unnoticed", () => {
     const covered = [
       ...STYLES.flatMap((s) => DOCS.flatMap((d) => THEMES.map((t: Theme) => `${s}:${d}:${t}`))),
-      ...FAILURE_REASONS.map((r) => `error:${r}:light`),
-      "error:not_found:dark",
+      ...STYLES.flatMap((s) => FAILURE_REASONS.map((r) => `error:${s}:${r}:light`)),
+      ...STYLES.map((s) => `error:${s}:not_found:dark`),
     ];
     expect(new Set(Object.keys(hashes))).toEqual(new Set(covered));
   });

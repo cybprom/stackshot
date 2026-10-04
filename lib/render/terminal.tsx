@@ -1,6 +1,7 @@
 import { COLORS, LAYER_COLORS, TERMINAL, TYPE, type Theme } from "@/lib/tokens";
 import type { StackDoc, StackItem, StackLayer } from "@/lib/stack-map/types";
-import { DOMAIN, starsLabel } from "@/lib/card-text";
+import { starsLabel } from "@/lib/card-text";
+import { DomainLine, TerminalFrame, TerminalPrompt, TerminalTitle } from "@/lib/render/chrome";
 
 type Colors = Record<string, string>;
 
@@ -77,91 +78,9 @@ export function TerminalCard({ doc, theme }: { doc: StackDoc; theme: Theme }) {
   const meta = [doc.language, starsLabel(doc.stars)].filter((line): line is string => line !== null);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        boxSizing: "border-box",
-        backgroundColor: TERMINAL.surface[theme],
-        border: `${TERMINAL.border}px solid ${c.rule}`,
-        borderRadius: TERMINAL.radius,
-        padding: 32,
-        fontFamily: TYPE.prompt.family,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          fontSize: TYPE.prompt.size,
-          fontWeight: TYPE.prompt.weight,
-          lineHeight: TYPE.prompt.lineHeight,
-        }}
-      >
-        {/* The second use of `accent` on a card, after the Datasheet's bar: on a prompt
-            the sigil is literal rather than decorative. ADR-0031. */}
-        <div style={{ display: "flex", fontWeight: 700, color: c.accent }}>$</div>
-        <div
-          style={{
-            display: "block",
-            marginLeft: TERMINAL.glyphGap,
-            flex: 1,
-            minWidth: 0,
-            color: c.inkMuted,
-            // A repo name can be 100 characters, and a command line does not wrap.
-            wordBreak: "break-all",
-            lineClamp: 1,
-          }}
-        >
-          {`stackshot ${ref}`}
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          marginTop: TERMINAL.gap,
-        }}
-      >
-        <div
-          style={{
-            // block, not flex: satori only honours lineClamp on a block container.
-            display: "block",
-            flexShrink: 1,
-            minWidth: 0,
-            fontSize: TYPE.terminalName.size,
-            fontWeight: TYPE.terminalName.weight,
-            lineHeight: TYPE.terminalName.lineHeight,
-            color: c.ink,
-            // Mono and no size ladder, so the longest names clamp rather than step down.
-            wordBreak: "break-all",
-            lineClamp: 2,
-          }}
-        >
-          {ref}
-        </div>
-        {meta.length > 0 ? (
-          <div
-            style={{
-              display: "flex",
-              flexShrink: 0,
-              paddingLeft: 24,
-              fontSize: TYPE.prompt.size,
-              fontWeight: TYPE.prompt.weight,
-              lineHeight: TYPE.prompt.lineHeight,
-              color: c.inkMuted,
-            }}
-          >
-            {meta.map((line, i) => (
-              <div key={line} style={{ display: "flex", marginLeft: i === 0 ? 0 : TERMINAL.gap }}>
-                {line}
-              </div>
-            ))}
-          </div>
-        ) : null}
-      </div>
+    <TerminalFrame c={c} theme={theme}>
+      <TerminalPrompt repoRef={ref} c={c} />
+      <TerminalTitle repoRef={ref} meta={meta} c={c} />
 
       <div style={{ display: "flex", flexDirection: "column", rowGap: TERMINAL.rowGap, marginTop: TERMINAL.gap }}>
         {layers.map((layer, i) => (
@@ -169,19 +88,7 @@ export function TerminalCard({ doc, theme }: { doc: StackDoc; theme: Theme }) {
         ))}
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          marginTop: TERMINAL.gap,
-          fontSize: TYPE.meta.size,
-          fontWeight: TYPE.meta.weight,
-          lineHeight: TYPE.meta.lineHeight,
-          letterSpacing: TYPE.meta.tracking * TYPE.meta.size,
-          color: c.inkMuted,
-        }}
-      >
-        {DOMAIN}
-      </div>
-    </div>
+      <DomainLine c={c} marginTop={TERMINAL.gap} />
+    </TerminalFrame>
   );
 }

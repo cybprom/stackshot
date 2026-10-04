@@ -4,6 +4,7 @@ import { ROOT_MANIFESTS } from "@/lib/github/tree";
 import { ERROR_COPY } from "@/lib/failure";
 import { renderErrorCard } from "@/lib/render/error-card";
 import { isRepoRef } from "@/lib/repo-ref";
+import type { CardStyle } from "@/lib/card-style";
 import { CARD, ERROR_CARD_HEIGHT, TYPE, displaySize, lineBox } from "@/lib/tokens";
 
 const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
@@ -11,8 +12,9 @@ const MIN_DRAWN_BYTES = 20_000;
 const THEMES = ["light", "dark"] as const;
 // resvg renders at zoom 2, so a PNG's pixel dimensions are twice the card's units.
 const ZOOM = 2;
-const render = (reason: FailureReason, theme: "light" | "dark", repo = "hello-world") =>
-  renderErrorCard({ reason, owner: "octocat", repo, theme });
+const STYLES = ["sheet", "tiles", "terminal"] as const satisfies readonly CardStyle[];
+const render = (reason: FailureReason, theme: "light" | "dark", repo = "hello-world", style: CardStyle = "sheet") =>
+  renderErrorCard({ reason, owner: "octocat", repo, style, theme });
 
 // IHDR is the first chunk: width and height as big-endian u32 at bytes 16 and 20.
 function pngSize(png: Buffer): { width: number; height: number } {
@@ -46,7 +48,48 @@ describe("every failure reason renders a card", () => {
   });
 });
 
-describe("the error card is exactly as tall as its content", () => {
+/**
+ * Every style frames its own error card (ADR-0033), so these run across all three. The
+ * failure this guards is the one that is invisible until a stranger embeds a broken repo:
+ * Tiles is the default and `card-*.png` is pinned to it.
+ */
+describe("the error card wears the requested style's frame", () => {
+  it.each(STYLES.flatMap((s) => THEMES.map((t) => [s, t] as const)))("%s, %s draws", async (style, theme) => {
+    const png = await render("no_manifests", theme, "hello-world", style);
+    expect(png.subarray(0, 4)).toEqual(PNG_MAGIC);
+    expect(png.byteLength).toBeGreaterThan(MIN_DRAWN_BYTES);
+  });
+
+  // The whole point: a failing Tiles embed must not be a Datasheet. The frames differ in
+  // their border, radius, surface and accent bar, so the bytes cannot match.
+  it("draws a different card per style for the same failure", async () => {
+    const [sheet, tiles, terminal] = await Promise.all(
+      STYLES.map((style) => render("no_manifests", "light", "hello-world", style)),
+    );
+    expect(sheet.equals(tiles)).toBe(false);
+    expect(tiles.equals(terminal)).toBe(false);
+    expect(sheet.equals(terminal)).toBe(false);
+  });
+
+  // Tags has no renderer of its own, so it borrows the Datasheet's — including here.
+  it("gives tags the Datasheet's error card, as its real card is", async () => {
+    const [tags, sheet] = await Promise.all([
+      render("not_found", "light", "hello-world", "tags"),
+      render("not_found", "light", "hello-world", "sheet"),
+    ]);
+    expect(tags.equals(sheet)).toBe(true);
+  });
+
+  // Content-height, as their real cards are: there is no band system to leave hanging.
+  it.each(["tiles", "terminal"] satisfies CardStyle[])("sizes %s to its content", async (style) => {
+    const { width, height } = pngSize(await render("no_manifests", "light", "hello-world", style));
+    expect(width).toBe(CARD.width * ZOOM);
+    expect(height).toBeLessThan(ERROR_CARD_HEIGHT * ZOOM);
+    expect(height).toBeGreaterThan(0);
+  });
+});
+
+describe("the Datasheet's error card is exactly as tall as its content", () => {
   it("is shorter than a real card and the same width", async () => {
     const { width, height } = pngSize(await render("not_found", "light"));
     expect(width).toBe(CARD.width * ZOOM);

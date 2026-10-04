@@ -33,12 +33,17 @@ async function main() {
     }
   }
 
-  for (const reason of FAILURE_REASONS) {
-    hashes[`error:${reason}:light`] = sha(await renderErrorCard({ reason, owner: "octocat", repo: "hello-world", theme: "light" }));
+  // Per style, because the error card wears the requested style's frame. ADR-0033.
+  for (const style of STYLES) {
+    for (const reason of FAILURE_REASONS) {
+      hashes[`error:${style}:${reason}:light`] = sha(
+        await renderErrorCard({ reason, owner: "octocat", repo: "hello-world", style, theme: "light" }),
+      );
+    }
+    hashes[`error:${style}:not_found:dark`] = sha(
+      await renderErrorCard({ reason: "not_found", owner: "octocat", repo: "hello-world", style, theme: "dark" }),
+    );
   }
-  hashes["error:not_found:dark"] = sha(
-    await renderErrorCard({ reason: "not_found", owner: "octocat", repo: "hello-world", theme: "dark" }),
-  );
 
   writeFileSync(OUT, `${JSON.stringify(hashes, null, 2)}\n`);
   console.log(`${Object.keys(hashes).length} hashes written at RENDER_VERSION ${RENDER_VERSION}`);

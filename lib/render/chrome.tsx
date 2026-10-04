@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { DOMAIN } from "@/lib/card-text";
-import { CARD, TYPE, displaySize } from "@/lib/tokens";
+import { CARD, TERMINAL, TILES, TYPE, displaySize, type Theme } from "@/lib/tokens";
 
 type Colors = Record<string, string>;
 
@@ -52,6 +52,169 @@ export function SheetFrame({ c, footerRight, children }: { c: Colors; footerRigh
         <div style={{ display: "flex" }}>{DOMAIN}</div>
         {footerRight ? <div style={{ display: "flex" }}>{footerRight}</div> : null}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Tiles' frame: a decorative hairline, its own radius, no accent bar, content-height.
+ * ADR-0030.
+ *
+ * Here rather than in `tiles.tsx` for the reason `SheetFrame` is here — it is shared with
+ * the error card now, so a failing `tiles-*.png` is framed as Tiles instead of as a style
+ * the reader never asked for. ADR-0033.
+ */
+export function TilesFrame({ c, theme, children }: { c: Colors; theme: Theme; children: ReactNode }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        boxSizing: "border-box",
+        backgroundColor: TILES.surface[theme],
+        border: `${TILES.border}px solid ${c.rule}`,
+        borderRadius: TILES.radius,
+        padding: CARD.padding,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** Terminal's frame. Sets the mono family once, so its children state only their size. */
+export function TerminalFrame({ c, theme, children }: { c: Colors; theme: Theme; children: ReactNode }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        boxSizing: "border-box",
+        backgroundColor: TERMINAL.surface[theme],
+        border: `${TERMINAL.border}px solid ${c.rule}`,
+        borderRadius: TERMINAL.radius,
+        padding: CARD.padding,
+        fontFamily: TYPE.prompt.family,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Terminal's header, in two parts. Its own rather than `CardHeader`, because header
+ * presentation belongs to the style (ADR-0031), and shared with the error card, which
+ * names a repo Stackshot was asked about and could not read.
+ *
+ * **Two components and not one returning a fragment.** Satori walks the tree itself and
+ * never terminates on a fragment where it expects a flex child — the render hangs rather
+ * than failing, so nothing says so. GOTCHAS 058. Keeping them separate also leaves both
+ * as direct children of the frame, which is the tree that already shipped.
+ */
+export function TerminalPrompt({ repoRef, c }: { repoRef: string; c: Colors }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        fontSize: TYPE.prompt.size,
+        fontWeight: TYPE.prompt.weight,
+        lineHeight: TYPE.prompt.lineHeight,
+      }}
+    >
+      {/* The second use of `accent` on a card, after the Datasheet's bar: on a prompt
+          the sigil is literal rather than decorative. ADR-0031. */}
+      <div style={{ display: "flex", fontWeight: 700, color: c.accent }}>$</div>
+      <div
+        style={{
+          display: "block",
+          marginLeft: TERMINAL.glyphGap,
+          flex: 1,
+          minWidth: 0,
+          color: c.inkMuted,
+          // A repo name can be 100 characters, and a command line does not wrap.
+          wordBreak: "break-all",
+          lineClamp: 1,
+        }}
+      >
+        {`stackshot ${repoRef}`}
+      </div>
+    </div>
+  );
+}
+
+export function TerminalTitle({ repoRef, meta, c }: { repoRef: string; meta: string[]; c: Colors }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "baseline",
+        justifyContent: "space-between",
+        marginTop: TERMINAL.gap,
+      }}
+    >
+      <div
+        style={{
+          // block, not flex: satori only honours lineClamp on a block container.
+          display: "block",
+          flexShrink: 1,
+          minWidth: 0,
+          fontSize: TYPE.terminalName.size,
+          fontWeight: TYPE.terminalName.weight,
+          lineHeight: TYPE.terminalName.lineHeight,
+          color: c.ink,
+          // Mono and no size ladder, so the longest names clamp rather than step down.
+          wordBreak: "break-all",
+          lineClamp: 2,
+        }}
+      >
+        {repoRef}
+      </div>
+      {meta.length > 0 ? (
+        <div
+          style={{
+            display: "flex",
+            flexShrink: 0,
+            paddingLeft: 24,
+            fontSize: TYPE.prompt.size,
+            fontWeight: TYPE.prompt.weight,
+            lineHeight: TYPE.prompt.lineHeight,
+            color: c.inkMuted,
+          }}
+        >
+          {meta.map((line, i) => (
+            <div key={line} style={{ display: "flex", marginLeft: i === 0 ? 0 : TERMINAL.gap }}>
+              {line}
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * The domain line in `TYPE.meta`, which every style says identically (ADR-0031). `family`
+ * is stated only where the frame does not already set it, so the styles that inherit it
+ * keep the bytes they had.
+ */
+export function DomainLine({ c, marginTop, family }: { c: Colors; marginTop?: number; family?: boolean }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        ...(marginTop === undefined ? {} : { marginTop }),
+        ...(family ? { fontFamily: TYPE.meta.family } : {}),
+        fontSize: TYPE.meta.size,
+        fontWeight: TYPE.meta.weight,
+        lineHeight: TYPE.meta.lineHeight,
+        letterSpacing: TYPE.meta.tracking * TYPE.meta.size,
+        color: c.inkMuted,
+      }}
+    >
+      {DOMAIN}
     </div>
   );
 }

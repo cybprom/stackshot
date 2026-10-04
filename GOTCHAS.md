@@ -1834,4 +1834,51 @@ measurement, and every word above applies with `width` substituted.
 
 ---
 
+## 058 — Satori hangs forever on a fragment where it wants a flex child
+**Date:** 2026-10-02 · **Cost:** ~1h, most of it spent blaming the wrong thing · **Status:** fixed
+**Writeup material:** yes — a hang is worse than a crash, and this one looked like my own impatience
+
+Extracting Terminal's header into a shared `TerminalHead` for the error card to reuse, I
+had it return a fragment:
+
+```tsx
+return (
+  <>
+    <div>{/* the prompt */}</div>
+    <div>{/* the name and metadata */}</div>
+  </>
+);
+```
+
+Correct React. `satori` walks the element tree itself rather than reconciling it, and on a
+fragment in that position it **spins at 100% CPU and never returns**. No throw, no warning,
+no timeout — `renderToPng` simply never settles.
+
+**The cost was almost all misdiagnosis.** The first symptom was `pnpm vitest run
+tests/render-hash.test.ts` not finishing, so I assumed the machine was loaded — I had in
+fact stacked three vitest runs against each other, which made that story fit — killed them
+and re-ran. Twenty-five minutes went into the theory that the test was slow before I looked
+at `ps` and saw one worker at 97% CPU for six and a half minutes, which is not starvation.
+
+What found it in two minutes once I stopped guessing: a script that renders one card per
+style with a timer. `card sheet` and `card tiles` printed, `card terminal` never did. One
+line of output located it exactly, and the suite could never have — a hanging test looks
+identical to a slow one.
+
+Fixed by exporting `TerminalPrompt` and `TerminalTitle` as two components instead of one
+returning a fragment. That is also the better shape: both stay direct children of the
+frame, so the tree is the one that already shipped and the hashes prove it.
+
+**The rules worth carrying:**
+
+- **Never return a fragment from anything Satori will render.** Return an array with keys,
+  or split the component. The failure mode is a hang, so it will not be caught by a test
+  that asserts on output.
+- **When a render "gets slow", check CPU before you believe it.** A satori hang and a busy
+  machine are indistinguishable from the outside, and only one of them is your fault.
+- **Do not run three vitest processes at once to find out why one is slow.** It manufactures
+  evidence for the wrong theory.
+
+---
+
 *New entries go above this line as they happen.*

@@ -1,7 +1,7 @@
-import { CARD, COLORS, LAYER_COLORS, TILES, TYPE, type Theme } from "@/lib/tokens";
+import { COLORS, LAYER_COLORS, TILES, TYPE, type Theme } from "@/lib/tokens";
 import type { Category, StackDoc, StackItem } from "@/lib/stack-map/types";
-import { DOMAIN, LAYER_NAME, starsLabel } from "@/lib/card-text";
-import { CardHeader } from "@/lib/render/chrome";
+import { LAYER_NAME, starsLabel } from "@/lib/card-text";
+import { CardHeader, DomainLine, TilesFrame } from "@/lib/render/chrome";
 import { layoutTiles } from "@/lib/render/tiles-layout";
 
 type Colors = Record<string, string>;
@@ -173,18 +173,7 @@ export function TilesCard({ doc, theme }: { doc: StackDoc; theme: Theme }) {
   const meta = [doc.language, starsLabel(doc.stars)].filter((line): line is string => line !== null);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        boxSizing: "border-box",
-        backgroundColor: TILES.surface[theme],
-        border: `${TILES.border}px solid ${c.rule}`,
-        borderRadius: TILES.radius,
-        padding: CARD.padding,
-      }}
-    >
+    <TilesFrame c={c} theme={theme}>
       <CardHeader owner={doc.owner} repo={doc.repo} meta={meta} c={c} />
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: TILES.gap, marginTop: TILES.section }}>
@@ -212,20 +201,8 @@ export function TilesCard({ doc, theme }: { doc: StackDoc; theme: Theme }) {
         }}
       >
         <Legend categories={layers.map((l) => l.category)} theme={theme} c={c} />
-        <div
-          style={{
-            display: "flex",
-            fontFamily: TYPE.meta.family,
-            fontSize: TYPE.meta.size,
-            fontWeight: TYPE.meta.weight,
-            lineHeight: TYPE.meta.lineHeight,
-            letterSpacing: TYPE.meta.tracking * TYPE.meta.size,
-            color: c.inkMuted,
-          }}
-        >
-          {DOMAIN}
-        </div>
+        <DomainLine c={c} family />
       </div>
-    </div>
+    </TilesFrame>
   );
 }

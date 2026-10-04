@@ -55,7 +55,7 @@ export async function serveCard(
     // Any throw is a bug, BudgetExceededError included. Counted apart from the
     // failure-by-reason counts, because a defect inside normal noise is invisible.
     countBug("serve_card", error, { owner, repo, style, theme });
-    return await errorCard(BUG_REASON, owner, repo, theme);
+    return await errorCard(BUG_REASON, owner, repo, style, theme);
   }
 }
 
@@ -67,7 +67,7 @@ async function run(
   theme: Theme,
 ): Promise<CardResult> {
   const result = await resolveCached(deps, owner, repo);
-  if (!result.ok) return errorCard(result.reason, owner, repo, theme);
+  if (!result.ok) return errorCard(result.reason, owner, repo, style, theme);
 
   const { doc, stackHash, cached, reads } = result;
   const started = performance.now();
@@ -92,19 +92,27 @@ async function render(
   return bytes;
 }
 
-async function errorCard(reason: FailureReason, owner: string, repo: string, theme: Theme): Promise<CardResult> {
+// The requested style's frame, not the Datasheet's: Tiles is the default and card-*.png
+// is pinned to it, so this is the frame most failing embeds in the wild show. ADR-0033.
+async function errorCard(
+  reason: FailureReason,
+  owner: string,
+  repo: string,
+  style: CardStyle,
+  theme: Theme,
+): Promise<CardResult> {
   try {
     return {
-      bytes: await renderErrorCard({ reason, owner, repo, theme }),
+      bytes: await renderErrorCard({ reason, owner, repo, style, theme }),
       reason,
       cacheControl: cacheControlFor(reason),
     };
   } catch (error) {
     // The card that explains the failure has itself failed. Render one with nothing
     // interpolated — this is the floor under I5, not a path we expect to reach.
-    countBug("error_card_render", error, { reason, owner, repo });
+    countBug("error_card_render", error, { reason, owner, repo, style });
     return {
-      bytes: await renderErrorCard({ reason: "unavailable", owner: "", repo: "", theme }),
+      bytes: await renderErrorCard({ reason: "unavailable", owner: "", repo: "", style, theme }),
       reason,
       cacheControl: cacheControlFor(reason),
     };

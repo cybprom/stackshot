@@ -114,6 +114,12 @@ one that governs** — anything that must be read has to survive 0.29. See GOTCH
 | `card/overflow` | "+7 more" | 22 | Mono 400 | 1.10 | 0.02em |
 | `card/gutter` | Rotated layer label | 18 | Mono 700 | 1.00 | 0.18em |
 | `card/meta` | Footer | 16 | Mono 400 | 1.20 | 0.04em |
+| `card/error-detail` | The error card's second line | 22 | Mono 400 | 28px | 0.00em |
+
+`card/error-detail` is `card/version`'s size with its own line box, and it is the one place
+on any card where a line of **mono prose wraps**. At `card/version`'s 1.10 the two lines set
+solid. It is a separate step rather than a looser `card/version`, because that step is an
+inline string after a name and never wraps. ADR-0033.
 
 Tracking tightens monotonically as size increases: 0.18 → 0.04 → 0.02 → 0.00 → -0.01 →
 -0.02. That relationship is the rule; individual values are negotiable, the relationship
@@ -375,6 +381,14 @@ Rules:
 
 ### The error card is 1200 × 518
 
+> **Amended by ADR-0033.** This is the **Datasheet's** error card. Every style frames its
+> own now, because Tiles is the default and `card-*.png` is pinned to it, so this frame was
+> the one most failing embeds in the wild would have shown. The content is one object in
+> all of them — label, reason, detail — and only the frame changes. Tiles and Terminal draw
+> theirs at content height, as they draw their real cards, and carry the reason label flat
+> under the header where the Datasheet rotates it into the gutter. The block below is the
+> Datasheet's and is unchanged, bytes included.
+
 Same width, same chrome, same palette, one band instead of four. **Width is held at 1200 so
 every type size keeps the display ratios measured above**; only the height changes.
 
@@ -566,6 +580,11 @@ generic.
 Design guidance I hold generally treats **all-caps labels** and **a monospace face for
 small data labels** as tells of generated work. Both are present here, deliberately.
 
+- **Amended by ADR-0033:** the gutter labels are no longer the only all-caps on a card.
+  Tiles and Terminal have no gutter, so their error cards carry the same reason label flat
+  in the body, at the same `card/gutter` step. It is the same signage in a frame that has
+  nowhere to rotate it, not a new element. **The ban the claim was protecting — no all-caps
+  anywhere on the site — is untouched.**
 - The gutter labels are all-caps because they are *signage on a technical drawing*, not
   eyebrow labels above headings. The distinguishing test: an eyebrow label sits above
   content and describes it redundantly; these sit beside content and are the only thing
