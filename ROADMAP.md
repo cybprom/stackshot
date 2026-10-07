@@ -224,7 +224,19 @@ SITE_ORIGIN: lib/site.ts is the single source for the origin in the card
             PORT`) or the preview points at production. Preview and snippet
             are the same absolute URLs, so the CDN entry is shared and
             same-origin `download` works.
-Last done:  PHASE 4 STEP 6 — THE ANIMATED HEIGHT, which COMPLETES PHASE
+Last done:  PHASE 5 STEPS 1-4. Step 1 per-style error frames (ADR-0033),
+            step 2 tags-*.png 404s (ADR-0034), step 3 prepare-home
+            (ADR-0035), step 4 the shared components (ADR-0036) plus the
+            index's three prototype fixes. 967 tests green.
+            GOTCHAS 057 (ResizeObserver echoes the size you just
+            measured), 058 (SATORI HANGS FOREVER on a fragment where it
+            wants a flex child), 059 (A LIBRARY'S CARD CANNOT NAME THE
+            LIBRARY — the best finding in the project, writeup material).
+            cybprom/stackshot IS NOW STARRED; the committed star count in
+            lib/home-data.json is STALE AT 0 until prepare-home is re-run.
+            The nav and the card show the live number, so this only
+            affects the fallback.
+            Before it: PHASE 4 STEP 6 — THE ANIMATED HEIGHT, which COMPLETES PHASE
             4. The plate eases its own measured height on a card change
             and snaps it on a resize; the crossfade waits for it. 400ms,
             not the dim's 240, because this one travels: next.js is 859u
@@ -260,9 +272,15 @@ Last done:  PHASE 4 STEP 6 — THE ANIMATED HEIGHT, which COMPLETES PHASE
             Before it: PHASE 3 — TERMINAL. lib/render/terminal.tsx at
             height "content", ADR-0031 on what styles share, and
             GOTCHAS 051 (the box glyphs are taller than their line box).
-Next:       PHASE 5 STEP 1, THE PER-STYLE ERROR FRAME. The plan and the
-            decisions are in the Phase 5 section below — work from it,
-            not from this line.
+Next:       PHASE 5 STEP 5, THE TWO LAYOUT SHELLS — the biggest piece
+            left. The plan and the decisions are in the Phase 5 section
+            below; work from it, not from this line. Steps 1-4 are DONE,
+            so every shared component already exists in app/site/ and
+            step 5 is TWO HEROES AROUND THEM, not a page build.
+            READ docs/design/site/a-playground.dc.html AND
+            c-gallery-wall.dc.html INCLUDING THE SCRIPT AT THE BOTTOM.
+            Step 4 shipped three bugs that were all specified in that
+            script and invisible in the markup.
 M4 CARRIES: the badge in your own README (the domain is live now, so this
             can come forward), the global budget guard, ADR-0012's amendment
             line for the separate bug counter, and monitoring KV bytes —
@@ -354,6 +372,16 @@ Author-decided. Do not re-open them; they were asked and answered.
    (the design drew it that way and its syntax colours assume a dark ground). And the
    React Compiler REFUSES DOM mutation from a component, which killed the
    render-once-filter-the-DOM index; see ADR-0036 for why 5.8KB beat a lint suppression.
+   THEN A SECOND PASS against docs/design/site/a-playground.dc.html found THREE more,
+   all in the index and none caught by a test: no ALL CHIP (no way back to the whole map
+   once a layer was picked, which also forced the chip's selected state to the
+   prototype's layer-independent ink pill); tiles ARRIVING FLAT instead of staggered
+   (now .reveal-tile — the prototype's tileIn is byte-identical to the card's — with
+   indexTileDelay = min(i*18, 360), the grid KEYED BY THE FILTER so the animation
+   re-runs); and the CAP NOT APPLYING TO A FILTERED GRID, which dumped all 92 Backend
+   entries on the page instead of 24 and a "Show all 92".
+   READ THE .dc.html's SCRIPT, not just its markup — all three were in the logic at the
+   bottom of the file, not in the part that looks like a design.
    ORIGINAL STEP 4 SCOPE, for reference: Nav (the 2×2 layer-colour logo mark, GitHub link with D5's
    star count), the snippet block, "One snippet. Both themes.", the rebuilt "What
    Stackshot found", the technology index, the footer. The generator and plate are done
