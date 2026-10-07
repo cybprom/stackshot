@@ -117,6 +117,7 @@ export const COPY = {
   // The technology index.
   indexTitle: "Does it know your stack?",
   indexIntro: (n: number) => `Stackshot recognises ${n} technologies across four layers. Search for yours.`,
+  indexAll: "All",
   indexSearchLabel: "Search technologies",
   indexSearchPlaceholder: "Search, e.g. prisma",
   indexShowAll: (n: number) => `Show all ${n}`,

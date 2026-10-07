@@ -13,6 +13,22 @@ import type { Category } from "@/lib/stack-map/types";
 /** How many tiles are shown before "Show all N". Two rows at desktop width. */
 export const INDEX_CAP = 24;
 
+/** The layer chips, with All first and selected by default. */
+export const INDEX_ALL = "all" as const;
+
+export type IndexFilter = typeof INDEX_ALL | Category;
+
+/**
+ * The stagger as the grid arrives, from `docs/design/site/a-playground.dc.html`: 18ms a
+ * tile, **capped at 360ms**. The cap is what makes it work at this count — uncapped, the
+ * 24th tile would wait 432ms and a search returning 100 would take two seconds to finish
+ * appearing. The card preview's own stagger is slower and steeper, because it paces five
+ * tiles a row across a card rather than a wall of a hundred.
+ */
+export function indexTileDelay(i: number): number {
+  return Math.min(i * 18, 360);
+}
+
 export type IndexEntry = {
   id: string;
   symbol: string;

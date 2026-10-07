@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { STACK_MAP } from "@/lib/stack-map";
-import { INDEX_CAP, TECH_COUNT, TECH_INDEX, countByCategory, score } from "@/lib/tech-index";
+import { INDEX_CAP, TECH_COUNT, TECH_INDEX, countByCategory, indexTileDelay, score } from "@/lib/tech-index";
 
 /**
  * The index is the only part of the technology section with any logic in it, and it is a
@@ -101,5 +101,31 @@ describe("searching", () => {
     const next = TECH_INDEX.find((e) => e.id === "next");
     expect(next?.search).not.toContain("npm:");
     expect(next?.search).toContain("next");
+  });
+});
+
+/**
+ * The stagger as the grid arrives, from `docs/design/site/a-playground.dc.html`. The cap
+ * is the load-bearing half: it is what keeps a search returning a hundred tiles from
+ * taking two seconds to finish appearing.
+ */
+describe("the arrival stagger", () => {
+  it("steps 18ms a tile", () => {
+    expect(indexTileDelay(0)).toBe(0);
+    expect(indexTileDelay(1)).toBe(18);
+    expect(indexTileDelay(5)).toBe(90);
+  });
+
+  it("caps at 360ms, however many match", () => {
+    expect(indexTileDelay(20)).toBe(360);
+    expect(indexTileDelay(224)).toBe(360);
+    // The whole map at once still finishes inside the cap plus one tile's duration.
+    expect(indexTileDelay(TECH_COUNT)).toBe(360);
+  });
+
+  // The 20th tile is where the cap bites; before it the stagger is real.
+  it("staggers the capped grid rather than landing it flat", () => {
+    expect(indexTileDelay(INDEX_CAP - 1)).toBe(360);
+    expect(indexTileDelay(10)).toBeLessThan(indexTileDelay(19));
   });
 });

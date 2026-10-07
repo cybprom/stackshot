@@ -3,14 +3,20 @@
 import { useMemo, useState } from "react";
 import { LAYER_NAME } from "@/lib/card-text";
 import { COPY, LINKS } from "@/lib/site";
-import { INDEX_CAP, score, type IndexEntry } from "@/lib/tech-index";
-import type { Category } from "@/lib/stack-map/types";
+import {
+  INDEX_ALL,
+  INDEX_CAP,
+  indexTileDelay,
+  score,
+  type IndexEntry,
+  type IndexFilter,
+} from "@/lib/tech-index";
 
-type Chip = { category: Category; label: string; count: number };
+type Chip = { value: IndexFilter; label: string; count: number };
 
 /**
  * The map as a searchable grid: the whole index, filtered by a query and the layer chips,
- * capped until asked to show everything.
+ * capped at `INDEX_CAP` until asked to show everything.
  *
  * **Ordinary React over the entries, not DOM surgery over server-rendered tiles.** The
  * first build did the latter, to keep the map out of the RSC payload, and the React
@@ -23,13 +29,13 @@ type Chip = { category: Category; label: string; count: number };
  */
 export function TechIndexControls({ entries, chips }: { entries: readonly IndexEntry[]; chips: Chip[] }) {
   const [query, setQuery] = useState("");
-  const [layer, setLayer] = useState<Category | null>(null);
+  const [layer, setLayer] = useState<IndexFilter>(INDEX_ALL);
   const [expanded, setExpanded] = useState(false);
 
   const matches = useMemo(() => {
     const scored: { entry: IndexEntry; rank: number }[] = [];
     for (const entry of entries) {
-      if (layer && entry.category !== layer) continue;
+      if (layer !== INDEX_ALL && entry.category !== layer) continue;
       const rank = score(entry, query);
       if (rank === null) continue;
       scored.push({ entry, rank });
@@ -40,10 +46,22 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
     return scored.map(({ entry }) => entry);
   }, [entries, query, layer]);
 
-  // A query or a chip means every match is worth showing; a bare grid is capped.
-  const filtering = query.trim() !== "" || layer !== null;
-  const capped = expanded || filtering ? matches : matches.slice(0, INDEX_CAP);
-  const hasMore = !filtering && matches.length > INDEX_CAP;
+  // The cap applies to a filtered grid too, as in the prototype: forty hits are still two
+  // rows and a "Show all 40", not forty tiles dumped on the page.
+  const shown = expanded ? matches : matches.slice(0, INDEX_CAP);
+  const hasMore = matches.length > INDEX_CAP;
+
+  // Narrowing the set starts the grid over, so the stagger runs again and whatever is
+  // left reads as a new answer rather than as the old one with holes in it.
+  function search(next: string) {
+    setQuery(next);
+    setExpanded(false);
+  }
+
+  function pick(next: IndexFilter) {
+    setLayer(next);
+    setExpanded(false);
+  }
 
   return (
     <>
@@ -58,28 +76,35 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
           aria-controls="tech-grid"
           placeholder={COPY.indexSearchPlaceholder}
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => search(event.target.value)}
           className="site-data h-[46px] w-full max-w-[340px] rounded-control border-[1.5px] border-ink bg-surface px-[14px] text-ink"
         />
       </div>
 
+      {/* All first and selected by default. Without it there is no way back to the whole
+          map once a layer is picked — the chips are a filter, not a mode you commit to. */}
       <div className="flex flex-wrap gap-[6px]">
         {chips.map((chip) => {
-          const on = layer === chip.category;
+          const on = layer === chip.value;
           return (
             <button
-              key={chip.category}
+              key={chip.value}
               type="button"
               aria-pressed={on}
-              onClick={() => setLayer(on ? null : chip.category)}
-              className="motion-state inline-flex h-[34px] shrink-0 items-center gap-[7px] rounded-pill border px-3 font-display text-[13.5px] font-semibold"
-              style={{
-                borderColor: on ? `var(--layer-${chip.category})` : "var(--rule)",
-                backgroundColor: on ? `var(--layer-${chip.category}-tint)` : "transparent",
-                color: on ? `var(--layer-${chip.category})` : "var(--ink)",
-              }}
+              onClick={() => pick(chip.value)}
+              className={`motion-state inline-flex h-[34px] shrink-0 items-center gap-[7px] rounded-pill border px-3 font-display text-[13.5px] font-semibold ${
+                on ? "border-ink bg-ink text-surface" : "border-rule bg-transparent text-ink hover:border-ink"
+              }`}
             >
-              <span className="inline-block h-2 w-2 rounded-[2px]" style={{ backgroundColor: `var(--layer-${chip.category})` }} />
+              {/* The dot keeps its layer colour whether or not the chip is selected: it is
+                  the key to the card's colours, not a selection indicator. All has no
+                  layer, so it takes the neutral. */}
+              <span
+                className="inline-block h-2 w-2 rounded-[2px]"
+                style={{
+                  backgroundColor: chip.value === INDEX_ALL ? "var(--ink-muted)" : `var(--layer-${chip.value})`,
+                }}
+              />
               {chip.label}
               <span className="site-data opacity-70">{chip.count}</span>
             </button>
@@ -87,9 +112,12 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
         })}
       </div>
 
-      <div id="tech-grid" className="flex flex-wrap gap-[10px]">
-        {capped.map((entry) => (
-          <TechTile key={entry.id} entry={entry} />
+      {/* Keyed by the filter, so narrowing the set remounts the tiles and the stagger
+          runs again. A CSS animation does not restart on its own for a node that stayed
+          put, and the arrival is the thing that says the grid answered you. */}
+      <div key={`${query}|${layer}|${expanded}`} id="tech-grid" className="flex flex-wrap gap-[10px]">
+        {shown.map((entry, i) => (
+          <TechTile key={entry.id} entry={entry} delay={indexTileDelay(i)} />
         ))}
       </div>
 
@@ -108,7 +136,7 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
         </p>
       ) : null}
 
-      {hasMore || expanded ? (
+      {hasMore ? (
         <button
           type="button"
           onClick={() => setExpanded((was) => !was)}
@@ -122,11 +150,14 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
 }
 
 /** One entry, as the card would draw it: the symbol in the layer's colour on its tint. */
-function TechTile({ entry }: { entry: IndexEntry }) {
+function TechTile({ entry, delay }: { entry: IndexEntry; delay: number }) {
   return (
     <div
-      className="box-border flex h-[88px] w-[100px] flex-col justify-between rounded-tile px-2 pb-[7px] pt-[6px]"
+      // The card preview's own reveal: same keyframes, same duration, a faster stagger.
+      // Its reduced-motion branch covers this too.
+      className="reveal-tile box-border flex h-[88px] w-[100px] flex-col justify-between rounded-tile px-2 pb-[7px] pt-[6px]"
       style={{
+        animationDelay: `${delay}ms`,
         backgroundColor: `var(--layer-${entry.category}-tint)`,
         borderTop: `3px solid var(--layer-${entry.category})`,
       }}

@@ -1,6 +1,7 @@
 import { TechIndexControls } from "@/app/site/tech-index-controls";
 import { LAYER_NAME } from "@/lib/card-text";
-import { TECH_INDEX, countByCategory } from "@/lib/tech-index";
+import { COPY } from "@/lib/site";
+import { INDEX_ALL, TECH_COUNT, TECH_INDEX, countByCategory } from "@/lib/tech-index";
 import type { Category } from "@/lib/stack-map/types";
 
 /**
@@ -18,7 +19,14 @@ export function TechIndex() {
     <section className="flex flex-col gap-5 border-t border-rule px-6 py-16 sm:px-14 sm:py-[72px]">
       <TechIndexControls
         entries={TECH_INDEX}
-        chips={categories.map((category) => ({ category, label: LAYER_NAME[category], count: counts[category] }))}
+        chips={[
+          { value: INDEX_ALL, label: COPY.indexAll, count: TECH_COUNT },
+          ...categories.map((category) => ({
+            value: category,
+            label: LAYER_NAME[category],
+            count: counts[category],
+          })),
+        ]}
       />
     </section>
   );
