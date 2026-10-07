@@ -14,11 +14,11 @@ export function LogoMark({ size = 16 }: { size?: number }) {
   return (
     <span
       aria-hidden
-      className="grid shrink-0 grid-cols-2 gap-[2px]"
+      className="grid shrink-0 grid-cols-2 gap-0.5"
       style={{ width: size, height: size }}
     >
       {CATEGORIES.map((category) => (
-        <span key={category} className="rounded-[2px]" style={{ backgroundColor: `var(--layer-${category})` }} />
+        <span key={category} className="rounded-xs" style={{ backgroundColor: `var(--layer-${category})` }} />
       ))}
     </span>
   );

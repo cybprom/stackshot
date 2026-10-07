@@ -11,7 +11,7 @@ import { COPY } from "@/lib/site";
  */
 export function StackFound({ doc }: { doc: PreviewDoc }) {
   return (
-    <section className="w-full border-t border-rule px-6 py-16 sm:px-14 sm:py-[72px]">
+    <section className="w-full border-t border-rule px-6 py-16 sm:px-14 sm:py-18">
       <h2 className="site-section">{COPY.stackTitle}</h2>
 
       {/* Columns, not a grid: a layer's rows stay together and the browser balances the
@@ -20,10 +20,10 @@ export function StackFound({ doc }: { doc: PreviewDoc }) {
         {doc.layers.map((layer) => (
           <div key={layer.category} className="mb-10 break-inside-avoid">
             {/* Sentence case. The card's gutter is the only all-caps in the project. */}
-            <h3 className="site-label flex items-center gap-[7px] text-ink-muted">
+            <h3 className="site-label flex items-center gap-1.75 text-ink-muted">
               <span
                 aria-hidden
-                className="inline-block h-2 w-2 rounded-[2px]"
+                className="inline-block h-2 w-2 rounded-xs"
                 style={{ backgroundColor: `var(--layer-${layer.category})` }}
               />
               {COPY.layer[layer.category]}
@@ -35,7 +35,7 @@ export function StackFound({ doc }: { doc: PreviewDoc }) {
                   <dt className="sr-only">{item.display}</dt>
                   <dd
                     aria-hidden
-                    className="mt-[1px] flex h-7 w-7 shrink-0 items-center justify-center rounded-[4px] font-display text-[13px] font-extrabold leading-none tracking-[-0.03em]"
+                    className="mt-px flex h-7 w-7 shrink-0 items-center justify-center rounded-sm font-display text-[13px] font-extrabold leading-none tracking-[-0.03em]"
                     style={{
                       backgroundColor: `var(--layer-${layer.category}-tint)`,
                       color: `var(--layer-${layer.category})`,

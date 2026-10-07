@@ -9,7 +9,7 @@ import { COPY, LINKS } from "@/lib/site";
 export function Footer() {
   return (
     <footer className="mt-auto flex flex-col gap-4 border-t border-rule px-6 pb-9 pt-7 text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-14">
-      <div className="site-body flex items-center gap-[10px]">
+      <div className="site-body flex items-center gap-2.5">
         <LogoMark />
         <span>
           {COPY.builtBy.before}

@@ -40,9 +40,7 @@ export function Segmented<T extends string>({
             type="button"
             aria-pressed={pressed}
             onClick={() => onChange(option.value)}
-            className={`site-label motion-state h-[34px] rounded-segment-item px-3 ${
-              pressed ? "bg-ink text-surface" : "text-ink-muted hover:text-ink"
-            }`}
+            className={`site-label motion-state h-8.5 rounded-segment-item px-3 ${pressed ? "bg-ink text-surface" : "text-ink-muted hover:text-ink"}`}
           >
             {option.label}
           </button>

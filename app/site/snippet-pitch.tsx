@@ -11,7 +11,7 @@ import { COPY } from "@/lib/site";
 export function SnippetPitch({ light, dark, alt }: { light: string; dark: string; alt: string }) {
   return (
     <section className="flex flex-col gap-10 border-t border-rule px-6 py-16 sm:px-14 lg:flex-row lg:gap-14 lg:py-16">
-      <div className="flex shrink-0 flex-col gap-[14px] lg:w-[420px]">
+      <div className="flex shrink-0 flex-col gap-3.5 lg:w-105">
         <h2 className="site-section">
           {COPY.snippetPitchTitle[0]}
           <br />
@@ -23,10 +23,10 @@ export function SnippetPitch({ light, dark, alt }: { light: string; dark: string
       {/* aria-hidden with the real markup in a sr-only line: a screen reader reading angle
           brackets and two full URLs character by character is noise, and the generator's
           snippet is the one anybody acts on. */}
-      <div className="min-w-0 flex-grow">
+      <div className="min-w-0 grow">
         <div
           aria-hidden
-          className="site-code box-border overflow-x-auto rounded-snippet bg-code-surface px-5 py-[18px] leading-[1.75] text-code-ink"
+          className="site-code box-border overflow-x-auto rounded-snippet bg-code-surface px-5 py-4.5 leading-[1.75] text-code-ink"
         >
           <pre className="whitespace-pre">
             <span className="text-code-tag">&lt;picture&gt;</span>

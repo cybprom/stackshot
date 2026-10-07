@@ -15,15 +15,15 @@ export async function Nav() {
   const count = await stars("cybprom/stackshot");
 
   return (
-    <nav className="flex h-[72px] shrink-0 items-center justify-between border-b border-rule px-6 sm:px-14">
-      <Link href="/" className="flex items-center gap-[10px] text-ink">
+    <nav className="flex h-18 shrink-0 items-center justify-between border-b border-rule px-6 sm:px-14">
+      <Link href="/" className="flex items-center gap-2.5 text-ink">
         <LogoMark size={18} />
         <span className="font-display text-[20px] font-extrabold tracking-[-0.03em]">{COPY.wordmark}</span>
       </Link>
 
       <a
         href={LINKS.repo}
-        className="motion-state inline-flex h-9 items-center gap-2 rounded-pill border-[1.5px] border-rule px-[14px] text-ink hover:border-ink"
+        className="motion-state inline-flex h-9 items-center gap-2 rounded-pill border-[1.5px] border-rule px-3.5 text-ink hover:border-ink"
       >
         <span className="text-layer-infra">
           <StarIcon />

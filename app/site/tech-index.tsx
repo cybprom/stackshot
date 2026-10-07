@@ -16,7 +16,7 @@ export function TechIndex() {
   const categories = Object.keys(LAYER_NAME) as Category[];
 
   return (
-    <section className="flex flex-col gap-5 border-t border-rule px-6 py-16 sm:px-14 sm:py-[72px]">
+    <section className="flex flex-col gap-5 border-t border-rule px-6 py-16 sm:px-14 sm:py-18">
       <TechIndexControls
         entries={TECH_INDEX}
         chips={[

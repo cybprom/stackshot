@@ -66,7 +66,7 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
   return (
     <>
       <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
-        <div className="flex max-w-[560px] flex-col gap-2">
+        <div className="flex max-w-140 flex-col gap-2">
           <h2 className="site-section">{COPY.indexTitle}</h2>
           <p className="site-body text-ink-muted">{COPY.indexIntro(entries.length)}</p>
         </div>
@@ -77,13 +77,13 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
           placeholder={COPY.indexSearchPlaceholder}
           value={query}
           onChange={(event) => search(event.target.value)}
-          className="site-data h-[46px] w-full max-w-[340px] rounded-control border-[1.5px] border-ink bg-surface px-[14px] text-ink"
+          className="site-data h-11.5 w-full max-w-85 rounded-control border-[1.5px] border-ink bg-surface px-3.5 text-ink"
         />
       </div>
 
       {/* All first and selected by default. Without it there is no way back to the whole
           map once a layer is picked — the chips are a filter, not a mode you commit to. */}
-      <div className="flex flex-wrap gap-[6px]">
+      <div className="flex flex-wrap gap-1.5">
         {chips.map((chip) => {
           const on = layer === chip.value;
           return (
@@ -92,15 +92,13 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
               type="button"
               aria-pressed={on}
               onClick={() => pick(chip.value)}
-              className={`motion-state inline-flex h-[34px] shrink-0 items-center gap-[7px] rounded-pill border px-3 font-display text-[13.5px] font-semibold ${
-                on ? "border-ink bg-ink text-surface" : "border-rule bg-transparent text-ink hover:border-ink"
-              }`}
+              className={`motion-state inline-flex h-8.5 shrink-0 items-center gap-1.75 rounded-pill border px-3 font-display text-[13.5px] font-semibold ${on ? "border-ink bg-ink text-surface" : "border-rule bg-transparent text-ink hover:border-ink"}`}
             >
               {/* The dot keeps its layer colour whether or not the chip is selected: it is
                   the key to the card's colours, not a selection indicator. All has no
                   layer, so it takes the neutral. */}
               <span
-                className="inline-block h-2 w-2 rounded-[2px]"
+                className="inline-block h-2 w-2 rounded-xs"
                 style={{
                   backgroundColor: chip.value === INDEX_ALL ? "var(--ink-muted)" : `var(--layer-${chip.value})`,
                 }}
@@ -115,7 +113,7 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
       {/* Keyed by the filter, so narrowing the set remounts the tiles and the stagger
           runs again. A CSS animation does not restart on its own for a node that stayed
           put, and the arrival is the thing that says the grid answered you. */}
-      <div key={`${query}|${layer}|${expanded}`} id="tech-grid" className="flex flex-wrap gap-[10px]">
+      <div key={`${query}|${layer}|${expanded}`} id="tech-grid" className="flex flex-wrap gap-2.5">
         {shown.map((entry, i) => (
           <TechTile key={entry.id} entry={entry} delay={indexTileDelay(i)} />
         ))}
@@ -140,7 +138,7 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
         <button
           type="button"
           onClick={() => setExpanded((was) => !was)}
-          className="site-label motion-state h-[42px] self-start rounded-control border-[1.5px] border-ink px-4 font-display font-semibold text-ink"
+          className="site-label motion-state h-10.5 self-start rounded-control border-[1.5px] border-ink px-4 font-display font-semibold text-ink"
         >
           {expanded ? COPY.indexShowFewer : COPY.indexShowAll(matches.length)}
         </button>
@@ -155,7 +153,7 @@ function TechTile({ entry, delay }: { entry: IndexEntry; delay: number }) {
     <div
       // The card preview's own reveal: same keyframes, same duration, a faster stagger.
       // Its reduced-motion branch covers this too.
-      className="reveal-tile box-border flex h-[88px] w-[100px] flex-col justify-between rounded-tile px-2 pb-[7px] pt-[6px]"
+      className="reveal-tile box-border flex h-22 w-25 flex-col justify-between rounded-tile px-2 pb-1.75 pt-1.5"
       style={{
         animationDelay: `${delay}ms`,
         backgroundColor: `var(--layer-${entry.category}-tint)`,
