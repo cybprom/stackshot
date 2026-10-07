@@ -1,25 +1,51 @@
 import { Footer } from "@/app/site/footer";
+import { GeneratorProvider } from "@/app/site/generator/context";
+import { GeneratorFound } from "@/app/site/generator/found";
+import { HeroA } from "@/app/site/hero-a";
+import { HeroC } from "@/app/site/hero-c";
 import { Nav } from "@/app/site/nav";
 import { SnippetPitch } from "@/app/site/snippet-pitch";
 import { TechIndex } from "@/app/site/tech-index";
-import { StackForm } from "@/app/stack-form";
-import { COPY, EXAMPLE_REPO, cardUrl } from "@/lib/site";
+import { siteLayout } from "@/lib/hero";
+import { INTRO_REPO, homeDoc } from "@/lib/home";
+import { previewDoc } from "@/lib/preview";
+import { EXAMPLE_REPO, cardUrl } from "@/lib/site";
 
-export default function Home() {
+/**
+ * One page, two heroes, for as long as it takes to choose between them. `?layout=a` and
+ * `?layout=c` preview the other against whichever the env var ships — which is what makes
+ * the comparison live rather than a pair of screenshots. Reading a search parameter opts
+ * the page into dynamic rendering; that cost lasts until step 7 deletes the fork.
+ *
+ * Everything below the hero is shared and identical, which is the claim the whole shape
+ * of step 5 rests on.
+ */
+export default async function Home({ searchParams }: PageProps<"/">) {
+  const layout = siteLayout((await searchParams).layout);
+
+  // C draws this card itself, ~0.9s after load, without a request: the doc is committed
+  // and the PNG was rendered at build. The homepage makes no GitHub call on any path.
+  // `unmapped` is stripped rather than sent — it is the backlog, and `/api/resolve` has
+  // never given it to a browser either.
+  const intro = previewDoc(homeDoc(INTRO_REPO));
+
   return (
     <div className="flex min-h-dvh flex-col">
-      <Nav />
+      <GeneratorProvider
+        intro={layout === "c" ? { url: `github.com/${INTRO_REPO}`, doc: intro } : undefined}
+        startExpanded={layout !== "c"}
+      >
+        {layout === "c" ? (
+          <HeroC />
+        ) : (
+          <>
+            <Nav />
+            <HeroA />
+          </>
+        )}
 
-      {/* The column is centred at roughly the card's natural width; everything inside
-          starts at the card's left edge. That single shared spine does the compositional
-          work a grid would do on a denser page. DESIGN.md SELF-CRITIQUE 5. */}
-      <main className="mx-auto w-full max-w-275 px-4 py-16 sm:px-8 sm:py-24">
-        <div className="flex flex-col items-start">
-          <h1 className="site-display max-w-[16ch]">{COPY.headline}</h1>
-          <p className="site-body mt-6 max-w-[68ch] text-ink-muted">{COPY.intro}</p>
-          <StackForm />
-        </div>
-      </main>
+        <GeneratorFound />
+      </GeneratorProvider>
 
       <SnippetPitch
         light={cardUrl(EXAMPLE_REPO.owner, EXAMPLE_REPO.repo, "tiles", "light")}

@@ -18,7 +18,7 @@ P5 PLAN:    ** READ THE "Phase 5" SECTION BELOW, DIRECTLY UNDER THIS
             WHAT THE PAGE CONTAINS; the Phase 5 section owns ORDER AND
             MECHANISM and does not repeat it. Those two together are
             enough to resume with no other context.
-            CURRENT STEP: 5, the two layout shells. Steps 1-4 DONE.
+            CURRENT STEP: 6, the phone pass. Steps 1-5 DONE.
 PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal
             DONE · 4 site generator DONE · 5 docs and the page. Nothing
             cut.
@@ -224,7 +224,38 @@ SITE_ORIGIN: lib/site.ts is the single source for the origin in the card
             PORT`) or the preview points at production. Preview and snippet
             are the same absolute URLs, so the CDN entry is shared and
             same-origin `download` works.
-Last done:  PHASE 5 STEPS 1-4. Step 1 per-style error frames (ADR-0033),
+Last done:  PHASE 5 STEP 5, THE TWO LAYOUT SHELLS. ADR-0037. Both heroes
+            are live and switchable: NEXT_PUBLIC_SITE_LAYOUT picks one,
+            ?layout=a and ?layout=c preview the other. `/` IS NOW DYNAMIC
+            because of that query parameter — it goes back to static when
+            step 7 deletes the fork.
+            THE GENERATOR IS NOW PARTS, NOT A PAGE. app/stack-form.tsx is
+            GONE; app/site/generator/ holds the provider plus six placeless
+            parts (repo-field, try-row, style-controls, status, plate,
+            actions, found) that take no width, margin or order of their
+            own. hero-a.tsx and hero-c.tsx compose them; panel.tsx is C's
+            and holds the widening. The refactor landed as a NO-OP first,
+            verified against a screenshot, so the heroes were additive.
+            lib/hero.ts is the fork's own module — layout choice, C's two
+            timings, the three panel widths, the wall's allocation — and is
+            DELETED WITH THE LOSING LAYOUT. tests/hero.test.ts covers it.
+            THE SNIPPET IS BEHIND A "Show snippet" DISCLOSURE in the hero,
+            which OPENS ITSELF if the clipboard write is refused. Both
+            designs drew a Copy button and no code block; that has no
+            fallback on a denied clipboard, and this does.
+            FOUND BY LOOKING, three things no test would have caught:
+            C's panel was the SAME COLOUR AS ITS OWN WALL in dark mode (the
+            panel is now pinned light, .theme-light); the card mounted into
+            a ZERO-WIDTH COLUMN and drew clipped at scale 1 (GOTCHAS 060);
+            and the empty state was still pointing at cardUrl, which hits
+            GitHub on a cold cache — both heroes now use the build-rendered
+            introCardUrl, which is what Phase 5 requires.
+            GOTCHAS 060 (the zero-width mount, and why a virtual-time
+            screenshot lies), 061 (reduced motion decides layout and the
+            server cannot know it — the residual is ACCEPTED), 062 (a
+            duplicated column with a flex gap does not loop).
+            1003 tests, lint, tsc and `pnpm build` green.
+            Before it: PHASE 5 STEPS 1-4. Step 1 per-style error frames (ADR-0033),
             step 2 tags-*.png 404s (ADR-0034), step 3 prepare-home
             (ADR-0035), step 4 the shared components (ADR-0036) plus the
             index's three prototype fixes. 967 tests green.
@@ -272,15 +303,23 @@ Last done:  PHASE 5 STEPS 1-4. Step 1 per-style error frames (ADR-0033),
             Before it: PHASE 3 — TERMINAL. lib/render/terminal.tsx at
             height "content", ADR-0031 on what styles share, and
             GOTCHAS 051 (the box glyphs are taller than their line box).
-Next:       PHASE 5 STEP 5, THE TWO LAYOUT SHELLS — the biggest piece
-            left. The plan and the decisions are in the Phase 5 section
-            below; work from it, not from this line. Steps 1-4 are DONE,
-            so every shared component already exists in app/site/ and
-            step 5 is TWO HEROES AROUND THEM, not a page build.
-            READ docs/design/site/a-playground.dc.html AND
-            c-gallery-wall.dc.html INCLUDING THE SCRIPT AT THE BOTTOM.
-            Step 4 shipped three bugs that were all specified in that
-            script and invisible in the markup.
+Next:       PHASE 5 STEP 6, THE PHONE PASS at 390px, per
+            a-playground-phone.dc.html and c-gallery-wall-phone.dc.html.
+            BOTH LAYOUTS ALREADY WORK AT 390 — C stacks below 1280px, so
+            its card already appears under the controls, which is what the
+            phone design asks for — so step 6 is a pass over the detail,
+            not a build. Two fixes already landed there while rendering:
+            the nav's "Star on GitHub" label is hidden below sm (it wrapped
+            into the wordmark), and both hero headlines step down (68->40,
+            54->36), because 68px across 390 is the whole first screen.
+            READ docs/design/site/*.dc.html INCLUDING THE SCRIPT AT THE
+            BOTTOM. Step 4 shipped three bugs that were all specified in
+            that script and invisible in the markup; step 5's panel
+            widening was specified there too.
+            THEN STEP 7: choose one layout and DELETE THE OTHER —
+            hero-{a,c}.tsx, lib/hero.ts, app/site/wall.tsx, panel.tsx, the
+            C-only CSS block, one COPY.hero* block, and the ?layout=
+            parameter that makes `/` dynamic.
 M4 CARRIES: the badge in your own README (the domain is live now, so this
             can come forward), the global budget guard, ADR-0012's amendment
             line for the separate bug counter, and monitoring KV bytes —
@@ -394,13 +433,26 @@ Author-decided. Do not re-open them; they were asked and answered.
      search and the layer filter as the navigation, a no-match linking to GitHub issues.
      Server-rendered from the map, filtered on the client.
    - **Archivo-ExtraBold ships HERE**, with the hero that uses it, not before.
-5. **The two layout shells. ← CURRENT STEP.** A and C as thin shells around step 4, ONLY THE HERO
-   DIFFERING. An env var picks the live one; `?layout=a` and `?layout=c` preview the other.
-   C additionally: the panel widens to two columns on Generate or a Try button, with WIDTH
-   AND HEIGHT both animating — that is **GOTCHAS 057 again with `width` substituted**,
-   which is why it was written down. Plus C's intro auto-generate at ~0.9s and the wall.
-6. **Phone, both layouts, 390px.** On C the panel cannot widen, so the card appears inside
-   it under the button.
+5. **THE TWO LAYOUT SHELLS — DONE.** ADR-0037. The generator became a provider plus six
+   placeless parts in `app/site/generator/`, landed as a no-op first; `hero-a.tsx` and
+   `hero-c.tsx` compose them and `lib/hero.ts` holds everything the fork owns.
+   - **The widening is not a measurement.** The three widths are design constants, so the
+     panel and its form column transition `max-width` between two absolute lengths. What
+     GOTCHAS 057 governs is the plate *inside* the opening panel: its observer reports the
+     widening frame as a resize, which snaps, and an eased height would trail the width by
+     400ms and tear the card off its frame.
+   - **The card's column is sized from the viewport, not from the panel** — see GOTCHAS
+     060, which is 057's companion and the opposite lesson: there the observer broke the
+     ease, here it would have papered over a wrong first frame.
+   - C's intro spends **no request**: the committed doc and the build-rendered PNG, which
+     is what ADR-0035 bought. Any keystroke before 0.9s cancels it.
+   - The wall is HTML from the committed docs, 4x8 dealt by `wallColumns()`, duplicated
+     for the loop with per-card margins rather than a gap (GOTCHAS 062).
+6. **Phone, both layouts, 390px. ← CURRENT STEP.** On C the panel cannot widen, so the card
+   appears inside it under the button — **already true**: `.panel-shell` stacks below
+   1280px, which is also the laptop case. Both layouts render at 390 and the nav and hero
+   headlines were already fixed there. This is a detail pass against the two `-phone`
+   prototypes, not a build.
 7. **Choose one layout and DELETE THE OTHER.** A fork with an expiry, not a feature.
 8. **The DESIGN.md rewrite.** It still describes only the Datasheet. ADR-0032 is the
    site's motion and radius authority until this lands. This is also where `card/owner` and

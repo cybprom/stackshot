@@ -1924,6 +1924,101 @@ exactly the repos that cannot answer that question from their own source. A libr
 gets less out of it. That is worth saying out loud in the writeup rather than discovering
 it from a confused issue.
 
+## 060 — A column sized as "whatever is left" is zero wide on the frame the plate measures
+**Date:** 2026-10-07 · **Cost:** ~0.6h, half of it blaming headless Chrome · **Status:** fixed
+**Writeup material:** yes — the measurement was right, the thing measured had not happened yet
+
+Layout C's panel opens from 660px to 1300px and the card's column appears inside it. The
+obvious markup is `flex-1 min-w-0` on that column: it takes whatever the panel has left.
+
+It has nothing left. The column mounts on the same commit that starts the transition, so
+on the frame the plate measures, the panel is still 660 wide and the left column still
+fills it. `frameEl.clientWidth` is 0, `plateScale` returns its `width > 0` fallback of 1,
+and the card lays out at its full 1200-unit canvas inside a 700px frame — clipped, with
+the domain line and two tiles per row off the right edge.
+
+**GOTCHAS 057 is the companion to this and not the same bug.** There the `ResizeObserver`
+was the thing that broke the ease; here it is the thing that would have rescued the scale,
+delivering a corrected width on every frame of the 560ms open. That rescue is worth
+refusing on its own: it re-renders the entire card tree thirty-odd times during a
+transition, to arrive at a number that was knowable before the first frame.
+
+The fix is to stop asking the panel. The column's width is derived from the viewport,
+which does not move while the panel opens:
+
+```css
+width: calc(min(1300px, 100vw - 80px) - 552px);
+```
+
+So the column is its final width from the first frame, the panel's `overflow: hidden`
+holds it off-screen until there is room, and the plate measures once. A genuine window
+resize still goes through the observer and still snaps.
+
+**What cost the time was the diagnosis, not the fix.** The first screenshots were taken
+with `--virtual-time-budget`, which fast-forwards timers but does not carry image decode
+with it — so the crossfade never completed either, and both symptoms looked like one
+"headless does not run the page properly" story. They were two different things: the
+crossfade genuinely was an artifact, and the clipped card genuinely was a bug. The rule
+that separates them: **a virtual-time screenshot can only be trusted for what is settled
+before the first paint.** Anything gated on a decode or an observer needs real time, which
+is twenty lines of CDP and should have been written first.
+
+---
+
+## 061 — Reduced motion decides a piece of layout, and the server cannot know it
+**Date:** 2026-10-07 · **Cost:** ~0.2h, accepted rather than solved · **Status:** living with it
+**Writeup material:** yes — the honest version of a "we support reduced motion" claim
+
+C's panel is closed on load and opens at 0.9s. Under `prefers-reduced-motion: reduce` it
+must be open from the start, with the intro card already in it: there is no sequence to
+watch, so the page arrives at the end of one.
+
+That makes a media query decide **layout**, not just whether something animates, and
+layout is the one thing the server has to commit to before it knows the answer. GOTCHAS
+056's trick — render both and let CSS pick — does not reach it: the card's column is not
+in the DOM until the panel opens, and mounting it inside a zero-width clipped column
+feeds the plate exactly the garbage measurement 060 is about.
+
+So the state is read with `useSyncExternalStore`, whose server snapshot is `false`. That
+is as early as a client can answer: it resolves during the hydration render rather than a
+commit later, so React never paints a collapsed panel of its own. What it cannot fix is
+the **server** HTML, which is the animated path by construction and paints before
+hydration.
+
+**The residual, stated plainly: a visitor who asked for reduced motion sees the closed
+panel until hydration, then it is open with no transition.** Not a flash of motion — a
+frame or two of a smaller panel on a slow device. The alternatives were a cookie (a
+request-time dependency on a page that has none) or rendering the open state for everyone
+and rewinding it for the majority, which is worse for more people.
+
+Worth knowing for anything else that reads a media query to decide structure: the question
+is not "can I read this on the client" but "what does the server send in the meantime",
+and the answer is always "the wrong one, for someone".
+
+---
+
+## 062 — A duplicated column with a flex `gap` does not loop seamlessly
+**Date:** 2026-10-07 · **Cost:** ~0.1h, caught while writing · **Status:** avoided
+**Writeup material:** no — small, but the arithmetic is the kind that hides
+
+The gallery wall scrolls by holding each column's eight cards twice and animating
+`translateY(0 → -50%)`. The duplicate is what makes the loop close: half the element's
+height is exactly one lap.
+
+Except with `gap: 24px` it is not. Sixteen cards have fifteen gaps, so the height is
+`16c + 15g` and half of it is `8c + 7.5g` — while one lap is eight cards *and* eight gaps,
+`8c + 8g`. The wall jumps half a gap, 12px, every 44 seconds.
+
+Giving every card its own `margin-bottom` instead makes each card's block `c + g` and the
+column exactly `16(c + g)`, so half is one lap by construction. The prototype has the gap
+version and it is invisible there, because the wall sits at 50% opacity behind a panel and
+nobody watches one lap of it.
+
+The general shape: **any "duplicate the content and translate by -50%" loop is wrong if
+the separator between items is a gap rather than part of the item.** It is also wrong if
+the two halves can differ in height, which is why the duplicate must be the same list
+rather than a second sample.
+
 ---
 
 *New entries go above this line as they happen.*

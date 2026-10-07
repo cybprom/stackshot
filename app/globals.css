@@ -86,6 +86,69 @@
   }
 }
 
+/* Two bands that do not follow the reader, for layout C's hero: a dark room with a lit
+   panel in it. The same argument as the code block's --code-* tokens, one level up — the
+   thing being shown assumes a ground, so the ground does not get to invert.
+
+   **The panel has to be the lighter of the two in both schemes**, which is why it is
+   pinned rather than left on --surface. On a dark page the page's own surface is #0e1113
+   and the band is too, so a panel that followed the reader vanished into the wall: same
+   colour, no edge, and a shadow does nothing against near-black. Found by looking, in
+   dark mode, which is the only place it shows.
+
+   Neither class touches --preview-page or the .scheme-* rules. The previewed card's
+   System has to stay a media query answered in CSS, and the card's own colours come from
+   lib/tokens by theme, so a pinned band cannot reach either. GOTCHAS 056.
+
+   The values are repeated rather than referenced, because the blocks above assign them to
+   the same names. tests/tokens.test.ts is the seam that stops the copies drifting, exactly
+   as it is for --tiles-surface. Both die with C at step 7 if A is chosen. */
+.theme-dark {
+  --surface: #0e1113;
+  --ink: #dde2dd;
+  --ink-muted: #8b9490;
+  --rule: #242a2b;
+  --accent: #ff6b3d;
+  --error: #f08055;
+  --success: #79b18d;
+
+  --layer-frontend: #7faeff;
+  --layer-frontend-tint: #14223a;
+  --layer-backend: #5cc896;
+  --layer-backend-tint: #10291d;
+  --layer-infra: #e5ae58;
+  --layer-infra-tint: #2a2111;
+  --layer-tooling: #a8aeb5;
+  --layer-tooling-tint: #1c2126;
+
+  color-scheme: dark;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.theme-light {
+  --surface: #edeeea;
+  --ink: #101615;
+  --ink-muted: #5a625e;
+  --rule: #c8ccc4;
+  --accent: #c8461e;
+  --error: #9b2c10;
+  --success: #2f5e3f;
+
+  --layer-frontend: #2458c4;
+  --layer-frontend-tint: #e4ecfa;
+  --layer-backend: #1b7f52;
+  --layer-backend-tint: #e0f1e7;
+  --layer-infra: #9a5f0e;
+  --layer-infra-tint: #f5ead6;
+  --layer-tooling: #596068;
+  --layer-tooling-tint: #eaeced;
+
+  color-scheme: light;
+  background: var(--surface);
+  color: var(--ink);
+}
+
 @theme inline {
   --color-surface: var(--surface);
   --color-ink: var(--ink);
@@ -129,6 +192,9 @@
      is not on the radius ladder, because it is not a radius — it is "fully round". */
   --radius-pill: 999px;
   --radius-tile: 6px;
+  /* C's panel, the one surface on the site large enough to need a step above the plate's
+     12. Goes with C at step 7 if A is chosen. */
+  --radius-panel: 16px;
 
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 }
@@ -177,6 +243,38 @@
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: -0.035em;
+}
+/* The two heroes' headlines, both Archivo 800. They are different sizes because the
+   layouts are: A sets its line across a 500-unit column beside the preview, C sets it
+   inside a panel that has to hold a form beneath it. One of these two dies at step 7 and
+   the survivor joins DESIGN's site scale at step 8. */
+@utility site-hero {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+
+  /* 68 across a 390px screen is five lines and the whole first screenful. The step down
+     is the headline's alone — DESIGN's tracking relationship holds at both sizes. */
+  @media (width >= 40rem) {
+    font-size: 68px;
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+  }
+}
+@utility site-panel-title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+
+  @media (width >= 40rem) {
+    font-size: 54px;
+    line-height: 1;
+    letter-spacing: -0.045em;
+  }
 }
 @utility site-label {
   font-family: var(--font-mono);
@@ -366,6 +464,114 @@ body {
    edge is dragged. lib/preview.ts holds the same number for the gate. ADR-0032. */
 .plate-height {
   transition: height 400ms var(--ease-standard);
+}
+
+/* ---- Layout C only. All of this goes with C if A is chosen at step 7. ---- */
+
+/* The panel opening to two columns. `max-width`, not `width`: both ends are absolute
+   lengths so the interpolation is unambiguous, and `width: 100%` underneath keeps the open
+   panel inside a viewport narrower than it.
+
+   The plate inside must not ease its own height while this runs. Its ResizeObserver
+   reports the widening frame as a resize, which snaps by construction — an eased height
+   would trail the frame by 400ms and the card would tear away from its edge. That is
+   GOTCHAS 057 with `width` substituted, and lib/hero.ts holds the duration's twin. */
+.panel-shell {
+  max-width: var(--panel-max);
+  transition: max-width 560ms var(--ease-standard);
+}
+
+.panel-form {
+  max-width: var(--panel-form-max);
+  transition: max-width 560ms var(--ease-standard);
+}
+
+.panel-card {
+  width: var(--panel-card-width);
+}
+
+/* Below the width the open panel needs, it cannot open, so it does not pretend to: the
+   two columns become one and the card appears under the controls instead of beside them.
+   Nothing animates, because nothing moves sideways. This is also what the phone design
+   asks for, one breakpoint earlier than the phone. */
+@media (max-width: 1279px) {
+  .panel-shell {
+    max-width: 100%;
+    flex-direction: column;
+  }
+
+  .panel-form,
+  .panel-card {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+/* C's panel arrives rather than being there, which is the one place the site contradicts
+   MOTION's "the page arrives complete". The argument is that C's whole proposition is a
+   wall of cards with one panel in front of it, and a panel that is simply present reads as
+   a screenshot. Recorded in the step's ADR; it is also the first thing to drop if C is
+   chosen and the entrance wears out. */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.panel-in {
+  animation: panel-in 520ms var(--ease-standard) 150ms both;
+}
+
+/* The one shadow in the project, against SURFACE's "shadows: none".
+
+   The rule's argument is that a card embedded in a README should sit flat in the page
+   rather than float above it, and that the site must not contradict the card. Neither
+   reaches this: the panel is not a card, and it is the only element on the site that is
+   genuinely in front of something — a wall of cards that moves behind it. Without the
+   shadow it reads as pasted onto the wall rather than held in front of it, which is the
+   whole composition. Recorded in the step's ADR; it dies with C at step 7 if A is chosen,
+   and becomes an amendment line in DESIGN at step 8 if C is. */
+.panel-shadow {
+  box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.75);
+}
+
+/* The wall behind it. Each column is its eight cards twice over and travels exactly half
+   its own height, so the loop has no seam — which only holds because the cards carry their
+   own bottom margin rather than a flex `gap`. With a gap, half the column's height is half
+   a gap short of one period and the wall jumps 11px every lap. */
+@keyframes wall-drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+.wall-up {
+  animation: wall-drift 44s linear infinite;
+}
+
+.wall-down {
+  animation: wall-drift 52s linear infinite reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-shell,
+  .panel-form {
+    transition: none;
+  }
+
+  .panel-in,
+  .wall-up,
+  .wall-down {
+    animation: none;
+  }
 }
 
 /* The real PNG, over the HTML that stood in for it. Same card, same width, same height, so

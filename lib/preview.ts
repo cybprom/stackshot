@@ -10,6 +10,21 @@ import { CARD, TYPE } from "@/lib/tokens";
 export type PreviewDoc = Omit<StackDoc, "unmapped">;
 
 /**
+ * What a committed doc becomes on its way to the browser. Named fields rather than a
+ * rest-spread, so this reads as the list of what the page is allowed to send: `unmapped`
+ * is the backlog, and `/api/resolve` has never handed it to a browser either.
+ */
+export function previewDoc(doc: StackDoc): PreviewDoc {
+  return {
+    owner: doc.owner,
+    repo: doc.repo,
+    language: doc.language,
+    stars: doc.stars,
+    layers: doc.layers,
+  };
+}
+
+/**
  * The site preview's arithmetic, render-free and testable. The components that use it are
  * in `app/preview/`; everything here is a number or a string, so it can be checked without
  * a DOM. ADR-0032.

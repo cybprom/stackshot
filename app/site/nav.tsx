@@ -28,7 +28,9 @@ export async function Nav() {
         <span className="text-layer-infra">
           <StarIcon />
         </span>
-        <span className="site-label font-display font-semibold">{COPY.starOnGitHub}</span>
+        {/* The label goes before the count does: the star and the number still say what
+            the link is, and at 390px the three together wrap into the wordmark. */}
+        <span className="site-label hidden font-display font-semibold sm:inline">{COPY.starOnGitHub}</span>
         <span className="site-data text-ink-muted">{starsLabel(count)}</span>
       </a>
     </nav>

@@ -253,7 +253,10 @@ one-line comment).
 - **Shadows: none.** Two reasons, both sufficient. A card embedded in a README should sit
   flat in the page rather than float above it, and Satori's shadow support is partial
   enough that any two-layer set would render inconsistently. The site has no shadows
-  either — depth on the site would contradict the card.
+  either — depth on the site would contradict the card. **One exception while layout C
+  exists** (ADR-0037): C's panel is the only element on the site genuinely in front of
+  something, a wall of cards that moves behind it, and neither reason reaches it. It dies
+  with C if A is chosen.
 
 ---
 
@@ -524,6 +527,12 @@ To be precise, because "left-aligned" is easy to misread as a whole-page mandate
 column is centered in the viewport at roughly the card's natural width (~1100px). Inside
 it, everything is left-aligned to the card's left edge.** The page does not hug the
 viewport edge.
+
+> **Amended by ADR-0037 for the hero.** Both Phase 5 layouts put the form and the card
+> side by side, so the hero has two spines rather than one and the card's left edge is no
+> longer where the headline starts. The rule holds inside each column and below the hero,
+> where the page is still one column. Step 8's rewrite reconciles this rather than
+> patching it further.
 
 **The card's left edge is the page's alignment spine.** Headline, input, snippet block,
 description list and footer all start there; nothing on the page begins anywhere else. On a

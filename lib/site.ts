@@ -68,9 +68,24 @@ export function pictureSnippet(owner: string, repo: string, style: ServedStyle):
 // scattered through JSX so the whole page can be read against DESIGN.md's copy rules in
 // one pass — which is the only way that audit actually happens.
 export const COPY = {
-  headline: "Show your stack where people already look.",
-  intro:
-    "Paste a GitHub repo. Stackshot reads its manifests and draws the stack in layers, as a PNG that follows your README's light and dark themes.",
+  /**
+   * One block per layout, because the heroes are the one place A and C differ and the
+   * copy differs with them. The survivor's block loses its prefix at step 7.
+   *
+   * Both replace Milestone 3's "Show your stack where people already look.", which
+   * DESIGN's SELF-CRITIQUE had already named as the line doing marketing work instead of
+   * naming the thing, and as the first element to replace if the page read generic.
+   */
+  heroA: {
+    headline: ["Your stack,", "drawn for your", "README."],
+    intro:
+      "Paste a GitHub repo. Stackshot reads its manifests, works out what it's built with, and draws a card that matches GitHub's light and dark themes.",
+  },
+  heroC: {
+    headline: "What's it built with?",
+    intro:
+      "Paste any GitHub repo. Stackshot draws its stack as a card for the README, in light and dark.",
+  },
   inputLabel: "GitHub repo",
   placeholder: "github.com/owner/repo",
   generate: "Generate card",
@@ -81,6 +96,11 @@ export const COPY = {
   copyMarkdown: "Copy markdown",
   copied: "Markdown copied",
   copyFailed: "Select the snippet to copy it",
+  // The snippet is one press away rather than always on the page, so the button that
+  // copies it always has something a visitor can read and select instead.
+  showSnippet: "Show snippet",
+  hideSnippet: "Hide snippet",
+  try: "Try",
   downloadLight: "Download light PNG",
   downloadDark: "Download dark PNG",
   snippetTitle: "Paste this into your README",

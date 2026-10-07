@@ -72,6 +72,40 @@ describe("the site's CSS palette matches the card's tokens", () => {
     expect(value(darkBlock, "preview-page")).toBe(PREVIEW.page.dark.toLowerCase());
   });
 
+  /**
+   * `.theme-dark` is layout C's band — the nav sits on a gallery wall, which is a dark
+   * room whatever the reader's scheme. It repeats the dark palette rather than
+   * referencing it, because the media query assigns the same names, so this is the seam
+   * that stops the third copy drifting.
+   */
+  describe.each(["dark", "light"] as const)(".theme-%s carries that palette", (scheme) => {
+    const band = CSS.match(new RegExp(`\\.theme-${scheme}\\s*\\{([^}]+)\\}`))?.[1] ?? "";
+
+    it.each(TOKENS)("--%s", (cssName, tokenName) => {
+      expect(value(band, cssName)).toBe(COLORS[scheme][tokenName]?.toLowerCase());
+    });
+
+    it.each(["frontend", "backend", "infra", "tooling"] as const)("--layer-%s", (category) => {
+      expect(value(band, `layer-${category}`)).toBe(LAYER_COLORS[scheme][category]?.color.toLowerCase());
+      expect(value(band, `layer-${category}-tint`)).toBe(LAYER_COLORS[scheme][category]?.tint.toLowerCase());
+    });
+
+    // Without this the band paints one scheme and tells the browser the other, which is
+    // what a form control's own chrome — a caret, a scrollbar, a focus ring — reads.
+    it("tells the browser which scheme it is", () => {
+      expect(band).toContain(`color-scheme: ${scheme}`);
+    });
+
+    /**
+     * The previewed card's System is a media query answered in CSS (GOTCHAS 056). A band
+     * that pinned `--preview-page` would freeze the plate behind the card to one scheme
+     * inside it, while the card itself still followed the reader.
+     */
+    it("leaves the previewed card's own surface alone", () => {
+      expect(value(band, "preview-page")).toBeUndefined();
+    });
+  });
+
   // DESIGN.md COLOR: the card has no semantic colors at all, and these two are site-only.
   it("keeps the semantic colors out of the card's palette", () => {
     for (const name of ["error", "success"]) {
