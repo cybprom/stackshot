@@ -79,6 +79,11 @@ async function main(token: string, only?: string) {
   const data: HomeData = { generatedAt: new Date().toISOString(), stars, docs };
   writeFileSync(OUT, `${JSON.stringify(data, null, 2)}\n`);
   console.log(`\n${Object.keys(docs).length} docs written · ${INTRO_REPO} at ${stars} stars`);
+  // The intro card's PNGs are rendered at build from the doc this just replaced, so until
+  // the next build they are the previous stack. The plate shows the HTML from the new doc
+  // and crossfades to bytes from the old one — two different cards, and on the site they
+  // are two different heights. GOTCHAS 063.
+  console.log("Run `pnpm build` to re-render the intro card's PNGs from this data.");
 }
 
 const onlyFlag = process.argv.indexOf("--only");

@@ -267,6 +267,13 @@ one-line comment).
 > the preview plate's height — which also retires "layout, height, or position" from the
 > must-not list for that one element. Everything else here stands, including no hover on a
 > card, no scroll-triggered anything, and a real reduced-motion branch.
+>
+> **Amended again by ADR-0037 and ADR-0038**, both for as long as layout C exists: C's
+> panel arrives rather than being present, and opens its width on a resolve. And the
+> generate button's label resolves character by character on hover, on focus, and when the
+> phase changes it — the one visible sign that a resolve has moved from reading to
+> drawing. All three have a real reduced-motion branch: no entrance, no width transition,
+> and a label that simply changes.
 
 Motion applies to the site only. The product is a static image; it does not animate.
 

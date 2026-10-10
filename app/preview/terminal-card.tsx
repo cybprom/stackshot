@@ -237,7 +237,7 @@ export function TerminalPreviewCard({
           {DOMAIN}
         </div>
         {cursor ? (
-          <div className={`cursor-hold${cursor === "out" ? " cursor-out" : ""}`} style={{ marginLeft: 12 }}>
+          <div className={`cursor-hold ${cursor === "out" ? "cursor-out" : ""}`} style={{ marginLeft: 12 }}>
             {/* One mono cell at TYPE.meta, in accent — the prompt's colour, and like the
                 prompt it is quoting something real. It is on no PNG. ADR-0031, ADR-0032.
 

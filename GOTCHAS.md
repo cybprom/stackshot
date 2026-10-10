@@ -2019,6 +2019,80 @@ the separator between items is a gap rather than part of the item.** It is also 
 the two halves can differ in height, which is why the duplicate must be the same list
 rather than a second sample.
 
+## 063 — The crossfade covered the old card instead of replacing it
+**Date:** 2026-10-10 · **Cost:** ~0.3h · **Status:** fixed
+**Writeup material:** yes — a bug that needs two things to disagree before it exists
+
+The plate draws the card twice: the HTML preview, and the real PNG fading in over it. The
+PNG layer is absolutely positioned at the frame's top with `width: 100%`, so its height is
+whatever the image's aspect ratio gives it, and the HTML underneath was never hidden —
+only covered.
+
+That is fine for as long as the two are the same card, which is the only case anyone had
+ever seen. **They are not always the same card.** Re-running `prepare-home` rewrites
+`lib/home-data.json`, but the intro card's PNGs are rendered at *build*, so until the next
+build the HTML is the new stack and the bytes are the old one. The old stack was shorter.
+The result is two cards on screen: the new one standing out below the bottom edge of the
+old one, which is sitting on top of it.
+
+The error card does the same thing for a different reason — 518 units against a real
+card's 800-odd — so any failing render landed a short card on top of a tall one.
+
+The fix is one rule: the HTML holds its opacity for the whole crossfade and then goes in a
+single step, `transition: opacity 0s linear 200ms`, where 200 is `CROSSFADE_MS`.
+`tests/preview.test.ts` asserts the two numbers match, because a shorter delay flashes the
+plate's own background mid-fade and a longer one leaves the doubling visible for the
+difference. A symmetric crossfade is the obvious alternative and is worse: two half-opaque
+copies of the same card composite to about three quarters, so every ordinary arrival would
+dip.
+
+**The second half of the fix is not code.** `prepare-home` now ends by saying to run
+`pnpm build`, because the data and the bytes it renders are two artifacts and only one of
+them is committed.
+
+---
+
+## 064 — A Tailwind class glued to a template interpolation silently stops existing
+**Date:** 2026-10-10 · **Cost:** ~0.4h, and the author found it, not me · **Status:** fixed
+**Writeup material:** YES — the failure is invisible in the diff and depends on the rest of the codebase
+
+Adding a conditional class to the plate's card tree, I turned
+
+```tsx
+className="absolute left-0 top-0 origin-top-left"
+```
+
+into
+
+```tsx
+className={`absolute left-0 top-0 origin-top-left${layer === "png" ? " card-html-out" : ""}`}
+```
+
+The rendered DOM is identical — the space is in the conditional string. What changed is
+what **Tailwind** sees. It scans source text for candidates rather than evaluating it, and
+the candidate it extracts there is `origin-top-left${layer`, which is not a utility. So
+`origin-top-left` was never generated, `transform-origin` fell back to its CSS default of
+`50% 50%`, and a card scaled about its centre instead of its top-left corner — pushed down
+by `(1 - scale) x height / 2`, 129px on a zustand card, and clipped by the frame's
+`overflow: hidden`. The card hung out of its container.
+
+**What makes this nasty is that it only breaks for a class used exactly once.** The same
+file had `overflow-hidden${frame.eased ? ...}` sitting there since Phase 4 and nothing was
+wrong, because `overflow-hidden` is used in six other places and gets generated anyway.
+`origin-top-left` is used here and nowhere else in the project. So the bug is a function of
+the whole codebase, not of the line that contains it — delete the last other use of a
+utility somewhere else and an unrelated component breaks.
+
+Three things worth carrying:
+
+- **Never let a class name touch `${`.** Put the space before the interpolation, not
+  inside the conditional. `grep -rn 'className={`[^`]*[a-z0-9-]\${'` finds all of them.
+- **A missing utility is not a missing style.** It falls back to the CSS default, which is
+  usually plausible — centred instead of top-left, static instead of relative — so it
+  reads as a layout mistake rather than as a stylesheet with a hole in it.
+- **Check the built CSS, not the DOM.** The element's `class` attribute was correct in
+  DevTools. `grep origin-top-left` over the served stylesheet was the two-second answer.
+
 ---
 
 *New entries go above this line as they happen.*

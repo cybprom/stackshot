@@ -5,6 +5,7 @@ import { CARD_STYLES, DEFAULT_STYLE, type CardStyle } from "@/lib/card-style";
 import {
   DEFAULT_LAUNCH_STYLE,
   LAUNCH_STYLES,
+  CROSSFADE_MS,
   PLATE_HEIGHT_MS,
   PNG_SETTLE_MS,
   PREVIEW_WIDTH,
@@ -225,5 +226,27 @@ describe("what a style reveals one at a time", () => {
   it("never counts more than four Terminal rows", () => {
     const many = { ...doc, layers: [...doc.layers, ...doc.layers, ...doc.layers] };
     expect(revealCount("terminal", many)).toBe(4);
+  });
+});
+
+/**
+ * The crossfade is two rules that have to move together: the PNG fades in over the HTML,
+ * and the HTML holds its opacity for exactly that long before going in one step. If the
+ * delay were shorter the HTML would vanish mid-fade and the plate would flash its own
+ * background; if it were longer a mismatched card would stay doubled for the difference.
+ * GOTCHAS 063.
+ */
+describe("the crossfade's two halves agree", () => {
+  const CSS = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+
+  const rule = (selector: string): string =>
+    CSS.match(new RegExp(`\\${selector}\\s*\\{([^}]+)\\}`))?.[1] ?? "";
+
+  it("fades the PNG in over CROSSFADE_MS", () => {
+    expect(rule(".png-layer")).toContain(`opacity ${CROSSFADE_MS}ms`);
+  });
+
+  it("holds the HTML for exactly that long", () => {
+    expect(rule(".card-html-out")).toContain(`linear ${CROSSFADE_MS}ms`);
   });
 });

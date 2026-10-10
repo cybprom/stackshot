@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "tsx scripts/check-env.ts && tsx scripts/check-home.ts && tsx scripts/render-intro.ts && next build",
+    "build": "tsx --env-file-if-exists=.env.local scripts/check-env.ts && tsx scripts/check-home.ts && tsx --env-file-if-exists=.env.local scripts/render-intro.ts && next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepare-home": "tsx --env-file-if-exists=.env.local scripts/prepare-home.ts",
+    "resolve": "tsx --env-file-if-exists=.env.local scripts/resolve.ts"
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",

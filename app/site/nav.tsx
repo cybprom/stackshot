@@ -11,11 +11,22 @@ import { stars } from "@/lib/stars";
  * `starsLabel` is the card's own rounding, not a second one: the number beside the logo
  * and the number on a card should never disagree about what 58,784 is called.
  */
-export async function Nav() {
+export async function Nav({ className = "" }: { className?: string }) {
   const count = await stars("cybprom/stackshot");
 
   return (
-    <nav className="flex h-18 shrink-0 items-center justify-between border-b border-rule px-6 sm:px-14">
+    // Sticky so the star stays reachable: it is the one thing on the page we are asking
+    // for, and it is otherwise only in view for the first screenful. `bg-surface` is
+    // required, not decoration — a transparent sticky bar lets the index's tiles scroll
+    // through it.
+    //
+    // `className` is how a layout paints the band, and it has to land on this element
+    // rather than on a wrapper: a sticky element can only travel inside its own parent's
+    // box, so a wrapper the height of the nav unsticks it immediately. C passes
+    // `theme-dark` and `bg-surface` then resolves to the band's own ground.
+    <nav
+      className={`sticky top-0 z-50 flex h-18 shrink-0 items-center justify-between border-b border-rule bg-surface px-6 sm:px-14 ${className}`}
+    >
       <Link href="/" className="flex items-center gap-2.5 text-ink">
         <LogoMark size={18} />
         <span className="font-display text-[20px] font-extrabold tracking-[-0.03em]">{COPY.wordmark}</span>

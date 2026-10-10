@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-10-04T02:41:02.534Z",
-  "stars": 0,
+  "generatedAt": "2026-10-10T04:52:43.902Z",
+  "stars": 2,
   "docs": {
     "cybprom/stackshot": {
       "owner": "cybprom",
       "repo": "stackshot",
       "language": "TypeScript",
-      "stars": 0,
+      "stars": 2,
       "layers": [
         {
           "category": "frontend",
@@ -51,6 +51,13 @@
               "symbol": "Rv",
               "description": "Rasterizes SVG to PNG, as a native Node binding.",
               "version": "2"
+            },
+            {
+              "id": "node",
+              "display": "Node",
+              "symbol": "No",
+              "description": "JavaScript runtime.",
+              "version": "22"
             }
           ],
           "overflow": 0
@@ -63,6 +70,12 @@
               "display": "Upstash",
               "symbol": "Up",
               "description": "Serverless Redis and queues."
+            },
+            {
+              "id": "github-actions",
+              "display": "GitHub Actions",
+              "symbol": "Ga",
+              "description": "CI hosted alongside the repo."
             }
           ],
           "overflow": 0
@@ -111,7 +124,7 @@
       "owner": "vercel",
       "repo": "next.js",
       "language": "JavaScript",
-      "stars": 143088,
+      "stars": 143099,
       "layers": [
         {
           "category": "frontend",
@@ -240,13 +253,6 @@
               "description": "pnpm monorepo with multiple packages."
             },
             {
-              "id": "lerna",
-              "display": "Lerna",
-              "symbol": "Le",
-              "description": "Monorepo versioning and publishing.",
-              "version": "9"
-            },
-            {
               "id": "jest",
               "display": "Jest",
               "symbol": "Je",
@@ -266,9 +272,16 @@
               "symbol": "Wp",
               "description": "Module bundler.",
               "version": "5"
+            },
+            {
+              "id": "typescript",
+              "display": "TypeScript",
+              "symbol": "Ts",
+              "description": "Typed JavaScript.",
+              "version": "6"
             }
           ],
-          "overflow": 5
+          "overflow": 4
         }
       ],
       "unmapped": [
@@ -298,7 +311,6 @@
         "cargo:dashmap",
         "cargo:data-encoding",
         "cargo:dhat",
-        "cargo:dunce",
         "cargo:either",
         "cargo:erased-serde",
         "cargo:fixedbitset",
@@ -349,7 +361,6 @@
         "cargo:rstest",
         "cargo:rustc-hash",
         "cargo:scattered-collect",
-        "cargo:semver",
         "cargo:serde_json",
         "cargo:serde_path_to_error",
         "cargo:serde_qs",
@@ -408,6 +419,7 @@
         "npm:@vercel/agent-eval",
         "npm:@vercel/og",
         "npm:@vercel/sandbox",
+        "npm:ajv",
         "npm:alex",
         "npm:async-sema",
         "npm:browserslist",
@@ -515,7 +527,7 @@
       "owner": "pmndrs",
       "repo": "zustand",
       "language": "TypeScript",
-      "stars": 58784,
+      "stars": 58803,
       "layers": [
         {
           "category": "frontend",
@@ -627,7 +639,7 @@
       "owner": "excalidraw",
       "repo": "excalidraw",
       "language": "TypeScript",
-      "stars": 133461,
+      "stars": 133571,
       "layers": [
         {
           "category": "frontend",
@@ -794,7 +806,7 @@
       "owner": "immich-app",
       "repo": "immich",
       "language": "TypeScript",
-      "stars": 115540,
+      "stars": 115883,
       "layers": [
         {
           "category": "frontend",
@@ -804,7 +816,7 @@
               "display": "Tailwind",
               "symbol": "Tw",
               "description": "Utility-first CSS framework.",
-              "version": "4"
+              "version": "3"
             },
             {
               "id": "zod",
@@ -819,13 +831,6 @@
               "symbol": "Du",
               "description": "React-based docs site generator.",
               "version": "3"
-            },
-            {
-              "id": "sveltekit",
-              "display": "SvelteKit",
-              "symbol": "Sv",
-              "description": "Svelte application framework with routing and server rendering.",
-              "version": "2"
             }
           ],
           "overflow": 0
@@ -872,7 +877,7 @@
               "version": "0.29"
             }
           ],
-          "overflow": 6
+          "overflow": 7
         },
         {
           "category": "infra",
@@ -902,13 +907,6 @@
               "description": "pnpm monorepo with multiple packages."
             },
             {
-              "id": "vite",
-              "display": "Vite",
-              "symbol": "Vi",
-              "description": "Dev server and bundler.",
-              "version": "8"
-            },
-            {
               "id": "vitest",
               "display": "Vitest",
               "symbol": "Vt",
@@ -932,42 +930,32 @@
               "display": "TypeScript",
               "symbol": "Ts",
               "description": "Typed JavaScript."
+            },
+            {
+              "id": "mypy",
+              "display": "mypy",
+              "symbol": "Mp",
+              "description": "Static type checker for Python."
             }
           ],
-          "overflow": 5
+          "overflow": 3
         }
       ],
       "unmapped": [
+        "cargo:cbindgen",
+        "cargo:jni",
+        "cargo:libc",
         "npm:@eslint/js",
         "npm:@extism/extism",
-        "npm:@faker-js/faker",
-        "npm:@formatjs/icu-messageformat-parser",
-        "npm:@immich/justified-layout-wasm",
         "npm:@immich/sql-tools",
-        "npm:@immich/ui",
-        "npm:@koddsson/eslint-plugin-tscompat",
         "npm:@mdi/js",
         "npm:@mdi/react",
         "npm:@mdx-js/react",
-        "npm:@noble/hashes",
-        "npm:@photo-sphere-viewer/core",
-        "npm:@photo-sphere-viewer/equirectangular-video-adapter",
-        "npm:@photo-sphere-viewer/markers-plugin",
-        "npm:@photo-sphere-viewer/resolution-plugin",
-        "npm:@photo-sphere-viewer/settings-plugin",
-        "npm:@photo-sphere-viewer/video-plugin",
         "npm:@react-email/components",
         "npm:@react-email/render",
-        "npm:@socket.io/component-emitter",
         "npm:@socket.io/redis-adapter",
-        "npm:@sveltejs/adapter-static",
-        "npm:@sveltejs/enhanced-img",
-        "npm:@sveltejs/vite-plugin-svelte",
-        "npm:@trivago/prettier-plugin-sort-imports",
         "npm:@typescript/native",
         "npm:@vitest/coverage-v8",
-        "npm:@zoom-image/core",
-        "npm:@zoom-image/svelte",
         "npm:archiver",
         "npm:async-lock",
         "npm:bcrypt",
@@ -979,35 +967,22 @@
         "npm:cookie-parser",
         "npm:cron",
         "npm:docusaurus-lunr-search",
-        "npm:dom-to-image",
         "npm:eslint-import-resolver-typescript",
         "npm:exiftool-vendored",
-        "npm:fabric",
-        "npm:factory.ts",
         "npm:fast-glob",
         "npm:fluent-ffmpeg",
         "npm:generic-pool",
-        "npm:geo-coordinates-parser",
         "npm:geo-tz",
-        "npm:geojson",
         "npm:globals",
         "npm:handlebars",
-        "npm:happy-dom",
-        "npm:hash-wasm",
         "npm:helmet",
-        "npm:hls-video-element",
-        "npm:hls.js",
-        "npm:intl-messageformat",
         "npm:jose",
         "npm:js-yaml",
         "npm:jsonwebtoken",
-        "npm:justified-layout",
         "npm:kysely-postgres-js",
         "npm:lodash-es",
         "npm:lunr",
         "npm:luxon",
-        "npm:maplibre-gl",
-        "npm:media-chrome",
         "npm:mnemonist",
         "npm:mock-fs",
         "npm:multer",
@@ -1019,40 +994,24 @@
         "npm:nodemailer",
         "npm:openid-client",
         "npm:picomatch",
-        "npm:pmtiles",
         "npm:pngjs",
         "npm:prism-react-renderer",
-        "npm:qrcode",
         "npm:raw-loader",
         "npm:react-email",
         "npm:reflect-metadata",
-        "npm:rollup-plugin-visualizer",
         "npm:rxjs",
         "npm:sanitize-filename",
         "npm:semver",
         "npm:sharp",
-        "npm:simple-icons",
         "npm:sirv",
         "npm:sql-formatter",
         "npm:supertest",
-        "npm:svelte-check",
-        "npm:svelte-confetti",
-        "npm:svelte-eslint-parser",
-        "npm:svelte-gestures",
-        "npm:svelte-i18n",
-        "npm:svelte-jsoneditor",
-        "npm:svelte-maplibre",
-        "npm:svelte-persisted-store",
-        "npm:tabbable",
-        "npm:tailwind-merge",
-        "npm:tailwind-variants",
         "npm:tailwindcss-preset-email",
         "npm:testcontainers",
         "npm:thumbhash",
         "npm:transformation-matrix",
         "npm:ua-parser-js",
         "npm:unplugin-swc",
-        "npm:uplot",
         "npm:url",
         "npm:uuid",
         "npm:validator",
@@ -1096,7 +1055,7 @@
       "owner": "apache",
       "repo": "airflow",
       "language": "Python",
-      "stars": 47046,
+      "stars": 47133,
       "layers": [
         {
           "category": "backend",
@@ -1398,7 +1357,7 @@
       "owner": "fastapi",
       "repo": "fastapi",
       "language": "Python",
-      "stars": 102795,
+      "stars": 102958,
       "layers": [
         {
           "category": "backend",
@@ -1552,7 +1511,7 @@
       "owner": "pandas-dev",
       "repo": "pandas",
       "language": "Python",
-      "stars": 49909,
+      "stars": 49985,
       "layers": [
         {
           "category": "backend",
@@ -1656,7 +1615,7 @@
       "owner": "pocketbase",
       "repo": "pocketbase",
       "language": "Go",
-      "stars": 61262,
+      "stars": 61338,
       "layers": [
         {
           "category": "frontend",
@@ -1768,7 +1727,7 @@
       "owner": "grafana",
       "repo": "grafana",
       "language": "TypeScript",
-      "stars": 77055,
+      "stars": 77212,
       "layers": [
         {
           "category": "frontend",
@@ -1983,6 +1942,7 @@
         "go:github.com/benbjohnson/clock",
         "go:github.com/blevesearch/bleve/v2",
         "go:github.com/blevesearch/bleve_index_api",
+        "go:github.com/blevesearch/zapx/v16",
         "go:github.com/bradfitz/gomemcache",
         "go:github.com/bwmarrin/snowflake",
         "go:github.com/cenkalti/backoff/v4",
@@ -2071,8 +2031,11 @@
         "go:github.com/grafana/grafana/pkg/apimachinery",
         "go:github.com/grafana/grafana/pkg/apiserver",
         "go:github.com/grafana/grafana/pkg/infra/features",
+        "go:github.com/grafana/grafana/pkg/infra/metrics",
         "go:github.com/grafana/grafana/pkg/plugins",
+        "go:github.com/grafana/grafana/pkg/storage/unified/apistore",
         "go:github.com/grafana/grafana/pkg/storage/unified/resource/kv",
+        "go:github.com/grafana/grafana/pkg/storage/unified/resourceclient",
         "go:github.com/grafana/grafana/pkg/storage/unified/resourcepb",
         "go:github.com/grafana/grafana/pkg/util/sqlite",
         "go:github.com/grafana/loki/pkg/push",
@@ -2401,7 +2364,6 @@
         "npm:ts-jest",
         "npm:ts-morph",
         "npm:ts-node",
-        "npm:tween-functions",
         "npm:type-fest",
         "npm:uplot",
         "npm:vis-data",
@@ -2423,7 +2385,7 @@
       "owner": "gohugoio",
       "repo": "hugo",
       "language": "Go",
-      "stars": 90028,
+      "stars": 90073,
       "layers": [
         {
           "category": "frontend",
@@ -2590,7 +2552,7 @@
       "owner": "astral-sh",
       "repo": "uv",
       "language": "Rust",
-      "stars": 90404,
+      "stars": 90558,
       "layers": [
         {
           "category": "frontend",
@@ -2709,10 +2671,10 @@
         "cargo:arrayvec",
         "cargo:assert_cmd",
         "cargo:assert_fs",
+        "cargo:astral-html",
         "cargo:astral-pubgrub",
         "cargo:astral-reqwest-middleware",
         "cargo:astral-reqwest-retry",
-        "cargo:astral-tl",
         "cargo:astral-tokio-tar",
         "cargo:astral-version-ranges",
         "cargo:astral_async_http_range_reader",
@@ -2734,6 +2696,7 @@
         "cargo:clap_complete_command",
         "cargo:configparser",
         "cargo:console",
+        "cargo:crc32fast",
         "cargo:csv",
         "cargo:ctrlc",
         "cargo:cyclonedx-bom",
@@ -2760,7 +2723,6 @@
         "cargo:h2",
         "cargo:hashbrown",
         "cargo:hex",
-        "cargo:html-escape",
         "cargo:http",
         "cargo:http-body-util",
         "cargo:http-content-range",
@@ -2845,22 +2807,20 @@
         "cargo:unicode-width",
         "cargo:unscanny",
         "cargo:url",
+        "cargo:uv-audit",
         "cargo:uv-cache",
         "cargo:uv-client",
+        "cargo:uv-command-support",
         "cargo:uv-configuration",
         "cargo:uv-distribution-types",
         "cargo:uv-fs",
-        "cargo:uv-keyring",
-        "cargo:uv-netrc",
+        "cargo:uv-lock",
         "cargo:uv-normalize",
-        "cargo:uv-once-map",
         "cargo:uv-pep440",
-        "cargo:uv-preview",
         "cargo:uv-pypi-types",
         "cargo:uv-redacted",
         "cargo:uv-small-str",
-        "cargo:uv-state",
-        "cargo:uv-static",
+        "cargo:uv-version",
         "cargo:uv-warnings",
         "cargo:walkdir",
         "cargo:webpki-root-certs",
@@ -2870,6 +2830,7 @@
         "cargo:windows-version",
         "cargo:wiremock",
         "cargo:x509-parser",
+        "cargo:zerocopy",
         "cargo:zeroize",
         "cargo:zstd",
         "pypi:astral-dev-toolchain-cargo-bloat",
@@ -2895,7 +2856,7 @@
       "owner": "denoland",
       "repo": "deno",
       "language": "Rust",
-      "stars": 108586,
+      "stars": 108722,
       "layers": [
         {
           "category": "backend",
@@ -3294,7 +3255,7 @@
       "owner": "mastodon",
       "repo": "mastodon",
       "language": "Ruby",
-      "stars": 50344,
+      "stars": 50368,
       "layers": [
         {
           "category": "frontend",
@@ -3682,7 +3643,7 @@
       "owner": "laravel",
       "repo": "laravel",
       "language": "Blade",
-      "stars": 85048,
+      "stars": 85060,
       "layers": [
         {
           "category": "frontend",
@@ -3770,7 +3731,7 @@
       "owner": "supabase",
       "repo": "supabase",
       "language": "TypeScript",
-      "stars": 111059,
+      "stars": 111287,
       "layers": [
         {
           "category": "frontend",

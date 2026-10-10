@@ -121,6 +121,11 @@
   --layer-tooling: #a8aeb5;
   --layer-tooling-tint: #1c2126;
 
+  /* The segmented control's groove. Site-only like --track always was, but it has to be
+     pinned with the rest: it sits inside C's panel, and a groove still following the page
+     is a dark slot in a light panel. Found by looking, in dark mode. */
+  --track: #1a1f21;
+
   color-scheme: dark;
   background: var(--surface);
   color: var(--ink);
@@ -143,6 +148,11 @@
   --layer-infra-tint: #f5ead6;
   --layer-tooling: #596068;
   --layer-tooling-tint: #eaeced;
+
+  /* The segmented control's groove. Site-only like --track always was, but it has to be
+     pinned with the rest: it sits inside C's panel, and a groove still following the page
+     is a dark slot in a light panel. Found by looking, in dark mode. */
+  --track: #e4e7e1;
 
   color-scheme: light;
   background: var(--surface);
@@ -571,6 +581,24 @@ body {
   .wall-up,
   .wall-down {
     animation: none;
+  }
+}
+
+/* The HTML, once the real bytes are fully up. It holds its opacity for the whole
+   crossfade and then goes in one step — so the normal case, where the two cards are
+   identical, looks exactly as it did, and the mismatched case stops showing both.
+
+   A symmetric crossfade would be the obvious alternative and is worse: two half-opaque
+   copies of the same card composite to about three quarters, so every arrival would dip.
+   The delay here is CROSSFADE_MS and the two move together. GOTCHAS 063. */
+.card-html-out {
+  opacity: 0;
+  transition: opacity 0s linear 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-html-out {
+    transition: none;
   }
 }
 

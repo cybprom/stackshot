@@ -20,9 +20,7 @@ import { COLORS } from "@/lib/tokens";
 export function HeroC() {
   return (
     <>
-      <div className="theme-dark">
-        <Nav />
-      </div>
+      <Nav className="theme-dark" />
 
       <section
         className="relative flex min-h-205 shrink-0 items-center justify-center overflow-hidden px-4 py-16 sm:px-10 sm:py-20"

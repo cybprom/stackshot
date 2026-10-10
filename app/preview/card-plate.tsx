@@ -199,14 +199,22 @@ export function CardPlate({
     >
       <div
         ref={frameRef}
-        className={`relative w-full overflow-hidden${frame.eased ? " plate-height" : ""}`}
+        className={`relative w-full overflow-hidden ${frame.eased ? "plate-height" : ""}`}
         style={doc ? { height: plateHeight(frame.units, frame.scale) } : undefined}
       >
         <div className={busy ? "card-dim" : "card-lit"}>
           {doc ? (
             <div
               ref={treeRef}
-              className="absolute left-0 top-0 origin-top-left"
+              // Hidden once the PNG is fully up, never merely covered by it. The two are
+              // the same card and the same height when everything agrees — but an error
+              // card is shorter than the card it replaces, and so is a PNG rendered from
+              // a doc that has since changed, and the HTML then shows below the bytes as
+              // a second card. GOTCHAS 063.
+              // The space before the interpolation is load-bearing: Tailwind scans source
+              // text for candidates, and `origin-top-left${...}` is not one. GOTCHAS 064.
+              className={`absolute left-0 top-0 origin-top-left ${layer === "png" ? "card-html-out" : ""}`}
+              aria-hidden={layer === "png"}
               style={{ width: PREVIEW_WIDTH, transform: `scale(${frame.scale})` }}
             >
               {system ? (
