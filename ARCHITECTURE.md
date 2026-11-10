@@ -109,7 +109,7 @@ one, no runtime theme detection, and no per-view telemetry.
 | `lib/repo-ref`, `lib/hash`, `lib/card-style` | nothing (card-style: `lib/tokens` types) | anything |
 | `lib/card-text` | `Category` as a type only | anything |
 | `lib/render/*` | `lib/tokens`, `lib/card-text`, `lib/card-style`, `FailureReason`, StackDoc type | `lib/github`, `lib/cache` |
-| `app/preview/*` (client) | `lib/tokens`, `lib/card-text`, `lib/card-style`, `lib/render/tiles-layout` | everything else in `lib/render/` |
+| `app/preview/*` (client) | `lib/tokens`, `lib/card-text`, `lib/card-style`, `lib/render/tiles-layout`, `app/site/marks` | everything else in `lib/render/` |
 | `lib/serve-card` | everything, **client injected** | — |
 | `app/**/route.ts` | everything | — |
 

@@ -31,12 +31,13 @@
   /* Terminal's, for the same reason and a different one: a terminal sits off the page. */
   --terminal-surface: #fafaf7;
 
-  /* The segmented control's groove. Site-only, like error and success — no card renders
-     it, so it is deliberately absent from lib/tokens.ts and from the seam test. */
-  --track: #e4e7e1;
+  /* Inputs and light-filled controls. Site-only, like error and success. */
+  --field: #ffffff;
 
-  /* GitHub's README surface, behind the previewed card. Mirrors PREVIEW.page. */
+  /* GitHub's README surface, behind the previewed card. Mirrors PREVIEW. */
   --preview-page: #ffffff;
+  --preview-rule: #d1d9e0;
+  --preview-ink-muted: #59636e;
 
   /* The illustrative snippet block, which is DARK IN BOTH THEMES — a code block reads as
      a terminal, and the design draws it that way. So its ink and its two syntax colours
@@ -47,6 +48,8 @@
   --code-ink: #c9d1cb;
   --code-tag: #7faeff;
   --code-string: #e5ae58;
+  --code-dim: #8b9490;
+  --code-rule: #242a2b;
 
   color-scheme: light;
 }
@@ -73,20 +76,20 @@
     --tiles-surface: #12171c;
     --terminal-surface: #0a0d10;
 
-    --track: #1a1f21;
+    --field: #14191c;
 
     --preview-page: #0d1117;
+    --preview-rule: #30363d;
+    --preview-ink-muted: #8b949e;
 
-    /* Only the ground moves, and it moves UP: #101615 against a #0e1113 page is two
-       near-blacks and the block disappears. The ink and the syntax colours do not change,
-       because they were already the dark ones. */
-    --code-surface: #1a1f21;
+    /* Below the page rather than above it now the block carries its own border. */
+    --code-surface: #0a0d0f;
 
     color-scheme: dark;
   }
 }
 
-/* Two bands that do not follow the reader, for layout C's hero: a dark room with a lit
+/* Two bands that do not follow the reader, for the hero: a dark room with a lit
    panel in it. The same argument as the code block's --code-* tokens, one level up — the
    thing being shown assumes a ground, so the ground does not get to invert.
 
@@ -102,7 +105,7 @@
 
    The values are repeated rather than referenced, because the blocks above assign them to
    the same names. tests/tokens.test.ts is the seam that stops the copies drifting, exactly
-   as it is for --tiles-surface. Both die with C at step 7 if A is chosen. */
+   as it is for --tiles-surface. */
 .theme-dark {
   --surface: #0e1113;
   --ink: #dde2dd;
@@ -121,10 +124,7 @@
   --layer-tooling: #a8aeb5;
   --layer-tooling-tint: #1c2126;
 
-  /* The segmented control's groove. Site-only like --track always was, but it has to be
-     pinned with the rest: it sits inside C's panel, and a groove still following the page
-     is a dark slot in a light panel. Found by looking, in dark mode. */
-  --track: #1a1f21;
+  --field: #14191c;
 
   color-scheme: dark;
   background: var(--surface);
@@ -149,10 +149,7 @@
   --layer-tooling: #596068;
   --layer-tooling-tint: #eaeced;
 
-  /* The segmented control's groove. Site-only like --track always was, but it has to be
-     pinned with the rest: it sits inside C's panel, and a groove still following the page
-     is a dark slot in a light panel. Found by looking, in dark mode. */
-  --track: #e4e7e1;
+  --field: #ffffff;
 
   color-scheme: light;
   background: var(--surface);
@@ -170,12 +167,16 @@
 
   --color-tiles-surface: var(--tiles-surface);
   --color-terminal-surface: var(--terminal-surface);
-  --color-track: var(--track);
+  --color-field: var(--field);
   --color-preview-page: var(--preview-page);
+  --color-preview-rule: var(--preview-rule);
+  --color-preview-ink-muted: var(--preview-ink-muted);
   --color-code-surface: var(--code-surface);
   --color-code-ink: var(--code-ink);
   --color-code-tag: var(--code-tag);
   --color-code-string: var(--code-string);
+  --color-code-dim: var(--code-dim);
+  --color-code-rule: var(--code-rule);
 
   --color-layer-frontend: var(--layer-frontend);
   --color-layer-frontend-tint: var(--layer-frontend-tint);
@@ -191,19 +192,15 @@
 
   /* The site's radii, taken from docs/design/site/. DESIGN's "radius 2 everywhere" is the
      card's rule and still governs the card; the page the generator sits in is rounded, and
-     a radius-2 control inside C's 18px panel reads as a mistake rather than as a rule being
+     a radius-2 control inside the panel reads as a mistake rather than as a rule being
      kept. ADR-0032. */
   --radius-control: 10px;
   --radius-segment: 10px;
   --radius-segment-item: 7px;
   --radius-plate: 12px;
   --radius-snippet: 12px;
-  /* The index's chips and the nav's star link. A pill is the one shape on the site that
-     is not on the radius ladder, because it is not a radius — it is "fully round". */
-  --radius-pill: 999px;
   --radius-tile: 6px;
-  /* C's panel, the one surface on the site large enough to need a step above the plate's
-     12. Goes with C at step 7 if A is chosen. */
+  /* The panel, the one surface large enough to need a step above the plate's 12. */
   --radius-panel: 16px;
 
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
@@ -254,37 +251,51 @@
   line-height: 1.05;
   letter-spacing: -0.035em;
 }
-/* The two heroes' headlines, both Archivo 800. They are different sizes because the
-   layouts are: A sets its line across a 500-unit column beside the preview, C sets it
-   inside a panel that has to hold a form beneath it. One of these two dies at step 7 and
-   the survivor joins DESIGN's site scale at step 8. */
-@utility site-hero {
-  font-family: var(--font-display);
-  font-size: 40px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.04em;
-
-  /* 68 across a 390px screen is five lines and the whole first screenful. The step down
-     is the headline's alone — DESIGN's tracking relationship holds at both sizes. */
-  @media (width >= 40rem) {
-    font-size: 68px;
-    line-height: 0.98;
-    letter-spacing: -0.045em;
-  }
-}
+/* The hero's headline, Archivo 800, stepped down so 390px is not all headline. */
 @utility site-panel-title {
   font-family: var(--font-display);
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 800;
   line-height: 1.02;
   letter-spacing: -0.04em;
 
   @media (width >= 40rem) {
-    font-size: 54px;
+    font-size: 58px;
     line-height: 1;
     letter-spacing: -0.045em;
   }
+}
+/* Buttons, labels and segments. Generate alone stays mono, for its scramble. */
+@utility site-control {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+@utility site-chip {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+/* Repo names, counts and the status line. */
+@utility site-status {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+@utility site-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+@utility site-small {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.45;
 }
 @utility site-label {
   font-family: var(--font-mono);
@@ -327,8 +338,19 @@ body {
 /* A real branch, not a global animation:none sledgehammer: state transitions become
    instant, and the reveal's own branch is beside its keyframes below. */
 @media (prefers-reduced-motion: reduce) {
-  .motion-state {
+  .motion-state,
+  .press,
+  .segment-fill-live,
+  .swap,
+  .chevron,
+  .disclose,
+  .disclose-code {
     transition-duration: 0ms;
+    transition-delay: 0ms;
+  }
+
+  .press:active:not(:disabled) {
+    transform: none;
   }
 }
 
@@ -338,6 +360,109 @@ body {
   transition-timing-function: var(--ease-standard);
 }
 
+/* The page's one column of content, shared by every section and the footer's rule. */
+.site-grid {
+  width: min(1220px, 100% - 40px);
+  margin-inline: auto;
+}
+
+/* Things you press. Reduced motion below keeps the colour change and drops the scale. */
+.press {
+  transition-property: color, background-color, border-color, transform;
+  transition-duration: 120ms;
+  transition-timing-function: var(--ease-standard);
+}
+
+.press:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* A field draws its own focus on the border, so the input inside gives up its outline. */
+.field:focus-within {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 0.5px var(--accent);
+}
+
+.field input:focus-visible {
+  outline: none;
+}
+
+/* A 26px chip with a 40px target. Fine pointers get it too, because it costs nothing. */
+.try-chip {
+  position: relative;
+}
+
+.try-chip::after {
+  content: "";
+  position: absolute;
+  inset: -7px 0;
+}
+
+/* The selected segment's fill slides between measured positions. */
+.segment-fill-live {
+  transition:
+    transform 120ms var(--ease-standard),
+    width 120ms var(--ease-standard);
+}
+
+/* Copy's two labels, in one grid cell so the button never changes width. */
+.swap {
+  opacity: 0;
+  transition: opacity 200ms var(--ease-standard);
+}
+
+.swap-on {
+  opacity: 1;
+  transition-duration: 120ms;
+}
+
+.chevron {
+  transition: transform 120ms var(--ease-standard);
+}
+
+.chevron-open {
+  transform: rotate(90deg);
+}
+
+/* Grid rows animate to the content's real height with nothing measured in script. */
+.disclose {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 400ms var(--ease-standard);
+}
+
+.disclose-open {
+  grid-template-rows: 1fr;
+}
+
+.disclose-code {
+  opacity: 0;
+  transition: opacity 200ms var(--ease-standard);
+}
+
+.disclose-open .disclose-code {
+  opacity: 1;
+  transition-delay: 133ms;
+}
+
+.index-chips {
+  scrollbar-width: none;
+}
+
+.index-grid {
+  transition: opacity 120ms var(--ease-standard);
+}
+
+.index-leaving {
+  opacity: 0;
+}
+
+@media (max-width: 639px) {
+  .index-capped > :nth-child(n + 13) {
+    display: none;
+  }
+}
+
 /* The loading sequence and the per-style reveals, from
    docs/design/directions/preview.dc.html. ADR-0032 added these four to MOTION's closed
    list; everything else on that list still stands.
@@ -345,15 +470,11 @@ body {
    Delays are per item and come from lib/preview.ts; durations are here, because a duration
    is the same for every item. */
 @keyframes tile-in {
-  0% {
+  from {
     opacity: 0;
-    transform: translateY(10px) scale(0.9);
+    transform: translateY(4px);
   }
-  65% {
-    opacity: 1;
-    transform: translateY(-1px) scale(1.03);
-  }
-  100% {
+  to {
     opacity: 1;
     transform: none;
   }
@@ -400,7 +521,12 @@ body {
   background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--sweep-accent) 13%, transparent));
   border-bottom: 2px solid var(--sweep-accent);
   box-shadow: 0 8px 18px -6px var(--sweep-accent);
-  animation: sweep 1250ms cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  animation: sweep 900ms cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  transition: opacity 120ms var(--ease-standard);
+}
+
+.sweep-out {
+  opacity: 0;
 }
 
 /* Terminal's cursor: a loading indicator, not part of the card. It blinks while the PNG is
@@ -427,7 +553,7 @@ body {
 }
 
 .cursor-blink {
-  animation: blink 1s steps(1) infinite;
+  animation: blink 1060ms steps(1) infinite;
 }
 
 /* The card being replaced stays visible and steps back, rather than vanishing: what is on
@@ -440,8 +566,8 @@ body {
 .card-dim,
 .card-lit {
   transition:
-    opacity 240ms var(--ease-standard),
-    filter 240ms var(--ease-standard);
+    opacity 200ms var(--ease-standard),
+    filter 200ms var(--ease-standard);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -476,56 +602,97 @@ body {
   transition: height 400ms var(--ease-standard);
 }
 
-/* ---- Layout C only. All of this goes with C if A is chosen at step 7. ---- */
-
-/* The panel opening to two columns. `max-width`, not `width`: both ends are absolute
-   lengths so the interpolation is unambiguous, and `width: 100%` underneath keeps the open
-   panel inside a viewport narrower than it.
-
-   The plate inside must not ease its own height while this runs. Its ResizeObserver
-   reports the widening frame as a resize, which snaps by construction — an eased height
-   would trail the frame by 400ms and the card would tear away from its edge. That is
-   GOTCHAS 057 with `width` substituted, and lib/hero.ts holds the duration's twin. */
+/* The panel opens once. `max-width`, so both ends are absolute lengths and `width: 100%`
+   underneath keeps the open panel inside a narrower viewport. The plate must not ease its
+   height while this runs: its observer reports the widening as a resize, which snaps.
+   GOTCHAS 057. */
 .panel-shell {
+  gap: 56px;
   max-width: var(--panel-max);
-  transition: max-width 560ms var(--ease-standard);
+  transition: max-width var(--panel-open) var(--ease-standard);
 }
 
 .panel-form {
   max-width: var(--panel-form-max);
-  transition: max-width 560ms var(--ease-standard);
+  transition: max-width var(--panel-open) var(--ease-standard);
+}
+
+/* Takes its final width at once, so the text breaks one time rather than during the slide. */
+.panel-copy {
+  width: 100%;
+  max-width: var(--panel-form-max);
+}
+
+.panel-copy-ghost {
+  width: var(--panel-form-closed);
+  pointer-events: none;
+  animation: panel-ghost-out 140ms var(--ease-standard) both;
+}
+
+.panel-copy-in {
+  animation: panel-reveal 240ms var(--ease-standard) 60ms both;
 }
 
 .panel-card {
   width: var(--panel-card-width);
 }
 
-/* Below the width the open panel needs, it cannot open, so it does not pretend to: the
-   two columns become one and the card appears under the controls instead of beside them.
-   Nothing animates, because nothing moves sideways. This is also what the phone design
-   asks for, one breakpoint earlier than the phone. */
+.panel-card-in {
+  animation: panel-card-in 320ms var(--ease-standard) 100ms both;
+}
+
+/* Below the width the open panel needs, the columns stack and nothing slides. */
 @media (max-width: 1279px) {
   .panel-shell {
-    max-width: 100%;
+    gap: 20px;
+    max-width: min(var(--panel-max), 760px);
     flex-direction: column;
   }
 
   .panel-form,
+  .panel-copy,
   .panel-card {
     max-width: 100%;
     width: 100%;
   }
+
+  /* The width never changes here, so there is no re-wrap to hide and no sideways travel. */
+  .panel-copy-ghost {
+    display: none;
+  }
+
+  .panel-copy-in {
+    animation: none;
+  }
+
+  .panel-card-in {
+    animation-name: panel-reveal;
+  }
 }
 
-/* C's panel arrives rather than being there, which is the one place the site contradicts
-   MOTION's "the page arrives complete". The argument is that C's whole proposition is a
-   wall of cards with one panel in front of it, and a panel that is simply present reads as
-   a screenshot. Recorded in the step's ADR; it is also the first thing to drop if C is
-   chosen and the entrance wears out. */
-@keyframes panel-in {
+@keyframes panel-reveal {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes panel-ghost-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes panel-card-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
   }
   to {
     opacity: 1;
@@ -533,42 +700,77 @@ body {
   }
 }
 
-.panel-in {
-  animation: panel-in 520ms var(--ease-standard) 150ms both;
+
+.panel-reveal {
+  animation: panel-reveal 200ms var(--ease-standard) 120ms both;
 }
 
-/* The one shadow in the project, against SURFACE's "shadows: none".
-
-   The rule's argument is that a card embedded in a README should sit flat in the page
-   rather than float above it, and that the site must not contradict the card. Neither
-   reaches this: the panel is not a card, and it is the only element on the site that is
-   genuinely in front of something — a wall of cards that moves behind it. Without the
-   shadow it reads as pasted onto the wall rather than held in front of it, which is the
-   whole composition. Recorded in the step's ADR; it dies with C at step 7 if A is chosen,
-   and becomes an amendment line in DESIGN at step 8 if C is. */
+/* The one shadow in the project, against SURFACE's "shadows: none": the panel is the only
+   element genuinely in front of something. ADR-0037. */
 .panel-shadow {
   box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.75);
 }
 
-/* The wall behind it. Each column is its eight cards twice over and travels exactly half
-   its own height, so the loop has no seam — which only holds because the cards carry their
-   own bottom margin rather than a flex `gap`. With a gap, half the column's height is half
-   a gap short of one period and the wall jumps 11px every lap. */
-@keyframes wall-drift {
+/* See-through over the wall, solid once the page has moved. Browsers without scroll
+   timelines keep the solid bar, which is the safe half. */
+.nav-band {
+  background: var(--surface);
+  border-color: var(--rule);
+}
+
+@supports (animation-timeline: scroll()) {
+  .nav-band {
+    animation: nav-solid linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 120px;
+  }
+}
+
+@keyframes nav-solid {
   from {
-    transform: translateY(0);
+    background: transparent;
+    border-color: transparent;
   }
   to {
-    transform: translateY(-50%);
+    background: var(--surface);
+    border-color: var(--rule);
   }
 }
 
-.wall-up {
-  animation: wall-drift 44s linear infinite;
+/* The wall moves only with scroll: there is no timer. Each column travels at its own rate.
+   ADR-0039 lifts MOTION's "no scroll-triggered anything" for this one element. */
+.wall {
+  opacity: 0.4;
+  transition: opacity 200ms var(--ease-standard);
+  /* Quieter behind the nav, which sits on it with nothing between them. */
+  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.4), rgb(0 0 0) 120px);
 }
 
-.wall-down {
-  animation: wall-drift 52s linear infinite reverse;
+/* Names the cards once the panel has opened; beside the narrow panel it reads as stray. */
+.wall-caption {
+  visibility: hidden;
+}
+
+.hero-band:has(.panel-card) .wall-caption {
+  visibility: visible;
+}
+
+.hero-band:has(#repo-url:focus) .wall {
+  opacity: 0.18;
+}
+
+@supports (animation-timeline: scroll()) {
+  .wall-column {
+    animation: wall-scroll linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 1000px;
+  }
+}
+
+@keyframes wall-scroll {
+  to {
+    transform: translateY(calc(var(--wall-rate) * -1000px));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -577,10 +779,15 @@ body {
     transition: none;
   }
 
-  .panel-in,
-  .wall-up,
-  .wall-down {
+  .panel-reveal,
+  .panel-copy-in,
+  .panel-card-in,
+  .wall-column {
     animation: none;
+  }
+
+  .panel-copy-ghost {
+    display: none;
   }
 }
 

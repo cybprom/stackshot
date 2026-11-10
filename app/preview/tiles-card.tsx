@@ -1,6 +1,6 @@
 import { PreviewCardHeader } from "@/app/preview/card-header";
 import { DOMAIN, LAYER_NAME, starsLabel } from "@/lib/card-text";
-import { family, legendDelay, PREVIEW_WIDTH, tileDelay, type PreviewDoc } from "@/lib/preview";
+import { BASELINE_NUDGE, family, legendDelay, PREVIEW_WIDTH, tileDelay, type PreviewDoc } from "@/lib/preview";
 import { layoutTiles } from "@/lib/render/tiles-layout";
 import { CARD, COLORS, LAYER_COLORS, TILES, TYPE, type Theme } from "@/lib/tokens";
 import type { Category, StackItem } from "@/lib/stack-map/types";
@@ -52,9 +52,13 @@ function Tile({
         borderRadius: TILES.tile.radius,
         backgroundColor: tint,
         borderTop: `${TILES.tile.rule}px solid ${color}`,
+        // Transparent sides make the browser mitre the bar's ends, as Satori draws them.
+        // A lone top border tapers instead, and the bars visibly change at the crossfade.
+        borderLeft: `${TILES.tile.rule}px solid transparent`,
+        borderRight: `${TILES.tile.rule}px solid transparent`,
         paddingTop: TILES.tile.padTop,
-        paddingLeft: TILES.tile.padX,
-        paddingRight: TILES.tile.padX,
+        paddingLeft: TILES.tile.padX - TILES.tile.rule,
+        paddingRight: TILES.tile.padX - TILES.tile.rule,
         paddingBottom: TILES.tile.padBottom,
       }}
     >
@@ -69,6 +73,8 @@ function Tile({
           fontWeight: TYPE.version.weight,
           lineHeight: 1,
           color: c.inkMuted,
+          position: "relative",
+          top: BASELINE_NUDGE.version,
         }}
       >
         {item.version ?? ""}
@@ -89,6 +95,8 @@ function Tile({
           line count — so a long display name clips at the same word in both. */}
       <div
         style={{
+          position: "relative",
+          top: BASELINE_NUDGE.tileName,
           maxHeight: TILES.nameMaxHeight,
           overflow: "hidden",
           fontFamily: family(TYPE.tileName.family),
@@ -152,6 +160,8 @@ function MoreTile({
           fontWeight: TYPE.tileName.weight,
           lineHeight: TYPE.tileName.lineHeight,
           color: c.inkMuted,
+          position: "relative",
+          top: BASELINE_NUDGE.tileName,
         }}
       >
         more
@@ -188,6 +198,8 @@ function Legend({ categories, theme, c }: { categories: Category[]; theme: Theme
               fontWeight: TYPE.legend.weight,
               lineHeight: TYPE.legend.lineHeight,
               color: c.inkMuted,
+              position: "relative",
+              top: BASELINE_NUDGE.legend,
             }}
           >
             {LAYER_NAME[category]}
@@ -277,6 +289,8 @@ export function TilesPreviewCard({
             lineHeight: TYPE.meta.lineHeight,
             letterSpacing: TYPE.meta.tracking * TYPE.meta.size,
             color: c.inkMuted,
+            position: "relative",
+            top: BASELINE_NUDGE.tilesMeta,
           }}
         >
           {DOMAIN}

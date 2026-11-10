@@ -2095,4 +2095,65 @@ Three things worth carrying:
 
 ---
 
+## 065 — The "PNG jump" was a status line, not the PNG
+**Date:** 2026-11-09 · **Cost:** ~1h · **Status:** fixed
+**Writeup material:** yes
+
+The card visibly hopped at the HTML-to-PNG crossfade. Every instinct said renderer drift.
+A per-frame trace of the panel said otherwise: the panel lost 15.2px on the exact frame the
+fade began, because "Drawing card" sat under the controls and vanished when the phase
+ended. The panel was vertically centred, so the card moved 7.6px. The bytes had nothing to
+do with it. The status line is now a fixed-height row and the panel is top-anchored.
+
+Looking closely found the drift anyway, smaller and underneath. Line boxes agreed (052) but
+glyphs sat up to 2 units lower in the PNG, per text style, and tile bars changed shape:
+Satori mitres a top border at a rounded corner and a browser tapers it. The fix is in the
+preview only, so no `RENDER_VERSION` bump: `BASELINE_NUDGE`, and transparent side borders
+to make the browser mitre too. Measured by searching for the best offset between screenshots
+of each state, per font. Everything now lands within one device pixel at 1440.
+
+Measure the page around the thing that looks wrong before measuring the thing.
+
+## 066 — An example card counts as "settled", which ended every first loading state
+**Date:** 2026-11-09 · **Cost:** ~0.25h · **Status:** fixed
+
+The plate reports `onSettled` when it has nothing left to wait for. On a first Generate it
+mounts holding only the example PNG, so it has nothing to wait for, and it told the page so
+while the resolve was still running. The phase dropped to idle: no sweep, and the new
+"drawn in" read 0.0s. The layout had hidden this since Phase 5 step 5, because the old intro
+sequence set its own phases. A timer that printed a number is what exposed it. `onSettled`
+now requires a doc.
+
+## 067 — A repeat click left the status on "Drawing" forever
+**Date:** 2026-11-09 · **Cost:** ~0.25h · **Status:** fixed
+
+Found by the author clicking things twice. Two routes, same symptom. Picking the style
+already selected set the phase to drawing while nothing about the card changed, so the plate
+never settled again. Clicking the same Try returned a new doc object, which reset the plate's
+PNG gate, but the gate's effect was keyed on the URLs and those had not moved, so it never
+reopened. The effect now keys on the doc too, a repeated style is a no-op, and `onSettled`
+fires only while a card is arriving, so a settled plate ends a drawing phase on its own.
+
+## 068 — `download` is ignored cross-origin, and the page was quietly cross-origin in dev
+**Date:** 2026-11-09 · **Cost:** ~0.25h · **Status:** fixed
+
+The Light/Dark PNG links navigated instead of saving when the page ran anywhere but the
+production host, because their absolute `SITE_ORIGIN` URLs made them cross-origin and browsers
+drop `download` there. The same URLs fed the plate, so an unconfigured `next dev` was also
+previewing production's PNGs. The page now uses path-only URLs. Only what leaves the site,
+the snippet, stays absolute.
+
+## 069 — A good resolve, then an error card: the cache read lost a race from a laptop
+**Date:** 2026-11-09 · **Cost:** ~0.5h · **Status:** fixed
+
+`/api/resolve` succeeded on next.js and the card then arrived as an error. Upstash is 330-500ms
+from a local `next dev` and `CACHE_TIMEOUT_MS` is 500, so reads time out at random and a timeout
+reads as a miss. The card route then re-resolved under its 2.5s per-fetch limit, and next.js's
+recursive tree took 4.9s on the same run. `tree=2506` in the log is what gave it away: the site
+client's limit is 6.25s, so the failing resolve could only be the card route's. The failure
+also wrote a `failed` pointer over the good one for 60s. Local processes now allow 2s for a
+cache call, and a `failed` pointer is written `NX`, so it only ever fills an empty slot.
+
+---
+
 *New entries go above this line as they happen.*

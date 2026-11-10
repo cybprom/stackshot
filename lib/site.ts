@@ -5,7 +5,7 @@ import type { Theme } from "@/lib/tokens";
 
 /**
  * The one origin the card's footer, the preview and the copied snippet all agree on.
- * Overridable so `next dev` previews its own cards; the default is what ships, and what
+ * Overridable so `next dev` hands out its own URLs; the default is what ships, and what
  * strangers' READMEs will point at forever.
  */
 export const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://stackshot.ilerioluwa.com";
@@ -23,8 +23,13 @@ export const LINKS = {
   author: "https://x.com/cybprom",
 } as const;
 
+/** The page's own way to a card. Same-origin on any host, which `download` depends on. */
+export function cardPath(owner: string, repo: string, style: ServedStyle, theme: Theme): string {
+  return `/${owner}/${repo}/${cardFileName(style, theme)}`;
+}
+
 export function cardUrl(owner: string, repo: string, style: ServedStyle, theme: Theme): string {
-  return `${SITE_ORIGIN}/${owner}/${repo}/${cardFileName(style, theme)}`;
+  return `${SITE_ORIGIN}${cardPath(owner, repo, style, theme)}`;
 }
 
 /**
@@ -55,6 +60,31 @@ export function introCardUrl(style: ServedStyle, theme: Theme): string {
  * card's 1200×518, and Tiles' content height — so a snippet copied while a repo worked
  * would distort when it later fails.
  */
+export type SnippetToken = { kind: "tag" | "attr" | "string" | "plain"; text: string };
+
+/**
+ * The snippet split for colouring. Display only: each attribute that holds a URL starts a
+ * new line so it can be read without scrolling, and the copied string is untouched.
+ */
+export function snippetTokens(snippet: string): SnippetToken[] {
+  const tokens: SnippetToken[] = [];
+  const pattern = /(<\/?[a-z]+|\/?>)|([a-z]+)=("[^"]*")/g;
+  let at = 0;
+  for (const match of snippet.matchAll(pattern)) {
+    if (match.index > at) tokens.push({ kind: "plain", text: snippet.slice(at, match.index) });
+    if (match[1] !== undefined) {
+      tokens.push({ kind: "tag", text: match[1] });
+    } else {
+      const name = match[2] as string;
+      if (name === "srcset" || name === "src") tokens.push({ kind: "plain", text: "\n   " });
+      tokens.push({ kind: "attr", text: name }, { kind: "plain", text: "=" }, { kind: "string", text: match[3] as string });
+    }
+    at = match.index + match[0].length;
+  }
+  if (at < snippet.length) tokens.push({ kind: "plain", text: snippet.slice(at) });
+  return tokens;
+}
+
 export function pictureSnippet(owner: string, repo: string, style: ServedStyle): string {
   return [
     `<picture>`,
@@ -68,26 +98,13 @@ export function pictureSnippet(owner: string, repo: string, style: ServedStyle):
 // scattered through JSX so the whole page can be read against DESIGN.md's copy rules in
 // one pass — which is the only way that audit actually happens.
 export const COPY = {
-  /**
-   * One block per layout, because the heroes are the one place A and C differ and the
-   * copy differs with them. The survivor's block loses its prefix at step 7.
-   *
-   * Both replace Milestone 3's "Show your stack where people already look.", which
-   * DESIGN's SELF-CRITIQUE had already named as the line doing marketing work instead of
-   * naming the thing, and as the first element to replace if the page read generic.
-   */
-  heroA: {
-    headline: ["Your stack,", "drawn for your", "README."],
-    intro:
-      "Paste a GitHub repo. Stackshot reads its manifests, works out what it's built with, and draws a card that matches GitHub's light and dark themes.",
-  },
-  heroC: {
-    headline: "What's it built with?",
-    intro:
-      "Paste any GitHub repo. Stackshot draws its stack as a card for the README, in light and dark.",
+  hero: {
+    headline: "What’s it built with?",
+    intro: "Paste any GitHub repo. Stackshot draws its stack as a card for the README, in light and dark.",
   },
   inputLabel: "GitHub repo",
-  placeholder: "github.com/owner/repo",
+  repoPrefix: "github.com/",
+  placeholder: "owner/repo",
   generate: "Generate card",
   // Two phases, both real: one while /api/resolve runs, one while the card draws. The
   // button and the live region say the same thing, so a screen reader hears the page.
@@ -101,11 +118,13 @@ export const COPY = {
   showSnippet: "Show snippet",
   hideSnippet: "Hide snippet",
   try: "Try",
-  downloadLight: "Download light PNG",
-  downloadDark: "Download dark PNG",
+  // Two links, not one button: browsers block or prompt on two downloads from one click.
+  downloadLight: { short: "Light", rest: " PNG", label: "Download light PNG" },
+  downloadDark: { short: "Dark", rest: " PNG", label: "Download dark PNG" },
   snippetTitle: "Paste this into your README",
   stackTitle: "What Stackshot found",
-  exampleCaption: `An example card: ${EXAMPLE_REPO.owner}/${EXAMPLE_REPO.repo}, generated the same way yours will be.`,
+  stackIntro: "Every technology on the card, with what it’s doing in this repo.",
+  stackMeta: (n: number, ref: string) => `${n} in ${ref}`,
   badUrl: "Stackshot reads GitHub repos. Paste a repo URL, or owner/repo.",
   // The per-IP gate and GitHub's own limit are one FailureReason but two different
   // sentences: one is about you, the other is about us.
@@ -117,14 +136,20 @@ export const COPY = {
   theme: { light: "Light", dark: "Dark", system: "System" } satisfies Record<ThemeMode, string>,
   // Says what the toggle is for, because it is the one control on the page that changes
   // nothing about what you copy. The snippet always carries both themes.
-  themeNote: "This changes the preview. Your snippet always carries both themes.",
+  themeNote: "Changes the preview only. Your snippet always carries both themes.",
+  // The words the line above the card resolves into, and what a screen reader hears.
+  statusReading: (ref: string) => `Reading ${ref}`,
+  statusDrawing: (ref: string) => `Drawing ${ref}`,
+  statusFound: (n: number, ref: string) => `${n} found in ${ref}`,
+  statusDrawn: (ms: number) => `drawn in ${(ms / 1000).toFixed(1)}s`,
   // The card's own legend strings, not a second set: the description list is a key to the
   // card above it, so a layer renamed on one has to be renamed on both.
   layer: LAYER_NAME,
 
   // Nav and footer.
   wordmark: "stackshot",
-  starOnGitHub: "Star on GitHub",
+  starOnGitHub: (stars: string) => `Star on GitHub, ${stars}`,
+  wallCaption: "Behind the panel: real repos, drawn by Stackshot",
   github: "GitHub",
   builtBy: { before: "Open source. Built by ", name: "Ilerioluwa", after: "." },
   suggest: "Suggest a technology",
@@ -132,7 +157,7 @@ export const COPY = {
   // "One snippet. Both themes." — two lines in the design, and the break is deliberate.
   snippetPitchTitle: ["One snippet.", "Both themes."],
   snippetPitch:
-    "Paste it into your README. GitHub shows the light card or the dark one to match each reader, and the card updates when your stack changes.",
+    "Paste it into your README. GitHub shows the light card or the dark one to match each reader, and the image redraws when your stack changes.",
 
   // The technology index.
   indexTitle: "Does it know your stack?",
@@ -142,9 +167,10 @@ export const COPY = {
   indexSearchPlaceholder: "Search, e.g. prisma",
   indexShowAll: (n: number) => `Show all ${n}`,
   indexShowFewer: "Show fewer",
-  indexNoMatch: (q: string) => `No match for "${q}".`,
-  indexSuggest: "Suggest it on GitHub",
-  indexSuggestAfter: " and it can join the map.",
+  indexNoMatch: (q: string) => `Nothing matches “${q}”.`,
+  indexClosest: (name: string) => `Closest is ${name}.`,
+  indexSuggest: "Suggest a technology",
+  indexShown: (shown: number, total: number) => `${shown} of ${total} shown`,
   // Announced to a screen reader as the grid filters, since the change is visual only.
   indexCount: (n: number) => `${n} ${n === 1 ? "technology" : "technologies"} shown`,
 } as const;

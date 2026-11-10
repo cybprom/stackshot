@@ -122,18 +122,16 @@ one line wherever a classification is contestable (e.g. why Prisma is `backend` 
 ```
 app/
   layout.tsx
-  page.tsx                       one page, the whole site; picks the hero
+  page.tsx                       one page, the whole site
   site/                          nav, footer, marks, snippet-pitch, stack-found,
                                  tech-index (+ its island). Components, not a route.
-    hero-a.tsx | hero-c.tsx      the two layouts. ONLY THE HERO DIFFERS; one is
-                                 deleted at Phase 5 step 7 (ADR-0037).
-    wall.tsx                     C's drifting gallery, HTML from the committed docs
+    hero.tsx                     the band: nav, wall, panel, caption (ADR-0039)
+    wall.tsx                     the gallery behind the panel, HTML from the committed docs
     generator/                   the generator as parts: context (all the state),
                                  repo-field, try-row, style-controls, status, plate,
-                                 actions, found, and panel (C's widening shell).
-                                 THE PARTS TAKE NO WIDTH, MARGIN OR ORDER — the hero
-                                 places them, which is what lets C put the controls
-                                 beside the card and Copy under it.
+                                 actions, found, and panel (the widening shell).
+                                 THE PARTS TAKE NO WIDTH, MARGIN OR ORDER — the panel
+                                 places them.
   globals.css                    site tokens; the card's live in lib/tokens.ts
   api/resolve/route.ts           POST { url } -> StackDoc
   [owner]/[repo]/[file]/route.ts {style}-{theme}.png, plus legacy card-{theme}.png
@@ -160,9 +158,7 @@ lib/
   card-style.ts                  style names, SERVED_STYLES, URL parsing; client-safe
   manifest-paths.ts              path filters shared by tree selection and detection
   site.ts                        SITE_ORIGIN, card URLs, the snippet, every site string
-  hero.ts                        the layout fork: which hero ships, C's timings and
-                                 panel widths, the wall's allocation. DELETED WITH
-                                 THE LOSING LAYOUT at Phase 5 step 7.
+  hero.ts                        the panel's widths and the wall's allocation
   home.ts                        the fixed repo list + the committed data's reader
   stars.ts                       the nav's star count, cached 1h, committed fallback
   tech-index.ts                  the map as a searchable index; the matcher (ADR-0036)

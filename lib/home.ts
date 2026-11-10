@@ -10,15 +10,24 @@ import type { StackDoc } from "@/lib/stack-map/types";
  * cache. The intro card's PNG is rendered from it at build time; the wall is HTML from it.
  */
 
-/** The intro card, and what C generates ~0.9s after load. */
+/** The example card: the first dimmed card in the slot, and the snippet section's pair. */
 export const INTRO_REPO = "cybprom/stackshot";
 
-/** C's second way in. The first two are also on the wall; the third is the intro card. */
+/** The second way in. All three are also on the wall. */
 export const TRY_REPOS = ["vercel/next.js", "pmndrs/zustand", INTRO_REPO] as const;
 
+/** Named under the panel: the ones a visitor is likeliest to recognise. */
+export const WALL_CAPTION_REPOS = [
+  "vercel/next.js",
+  "pmndrs/zustand",
+  INTRO_REPO,
+  "gohugoio/hugo",
+  "mastodon/mastodon",
+] as const;
+
 /**
- * The drifting wall behind C's panel: four columns, the sixteen duplicated across them.
- * It sits at 50% opacity and moves, so nobody reads the same card twice — sixteen is the
+ * The wall behind the panel: six columns, the sixteen dealt across them.
+ * It is dimmed and moves with the page, so nobody reads the same card twice — sixteen is the
  * number that gives the wall its variety without doubling a review that has to be done by
  * eye, and the quota behind it.
  *

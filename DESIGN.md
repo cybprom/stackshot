@@ -268,6 +268,15 @@ one-line comment).
 > must-not list for that one element. Everything else here stands, including no hover on a
 > card, no scroll-triggered anything, and a real reduced-motion branch.
 >
+> **Amended by ADR-0039, which replaces the entrance below.** The panel has no entrance
+> and nothing moves on load; it opens once, on the first Generate. The wall moves with
+> page scroll, the one scroll-linked element on the site, and dims when the field has
+> focus. The status line above the card resolves like the button. On the site the accent
+> also marks the status square and a focused field's border. The card's rule is unchanged.
+> The opening is one 520ms movement: width and height on the same curve, the copy
+> crossfading from its closed wrap to its open wrap so no text re-breaks in motion, and the
+> card column fading in 16px from the right. Reduced motion snaps all of it.
+>
 > **Amended again by ADR-0037 and ADR-0038**, both for as long as layout C exists: C's
 > panel arrives rather than being present, and opens its width on a resolve. And the
 > generate button's label resolves character by character on hover, on focus, and when the

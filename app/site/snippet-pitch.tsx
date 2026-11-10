@@ -1,46 +1,39 @@
-import { COPY } from "@/lib/site";
+import { SnippetCode } from "@/app/site/snippet-code";
+import { COPY, introCardUrl } from "@/lib/site";
 
 /**
- * "One snippet. Both themes." — the section that explains what the `<picture>` above it
- * actually does, next to a coloured rendering of it.
- *
- * The snippet here is **illustrative and deliberately not copyable**: the real one, with
- * this repo's URLs in it, sits by the Copy button in the generator. Two copyable snippets
- * on one page is two things to get wrong.
+ * What the `<picture>` actually does. Illustrative and deliberately not copyable: the real
+ * snippet, with the visitor's own repo in it, is by the Copy button in the generator.
  */
-export function SnippetPitch({ light, dark, alt }: { light: string; dark: string; alt: string }) {
+export function SnippetPitch({ snippet }: { snippet: string }) {
   return (
-    <section className="flex flex-col gap-10 border-t border-rule px-6 py-16 sm:px-14 lg:flex-row lg:gap-14 lg:py-16">
-      <div className="flex shrink-0 flex-col gap-3.5 lg:w-105">
+    <section className="site-grid flex flex-col gap-8 py-16 lg:flex-row lg:gap-16 lg:py-20">
+      <div className="flex shrink-0 flex-col gap-4 lg:w-105">
         <h2 className="site-section">
-          {COPY.snippetPitchTitle[0]}
-          <br />
+          {COPY.snippetPitchTitle[0]} <br className="hidden lg:block" />
           {COPY.snippetPitchTitle[1]}
         </h2>
         <p className="site-body text-ink-muted">{COPY.snippetPitch}</p>
+
+        {/* Build-rendered bytes, so this pair never touches the card route. */}
+        <div className="mt-1 hidden gap-2 lg:flex">
+          {(["light", "dark"] as const).map((theme) => (
+            <figure key={theme} className="flex w-40 flex-col gap-1.5">
+              {/* eslint-disable-next-line @next/next/no-img-element -- our exact bytes */}
+              <img src={introCardUrl("tiles", theme)} alt="" className="block w-full rounded-tile" />
+              <figcaption className="site-status text-ink-muted">prefers {theme}</figcaption>
+            </figure>
+          ))}
+        </div>
       </div>
 
-      {/* aria-hidden with the real markup in a sr-only line: a screen reader reading angle
-          brackets and two full URLs character by character is noise, and the generator's
-          snippet is the one anybody acts on. */}
       <div className="min-w-0 grow">
-        <div
-          aria-hidden
-          className="site-code box-border overflow-x-auto rounded-snippet bg-code-surface px-5 py-4.5 leading-[1.75] text-code-ink"
-        >
-          <pre className="whitespace-pre">
-            <span className="text-code-tag">&lt;picture&gt;</span>
-            {"\n  "}
-            <span className="text-code-tag">&lt;source</span> media=&quot;(prefers-color-scheme: dark)&quot;
-            {"\n    "}srcset=&quot;<span className="text-code-string">{dark}</span>&quot;
-            <span className="text-code-tag">&gt;</span>
-            {"\n  "}
-            <span className="text-code-tag">&lt;img</span> alt=&quot;{alt}&quot;
-            {"\n    "}src=&quot;<span className="text-code-string">{light}</span>&quot;
-            <span className="text-code-tag">&gt;</span>
-            {"\n"}
-            <span className="text-code-tag">&lt;/picture&gt;</span>
-          </pre>
+        <div aria-hidden className="overflow-hidden rounded-snippet border border-code-rule bg-code-surface">
+          <div className="site-status flex h-11 items-center gap-3 border-b border-code-rule px-4 text-code-ink sm:px-5">
+            <span>README.md</span>
+            <span className="text-code-dim">HTML</span>
+          </div>
+          <SnippetCode snippet={snippet} />
         </div>
         <p className="sr-only">{COPY.snippetPitch}</p>
       </div>

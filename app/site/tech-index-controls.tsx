@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { SearchIcon } from "@/app/site/marks";
 import { LAYER_NAME } from "@/lib/card-text";
 import { COPY, LINKS } from "@/lib/site";
 import {
   INDEX_ALL,
   INDEX_CAP,
+  closestEntry,
   indexTileDelay,
   score,
   type IndexEntry,
@@ -14,53 +16,54 @@ import {
 
 type Chip = { value: IndexFilter; label: string; count: number };
 
+/** Old tiles fade out together over this long, which is also the typing debounce. */
+const SWAP_MS = 120;
+
 /**
- * The map as a searchable grid: the whole index, filtered by a query and the layer chips,
- * capped at `INDEX_CAP` until asked to show everything.
- *
- * **Ordinary React over the entries, not DOM surgery over server-rendered tiles.** The
- * first build did the latter, to keep the map out of the RSC payload, and the React
- * Compiler refused it on three counts — mutating `hidden`, setting state from the effect
- * that filtered, reading a ref during render. The index costs 5.8KB gzipped, which is not
- * worth a lint suppression on the page's largest component. ADR-0036.
- *
- * Ranking is a sort on `score`, so **a fuzzy matcher is a change to that one function**
- * and nothing here moves.
+ * The map as a searchable grid. Ordinary React over the entries rather than DOM surgery
+ * over server-rendered tiles, which the React Compiler refuses. ADR-0036.
  */
 export function TechIndexControls({ entries, chips }: { entries: readonly IndexEntry[]; chips: Chip[] }) {
   const [query, setQuery] = useState("");
   const [layer, setLayer] = useState<IndexFilter>(INDEX_ALL);
   const [expanded, setExpanded] = useState(false);
+  // What the grid is drawing, which trails the controls by SWAP_MS.
+  const [applied, setApplied] = useState<{ query: string; layer: IndexFilter }>({ query: "", layer: INDEX_ALL });
+  const [leaving, setLeaving] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (timer.current !== null) clearTimeout(timer.current);
+  }, []);
 
   const matches = useMemo(() => {
     const scored: { entry: IndexEntry; rank: number }[] = [];
     for (const entry of entries) {
-      if (layer !== INDEX_ALL && entry.category !== layer) continue;
-      const rank = score(entry, query);
+      if (applied.layer !== INDEX_ALL && entry.category !== applied.layer) continue;
+      const rank = score(entry, applied.query);
       if (rank === null) continue;
       scored.push({ entry, rank });
     }
-    // Best first; ties keep the server's alphabetical order, so an empty query renders
-    // the grid exactly as `TECH_INDEX` is sorted.
+    // Best first; ties keep the server's alphabetical order.
     scored.sort((a, b) => b.rank - a.rank);
     return scored.map(({ entry }) => entry);
-  }, [entries, query, layer]);
+  }, [entries, applied]);
 
-  // The cap applies to a filtered grid too, as in the prototype: forty hits are still two
-  // rows and a "Show all 40", not forty tiles dumped on the page.
   const shown = expanded ? matches : matches.slice(0, INDEX_CAP);
   const hasMore = matches.length > INDEX_CAP;
+  const trimmed = applied.query.trim();
+  const closest = matches.length === 0 ? closestEntry(entries, trimmed) : undefined;
 
-  // Narrowing the set starts the grid over, so the stagger runs again and whatever is
-  // left reads as a new answer rather than as the old one with holes in it.
-  function search(next: string) {
-    setQuery(next);
-    setExpanded(false);
-  }
-
-  function pick(next: IndexFilter) {
-    setLayer(next);
-    setExpanded(false);
+  function change(nextQuery: string, nextLayer: IndexFilter) {
+    setQuery(nextQuery);
+    setLayer(nextLayer);
+    setLeaving(true);
+    if (timer.current !== null) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      setApplied({ query: nextQuery, layer: nextLayer });
+      setExpanded(false);
+      setLeaving(false);
+    }, SWAP_MS);
   }
 
   return (
@@ -70,20 +73,22 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
           <h2 className="site-section">{COPY.indexTitle}</h2>
           <p className="site-body text-ink-muted">{COPY.indexIntro(entries.length)}</p>
         </div>
-        <input
-          type="search"
-          aria-label={COPY.indexSearchLabel}
-          aria-controls="tech-grid"
-          placeholder={COPY.indexSearchPlaceholder}
-          value={query}
-          onChange={(event) => search(event.target.value)}
-          className="site-data h-11.5 w-full max-w-85 rounded-control border-[1.5px] border-ink bg-surface px-3.5 text-ink"
-        />
+        <div className="field motion-state flex h-11 w-full items-center gap-2.5 rounded-control border border-rule bg-field px-3.5 text-ink-muted sm:max-w-75">
+          <SearchIcon />
+          <input
+            type="search"
+            aria-label={COPY.indexSearchLabel}
+            aria-controls="tech-grid"
+            placeholder={COPY.indexSearchPlaceholder}
+            value={query}
+            onChange={(event) => change(event.target.value, layer)}
+            className="site-data h-full w-full min-w-0 bg-transparent text-ink placeholder:text-ink-muted"
+          />
+        </div>
       </div>
 
-      {/* All first and selected by default. Without it there is no way back to the whole
-          map once a layer is picked — the chips are a filter, not a mode you commit to. */}
-      <div className="flex flex-wrap gap-1.5">
+      {/* All first and selected by default, or there is no way back to the whole map. */}
+      <div className="index-chips -mx-5 flex gap-1.5 overflow-x-auto px-5 sm:mx-0 sm:flex-wrap sm:px-0">
         {chips.map((chip) => {
           const on = layer === chip.value;
           return (
@@ -91,12 +96,10 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
               key={chip.value}
               type="button"
               aria-pressed={on}
-              onClick={() => pick(chip.value)}
-              className={`motion-state inline-flex h-8.5 shrink-0 items-center gap-1.75 rounded-pill border px-3 font-display text-[13.5px] font-semibold ${on ? "border-ink bg-ink text-surface" : "border-rule bg-transparent text-ink hover:border-ink"}`}
+              onClick={() => change(query, chip.value)}
+              className={`site-control motion-state inline-flex h-8 shrink-0 items-center gap-2 rounded-tile border px-2.5 ${on ? "border-ink bg-ink text-surface" : "border-rule text-ink hover:border-ink"}`}
             >
-              {/* The dot keeps its layer colour whether or not the chip is selected: it is
-                  the key to the card's colours, not a selection indicator. All has no
-                  layer, so it takes the neutral. */}
+              {/* The dot keeps its layer colour either way: it is the key to the card. */}
               <span
                 className="inline-block h-2 w-2 rounded-xs"
                 style={{
@@ -104,16 +107,19 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
                 }}
               />
               {chip.label}
-              <span className="site-data opacity-70">{chip.count}</span>
+              <span className="site-status opacity-70">{chip.count}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Keyed by the filter, so narrowing the set remounts the tiles and the stagger
-          runs again. A CSS animation does not restart on its own for a node that stayed
-          put, and the arrival is the thing that says the grid answered you. */}
-      <div key={`${query}|${layer}|${expanded}`} id="tech-grid" className="flex flex-wrap gap-2.5">
+      {/* Keyed by the filter, so the tiles remount and the stagger runs again. Twelve on
+          a phone: 24 tiles at four across is a whole screen of grid. */}
+      <div
+        key={`${applied.query}|${applied.layer}|${expanded}`}
+        id="tech-grid"
+        className={`index-grid grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-12 ${leaving ? "index-leaving" : ""} ${expanded ? "" : "index-capped"}`}
+      >
         {shown.map((entry, i) => (
           <TechTile key={entry.id} entry={entry} delay={indexTileDelay(i)} />
         ))}
@@ -126,22 +132,27 @@ export function TechIndexControls({ entries, chips }: { entries: readonly IndexE
 
       {matches.length === 0 ? (
         <p className="site-body text-ink-muted">
-          {COPY.indexNoMatch(query.trim())}{" "}
-          <a href={LINKS.issues} className="font-semibold text-ink underline decoration-rule underline-offset-4">
+          <span className="block font-semibold text-ink">{COPY.indexNoMatch(trimmed)}</span>
+          {closest ? `${COPY.indexClosest(closest.display)} ` : null}
+          <a href={LINKS.issues} className="motion-state font-semibold text-ink underline underline-offset-2 hover:text-ink-muted">
             {COPY.indexSuggest}
           </a>
-          {COPY.indexSuggestAfter}
         </p>
       ) : null}
 
       {hasMore ? (
-        <button
-          type="button"
-          onClick={() => setExpanded((was) => !was)}
-          className="site-label motion-state h-10.5 self-start rounded-control border-[1.5px] border-ink px-4 font-display font-semibold text-ink"
-        >
-          {expanded ? COPY.indexShowFewer : COPY.indexShowAll(matches.length)}
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setExpanded((was) => !was)}
+            className="site-control motion-state h-11 flex-1 rounded-control border border-rule px-4 text-ink hover:border-ink sm:flex-none"
+          >
+            {expanded ? COPY.indexShowFewer : COPY.indexShowAll(matches.length)}
+          </button>
+          <span className="site-status hidden text-ink-muted sm:inline">
+            {COPY.indexShown(shown.length, matches.length)}
+          </span>
+        </div>
       ) : null}
     </>
   );
@@ -153,11 +164,13 @@ function TechTile({ entry, delay }: { entry: IndexEntry; delay: number }) {
     <div
       // The card preview's own reveal: same keyframes, same duration, a faster stagger.
       // Its reduced-motion branch covers this too.
-      className="reveal-tile box-border flex h-22 w-25 flex-col justify-between rounded-tile px-2 pb-1.75 pt-1.5"
+      className="reveal-tile box-border flex h-20.5 min-w-0 flex-col justify-between rounded-tile px-0.75 pb-1.75 pt-1.5"
       style={{
         animationDelay: `${delay}ms`,
         backgroundColor: `var(--layer-${entry.category}-tint)`,
         borderTop: `3px solid var(--layer-${entry.category})`,
+        // Transparent sides mitre the bar's ends, as the card draws them.
+        borderInline: "3px solid transparent",
       }}
     >
       <div

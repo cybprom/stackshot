@@ -70,10 +70,14 @@ describe("the site's CSS palette matches the card's tokens", () => {
   it("--preview-page matches the surface the card is previewed on", () => {
     expect(value(lightBlock, "preview-page")).toBe(PREVIEW.page.light.toLowerCase());
     expect(value(darkBlock, "preview-page")).toBe(PREVIEW.page.dark.toLowerCase());
+    expect(value(lightBlock, "preview-rule")).toBe(PREVIEW.rule.light.toLowerCase());
+    expect(value(darkBlock, "preview-rule")).toBe(PREVIEW.rule.dark.toLowerCase());
+    expect(value(lightBlock, "preview-ink-muted")).toBe(PREVIEW.inkMuted.light.toLowerCase());
+    expect(value(darkBlock, "preview-ink-muted")).toBe(PREVIEW.inkMuted.dark.toLowerCase());
   });
 
   /**
-   * `.theme-dark` is layout C's band — the nav sits on a gallery wall, which is a dark
+   * `.theme-dark` is the hero's band — the nav sits on a gallery wall, which is a dark
    * room whatever the reader's scheme. It repeats the dark palette rather than
    * referencing it, because the media query assigns the same names, so this is the seam
    * that stops the third copy drifting.

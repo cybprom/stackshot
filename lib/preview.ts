@@ -24,6 +24,11 @@ export function previewDoc(doc: StackDoc): PreviewDoc {
   };
 }
 
+/** Everything detected, including what the card had no room to show. */
+export function foundCount(doc: PreviewDoc): number {
+  return doc.layers.reduce((total, layer) => total + layer.items.length + layer.overflow, 0);
+}
+
 /**
  * The site preview's arithmetic, render-free and testable. The components that use it are
  * in `app/preview/`; everything here is a number or a string, so it can be checked without
@@ -61,7 +66,7 @@ export const DEFAULT_LAUNCH_STYLE: LaunchStyle = isLaunchStyle(DEFAULT_STYLE)
  * JavaScript renders the light card and corrects it a frame later. The labels live in
  * `lib/site.ts` with every other site string. GOTCHAS 056.
  */
-export const THEME_MODES = ["light", "dark", "system"] as const;
+export const THEME_MODES = ["system", "light", "dark"] as const;
 
 export type ThemeMode = (typeof THEME_MODES)[number];
 
@@ -98,6 +103,13 @@ const FONT_VAR: Record<CardFamily, string> = {
 export function family(name: CardFamily): string {
   return FONT_VAR[name];
 }
+
+/**
+ * How far each text run sits lower in the PNG than in a browser, in card units, measured
+ * against the rendered bytes. Line boxes already agree; this is where the two engines put
+ * the glyphs inside one. Without it the small text hops at the crossfade. GOTCHAS 065.
+ */
+export const BASELINE_NUDGE = { display: 1, version: 0.5, tileName: 2, legend: 2, tree: 1, tilesMeta: 2, terminalMeta: 1 } as const;
 
 /**
  * Milliseconds of no style change before the real PNG is requested, from

@@ -22,19 +22,24 @@ export const SCRAMBLE_CYCLES = 2;
  *
  * `random` is injected so the test is deterministic — not because anything else needs it.
  */
-export function scrambleFrame(target: string, tick: number, random: () => number = Math.random): string {
+export function scrambleFrame(
+  target: string,
+  tick: number,
+  random: () => number = Math.random,
+  cycles: number = SCRAMBLE_CYCLES,
+): string {
   return target
     .split("")
     .map((char, index) => {
-      if (tick / SCRAMBLE_CYCLES > index || char === " ") return char;
+      if (tick / cycles > index || char === " ") return char;
       return SCRAMBLE_CHARS[Math.floor(random() * SCRAMBLE_CHARS.length)] ?? char;
     })
     .join("");
 }
 
 /** The first tick at which `scrambleFrame` returns the target unchanged. */
-export function scrambleTicks(target: string): number {
-  return target.length * SCRAMBLE_CYCLES;
+export function scrambleTicks(target: string, cycles: number = SCRAMBLE_CYCLES): number {
+  return target.length * cycles;
 }
 
 /** How long a label takes to resolve, for anything that has to wait for it. */

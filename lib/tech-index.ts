@@ -18,15 +18,9 @@ export const INDEX_ALL = "all" as const;
 
 export type IndexFilter = typeof INDEX_ALL | Category;
 
-/**
- * The stagger as the grid arrives, from `docs/design/site/a-playground.dc.html`: 18ms a
- * tile, **capped at 360ms**. The cap is what makes it work at this count — uncapped, the
- * 24th tile would wait 432ms and a search returning 100 would take two seconds to finish
- * appearing. The card preview's own stagger is slower and steeper, because it paces five
- * tiles a row across a card rather than a wall of a hundred.
- */
+/** 45ms a tile for the first twelve; the rest land with the twelfth. */
 export function indexTileDelay(i: number): number {
-  return Math.min(i * 18, 360);
+  return Math.min(i, 11) * 45;
 }
 
 export type IndexEntry = {
@@ -91,4 +85,35 @@ export function score(entry: Pick<IndexEntry, "display" | "search">, query: stri
   // An alias or the id matched, so the name on the tile will not contain what was typed.
   if (entry.search.includes(q)) return 40;
   return null;
+}
+
+function editDistance(a: string, b: string): number {
+  let row = Array.from({ length: b.length + 1 }, (_unused, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const next = [i];
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      next[j] = Math.min((row[j] as number) + 1, (next[j - 1] as number) + 1, (row[j - 1] as number) + cost);
+    }
+    row = next;
+  }
+  return row[b.length] as number;
+}
+
+/** The likeliest typo target for a search that found nothing, if one is close enough. */
+export function closestEntry(entries: readonly IndexEntry[], query: string): IndexEntry | undefined {
+  const bare = (text: string) => text.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const q = bare(query);
+  if (q.length < 3) return undefined;
+
+  let best: IndexEntry | undefined;
+  let bestDistance = Math.max(1, Math.floor(q.length / 3)) + 1;
+  for (const entry of entries) {
+    const distance = editDistance(q, bare(entry.display));
+    if (distance < bestDistance) {
+      best = entry;
+      bestDistance = distance;
+    }
+  }
+  return best;
 }

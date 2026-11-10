@@ -219,6 +219,28 @@ describe("the upstash wrapper", () => {
     // for every other.
     expect(await cache.getPng("sheet", "abc", "light")).toBeUndefined();
   });
+
+  it("never lets a failure replace a good pointer, and lets a success replace a failure", async () => {
+    const store = new Map<string, unknown>();
+    const redis = {
+      get: async (k: string) => store.get(k) ?? null,
+      set: async (k: string, v: unknown, options: { nx?: boolean }) => {
+        if (options.nx && store.has(k)) return null;
+        store.set(k, v);
+        return "OK";
+      },
+    };
+    const cache = upstashCache(redis as never);
+    const good: Pointer = { kind: "ok", owner: "o", repo: "r", sha: "s", stackHash: "h" };
+
+    await cache.setPointer("o", "r", good);
+    await cache.setPointer("o", "r", { kind: "failed", reason: "unavailable" });
+    expect(await cache.getPointer("o", "r")).toEqual(good);
+
+    await cache.setPointer("o", "new", { kind: "failed", reason: "unavailable" });
+    await cache.setPointer("o", "new", good);
+    expect(await cache.getPointer("o", "new")).toEqual(good);
+  });
 });
 
 describe("a failure is cached for as long as it stays true (ADR-0027)", () => {

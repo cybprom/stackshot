@@ -152,6 +152,9 @@ export const TERMINAL = {
  */
 export const PREVIEW = {
   page: { light: "#FFFFFF", dark: "#0D1117" } satisfies Record<Theme, string>,
+  // GitHub's own border and muted text, for the README bar above the card.
+  rule: { light: "#D1D9E0", dark: "#30363D" } satisfies Record<Theme, string>,
+  inkMuted: { light: "#59636E", dark: "#8B949E" } satisfies Record<Theme, string>,
 } as const;
 
 /**

@@ -18,7 +18,7 @@ P5 PLAN:    ** READ THE "Phase 5" SECTION BELOW, DIRECTLY UNDER THIS
             WHAT THE PAGE CONTAINS; the Phase 5 section owns ORDER AND
             MECHANISM and does not repeat it. Those two together are
             enough to resume with no other context.
-            CURRENT STEP: 6, the phone pass. Steps 1-5 DONE.
+            CURRENT STEP: 8, the DESIGN.md rewrite. Steps 1-7 DONE.
 PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal
             DONE · 4 site generator DONE · 5 docs and the page. Nothing
             cut.
@@ -219,12 +219,29 @@ CACHE KEYS: every Upstash key is `{VERCEL_ENV}:...`, so a local `next dev`
 SITE_ORIGIN: lib/site.ts is the single source for the origin in the card
             footer, the preview <img> and the copied snippet. Defaults to
             https://stackshot.ilerioluwa.com; override with
-            NEXT_PUBLIC_SITE_ORIGIN. Local dev MUST set it to its own port
-            (`NEXT_PUBLIC_SITE_ORIGIN=http://localhost:PORT pnpm dev --port
-            PORT`) or the preview points at production. Preview and snippet
-            are the same absolute URLs, so the CDN entry is shared and
-            same-origin `download` works.
-Last done:  PHASE 5 STEP 5, THE TWO LAYOUT SHELLS. ADR-0037. Both heroes
+            NEXT_PUBLIC_SITE_ORIGIN. The preview and the download links are
+            path-only, so they follow whatever host serves the page and
+            `download` always saves (GOTCHAS 068). Only the snippet is
+            absolute, and in production it resolves to the same URL, so the
+            CDN entry is still shared.
+Last done:  PHASE 5 STEPS 6-7, ON 2026-11-09, reviewed by the author and committed.
+            AFTER THE REVIEW: the panel opens as one 520ms movement, the
+            first read shows a blank plate rather than the example card, and
+            a failure naming a repo replaces the previous card. GOTCHAS 067-069.
+            NOT YET RUN in Safari, Firefox or on a real phone.
+            LAYOUT C WON AND A IS DELETED; `/` IS STATIC AGAIN. C was then
+            redesigned by the author (ADR-0039), which SUPERSEDES the AFTER P4
+            notes above about C auto-generating at 0.9s, the wall's mixed
+            themes and its timer drift. One column until the first Generate,
+            top-anchored, dark-only six-column wall moved by scroll alone,
+            README frame, status line above the card that scrambles.
+            THE PNG JUMP WAS A STATUS LINE (GOTCHAS 065), and a first Generate
+            was ending its own loading state (066). No RENDER_VERSION bump: the
+            HTML preview moved to match the bytes, not the other way round.
+            A FAILED FIRST GENERATE shows that repo's real error card, and the
+            frame now follows the PNG's height when the bytes disagree.
+            Tests, lint, tsc and `pnpm build` green.
+            Before it: PHASE 5 STEP 5, THE TWO LAYOUT SHELLS. ADR-0037. Both heroes
             are live and switchable: NEXT_PUBLIC_SITE_LAYOUT picks one,
             ?layout=a and ?layout=c preview the other. `/` IS NOW DYNAMIC
             because of that query parameter — it goes back to static when
@@ -303,23 +320,13 @@ Last done:  PHASE 5 STEP 5, THE TWO LAYOUT SHELLS. ADR-0037. Both heroes
             Before it: PHASE 3 — TERMINAL. lib/render/terminal.tsx at
             height "content", ADR-0031 on what styles share, and
             GOTCHAS 051 (the box glyphs are taller than their line box).
-Next:       PHASE 5 STEP 6, THE PHONE PASS at 390px, per
-            a-playground-phone.dc.html and c-gallery-wall-phone.dc.html.
-            BOTH LAYOUTS ALREADY WORK AT 390 — C stacks below 1280px, so
-            its card already appears under the controls, which is what the
-            phone design asks for — so step 6 is a pass over the detail,
-            not a build. Two fixes already landed there while rendering:
-            the nav's "Star on GitHub" label is hidden below sm (it wrapped
-            into the wordmark), and both hero headlines step down (68->40,
-            54->36), because 68px across 390 is the whole first screen.
-            READ docs/design/site/*.dc.html INCLUDING THE SCRIPT AT THE
-            BOTTOM. Step 4 shipped three bugs that were all specified in
-            that script and invisible in the markup; step 5's panel
-            widening was specified there too.
-            THEN STEP 7: choose one layout and DELETE THE OTHER —
-            hero-{a,c}.tsx, lib/hero.ts, app/site/wall.tsx, panel.tsx, the
-            C-only CSS block, one COPY.hero* block, and the ?layout=
-            parameter that makes `/` dynamic.
+Next:       PHASE 5 STEP 8, THE DESIGN.md REWRITE. card/owner and card/meta: the
+            table says 1.20 but the card has always rendered 26 and 18, so
+            correct the TABLE; no RENDER_VERSION bump is needed.
+            THEN MILESTONE 4: the global budget guard, the analytics that are
+            still only log lines (Redis storage, copy and download counters,
+            /api/stats, the embed-count script, Vercel Web Analytics), and
+            the README's real embed. main IS AHEAD OF origin: pushing deploys.
 M4 CARRIES: the badge in your own README (the domain is live now, so this
             can come forward), the global budget guard, ADR-0012's amendment
             line for the separate bug counter, and monitoring KV bytes —
@@ -448,16 +455,15 @@ Author-decided. Do not re-open them; they were asked and answered.
      is what ADR-0035 bought. Any keystroke before 0.9s cancels it.
    - The wall is HTML from the committed docs, 4x8 dealt by `wallColumns()`, duplicated
      for the loop with per-card margins rather than a gap (GOTCHAS 062).
-6. **Phone, both layouts, 390px. ← CURRENT STEP.** On C the panel cannot widen, so the card
+6. **Phone, 390px — DONE,** with the redesign (ADR-0039). On C the panel cannot widen, so the card
    appears inside it under the button — **already true**: `.panel-shell` stacks below
    1280px, which is also the laptop case. Both layouts render at 390 and the nav and hero
    headlines were already fixed there. This is a detail pass against the two `-phone`
    prototypes, not a build.
-7. **Choose one layout and DELETE THE OTHER.** A fork with an expiry, not a feature.
-8. **The DESIGN.md rewrite.** It still describes only the Datasheet. ADR-0032 is the
-   site's motion and radius authority until this lands. This is also where `card/owner` and
-   `card/meta` are corrected to the table at 26 and 18 — **the only `RENDER_VERSION` bump
-   in Phase 5**, and it regenerates the hashes in the same commit.
+7. **Choose one layout and DELETE THE OTHER — DONE.** C. ADR-0039.
+8. **The DESIGN.md rewrite. ← CURRENT STEP.** It still describes only the Datasheet. ADR-0032 is the
+   site's motion and radius authority until this lands. `card/owner` and `card/meta` already
+   render at 26 and 18, so the table is what gets corrected, with no `RENDER_VERSION` bump.
 
 ### The monthly refresh PR
 

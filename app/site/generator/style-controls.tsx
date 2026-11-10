@@ -5,17 +5,13 @@ import { Segmented } from "@/app/preview/segmented";
 import { LAUNCH_STYLES, THEME_MODES } from "@/lib/preview";
 import { COPY } from "@/lib/site";
 
-/**
- * The style switcher and the theme toggle. A sits them above the plate and C beside it,
- * so they wrap rather than assuming a row, and the note that explains the toggle travels
- * with them.
- */
+/** The style switcher and the theme toggle, with the note that explains the toggle. */
 export function StyleControls() {
   const { style, pickStyle, mode, setMode } = useGenerator();
 
   return (
     <div className="flex w-full flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Segmented
           label={COPY.styleGroup}
           options={LAUNCH_STYLES.map((name) => ({ value: name, label: COPY.style[name] }))}
@@ -31,9 +27,7 @@ export function StyleControls() {
         />
       </div>
 
-      {/* Beside the control it explains, not beneath the card: it is the one control on
-          the page that changes nothing about what you copy. */}
-      <p id="theme-note" className="site-label text-ink-muted">
+      <p id="theme-note" className="site-small hidden text-[14px] text-ink-muted sm:block">
         {COPY.themeNote}
       </p>
     </div>

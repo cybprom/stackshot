@@ -1,6 +1,7 @@
 # ADR-0037: Two heroes around one generator, and what C needs that A does not
 
 **Status:** Accepted
+**Superseded in part by:** ADR-0039 (A is deleted; C has no intro or entrance)
 **Date:** 2026-10-07
 
 ## Context

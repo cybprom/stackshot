@@ -1,78 +1,92 @@
-import { starsLabel } from "@/lib/card-text";
-import { wallColumns, type WallSlot } from "@/lib/hero";
-import { homeDoc } from "@/lib/home";
-import { COLORS, LAYER_COLORS, TERMINAL, TILES, type Theme } from "@/lib/tokens";
+import { starsCount } from "@/lib/card-text";
+import { WALL_DRIFT, wallColumns, type WallSlot } from "@/lib/hero";
+import { homeDoc, WALL_CAPTION_REPOS } from "@/lib/home";
+import { COPY } from "@/lib/site";
+import { COLORS, LAYER_COLORS, TERMINAL, TILES } from "@/lib/tokens";
 
-/** How many symbols a Tiles mini-card shows before it stops. Two rows of five. */
 const MINI_TILES = 10;
+const palette = COLORS.dark;
+const layers = LAYER_COLORS.dark;
 
 /**
- * One card on the wall, at about a quarter of a real card's width.
- *
- * **It is a drawing of a card, not a card scaled down.** A real 1200-unit tree at 0.25
- * sets its package names at 7.5px, which is grey texture rather than a card — so the
- * mini-card keeps the symbol, the name and the stars at a size that reads at 300px and
- * drops everything else. The sizes below are this illustration's own and appear nowhere
- * else on the site. Every colour is still a token, per theme, because the wall shows
- * light and dark cards side by side on one dark ground.
+ * A drawing of a card rather than a card scaled down, so 48 of them stay cheap as server
+ * HTML. The sizes are this illustration's own; every colour is a token. Dark only, so the
+ * panel stays the one lit object in the room.
  */
 function WallCard({ slot }: { slot: WallSlot }) {
   const doc = homeDoc(slot.ref);
-  const theme: Theme = slot.theme;
-  const palette = COLORS[theme];
-  const layers = LAYER_COLORS[theme];
-  const surface = slot.style === "terminal" ? TERMINAL.surface[theme] : TILES.surface[theme];
-
+  const tiles = slot.style === "tiles";
   const symbols = doc.layers
-    .flatMap((layer) => layer.items.map((item) => ({ symbol: item.symbol, category: layer.category })))
+    .flatMap((layer) =>
+      layer.items.map((item) => ({ symbol: item.symbol, display: item.display, category: layer.category })),
+    )
     .slice(0, MINI_TILES);
 
   return (
     <div
       className="mb-6 box-border flex w-full flex-col gap-2.5 rounded-plate border p-4"
-      style={{ backgroundColor: surface, borderColor: palette.rule }}
+      style={{ backgroundColor: tiles ? TILES.surface.dark : TERMINAL.surface.dark, borderColor: palette.rule }}
     >
-      <div className="flex items-baseline justify-between gap-2">
-        <span
-          className="overflow-hidden whitespace-nowrap font-display text-[16px] font-bold tracking-[-0.02em]"
-          style={{ color: palette.ink }}
-        >
-          {doc.repo}
-        </span>
-        <span className="whitespace-nowrap font-mono text-[10px]" style={{ color: palette.inkMuted }}>
-          {starsLabel(doc.stars)}
-        </span>
+      {tiles ? null : (
+        <div className="font-mono text-[9px]" style={{ color: palette.inkMuted }}>
+          <span style={{ color: palette.accent }}>$</span> stackshot {doc.owner}/{doc.repo}
+        </div>
+      )}
+
+      <div className="flex items-end justify-between gap-2">
+        <div className="min-w-0">
+          {tiles ? (
+            <div className="truncate font-mono text-[9px]" style={{ color: palette.inkMuted }}>
+              {doc.owner} /
+            </div>
+          ) : null}
+          <div
+            className="truncate font-display text-[17px] font-bold leading-tight tracking-[-0.02em]"
+            style={{ color: palette.ink }}
+          >
+            {doc.repo}
+          </div>
+        </div>
+        <div className="shrink-0 text-right font-mono text-[9px] leading-tight" style={{ color: palette.inkMuted }}>
+          {doc.language ? <div>{doc.language}</div> : null}
+          <div>{starsCount(doc.stars)} stars</div>
+        </div>
       </div>
 
-      {slot.style === "tiles" ? (
-        <div className="flex flex-wrap gap-1.5">
-          {symbols.map(({ symbol, category }, index) => (
+      {tiles ? (
+        <div className="grid grid-cols-5 gap-1.5">
+          {symbols.map(({ symbol, display, category }, index) => (
             <div
               key={`${symbol}-${index}`}
-              className="box-border h-11 w-12 rounded-tile border-t-2 px-1.5 py-1 font-display text-[18px] font-extrabold leading-none tracking-[-0.03em]"
+              className="flex h-12.5 min-w-0 flex-col justify-between rounded-tile border-t-2 px-1 py-1"
+              // Transparent sides mitre the bar's ends, as the card draws them.
               style={{
                 backgroundColor: layers[category].tint,
                 borderTopColor: layers[category].color,
-                color: layers[category].color,
+                borderInline: "2px solid transparent",
               }}
             >
-              {symbol}
+              <span
+                className="font-display text-[17px] font-extrabold leading-none tracking-[-0.03em]"
+                style={{ color: layers[category].color }}
+              >
+                {symbol}
+              </span>
+              <span className="truncate text-[7px] leading-none" style={{ color: palette.ink }}>
+                {display}
+              </span>
             </div>
           ))}
         </div>
       ) : (
-        <div className="flex flex-col gap-0.5 font-mono text-[11px] leading-4">
+        <div className="flex flex-col gap-0.5 font-mono text-[10px] leading-4">
           {doc.layers.map((layer, index) => (
             <div key={layer.category} className="overflow-hidden whitespace-nowrap">
-              <span style={{ color: palette.inkMuted }}>
-                {index === doc.layers.length - 1 ? "└─" : "├─"}
-              </span>{" "}
+              <span style={{ color: palette.inkMuted }}>{index === doc.layers.length - 1 ? "└─" : "├─"}</span>{" "}
               <span className="font-bold" style={{ color: layers[layer.category].color }}>
                 {layer.category}
               </span>{" "}
-              <span style={{ color: palette.ink }}>
-                {layer.items.map((item) => item.display).join("  ")}
-              </span>
+              <span style={{ color: palette.ink }}>{layer.items.map((item) => item.display).join("  ")}</span>
             </div>
           ))}
         </div>
@@ -82,38 +96,42 @@ function WallCard({ slot }: { slot: WallSlot }) {
 }
 
 /**
- * The drifting wall behind C's panel: four columns of eight cards, each column holding
- * its eight twice so the loop closes on itself.
- *
- * **Every card is a committed `StackDoc` drawn as HTML** — no PNG, no request, nothing
- * that can be cold. ADR-0035, and the reason the homepage makes no GitHub call on any
- * path.
- *
- * `aria-hidden`, because it is sixteen repos' worth of decoration: a screen reader
- * reading two hundred package names before reaching the field would be the worst version
- * of this page. The names are all in the technology index further down, which is
- * navigable.
+ * Six columns of committed docs, so nothing here can be cold (ADR-0035). They move only
+ * with the page's scroll, each at its own rate, and step back when the field has focus.
+ * `aria-hidden`: two hundred package names before the field would be the worst of this page.
  */
 export function GalleryWall() {
   return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-x-0 -top-10 flex justify-center gap-6 opacity-50"
-    >
-      {wallColumns().map((column, index) => (
-        <div
-          key={index}
-          // Every card carries its own bottom margin instead of the column carrying a
-          // gap, so the column's height is exactly twice one lap. With a gap it is half a
-          // gap short and the wall jumps at the seam.
-          className={`w-75 shrink-0 ${index % 2 === 0 ? "wall-up" : "wall-down"}`}
-          style={{ willChange: "transform" }}
-        >
-          {[...column, ...column].map((slot, position) => (
-            <WallCard key={`${slot.ref}-${position}`} slot={slot} />
-          ))}
-        </div>
-      ))}
+    <div aria-hidden className="wall pointer-events-none absolute inset-x-0 top-0 flex justify-center gap-6">
+      {wallColumns().map((column, index) => {
+        const drift = WALL_DRIFT[index];
+        return (
+          <div
+            key={index}
+            className="wall-column w-75 shrink-0"
+            style={
+              { "--wall-rate": drift?.rate ?? 0.1, marginTop: -(drift?.offset ?? 0) } as React.CSSProperties
+            }
+          >
+            {column.map((slot, position) => (
+              <WallCard key={`${slot.ref}-${position}`} slot={slot} />
+            ))}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function WallCaption() {
+  return (
+    <div className="wall-caption site-grid relative mt-5 hidden items-baseline justify-between gap-6 lg:flex">
+      <span className="site-small text-ink">{COPY.wallCaption}</span>
+      <span className="site-status flex gap-5 text-ink">
+        {WALL_CAPTION_REPOS.map((ref) => (
+          <span key={ref}>{ref}</span>
+        ))}
+      </span>
     </div>
   );
 }

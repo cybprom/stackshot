@@ -1,4 +1,4 @@
-import { family } from "@/lib/preview";
+import { BASELINE_NUDGE, family } from "@/lib/preview";
 import { TYPE, displaySize } from "@/lib/tokens";
 
 type Colors = Record<string, string>;
@@ -51,6 +51,8 @@ export function PreviewCardHeader({
             letterSpacing: TYPE.display.tracking * size,
             color: c.ink,
             wordBreak: "break-word",
+            position: "relative",
+            top: BASELINE_NUDGE.display,
           }}
         >
           {repo}

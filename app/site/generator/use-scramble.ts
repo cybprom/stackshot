@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { SCRAMBLE_STEP_MS, scrambleFrame, scrambleTicks } from "@/lib/scramble";
+import { SCRAMBLE_CYCLES, SCRAMBLE_STEP_MS, scrambleFrame, scrambleTicks } from "@/lib/scramble";
 
 /**
  * A label that resolves into place — on hover or focus, and whenever the label itself
@@ -27,6 +27,7 @@ import { SCRAMBLE_STEP_MS, scrambleFrame, scrambleTicks } from "@/lib/scramble";
 export function useScramble(
   label: string,
   reduceMotion: boolean,
+  cycles: number = SCRAMBLE_CYCLES,
 ): { text: string; start: () => void; stop: () => void } {
   const [text, setText] = useState(label);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -52,14 +53,14 @@ export function useScramble(
     timer.current = setInterval(() => {
       tick += 1;
       const current = target.current;
-      if (tick >= scrambleTicks(current)) {
+      if (tick >= scrambleTicks(current, cycles)) {
         clear();
         setText(current);
         return;
       }
-      setText(scrambleFrame(current, tick));
+      setText(scrambleFrame(current, tick, Math.random, cycles));
     }, SCRAMBLE_STEP_MS);
-  }, [clear]);
+  }, [clear, cycles]);
 
   const stop = useCallback(() => {
     clear();

@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { PREVIEW_CARDS } from "@/app/preview/cards";
+import { BookIcon } from "@/app/site/marks";
 import {
   CURSOR_FADE_MS,
   PLATE_HEIGHT_MS,
@@ -38,6 +39,7 @@ export function CardPlate({
   style,
   mode,
   png,
+  placeholder = false,
   busy = false,
   reveal = false,
   onSettled,
@@ -47,6 +49,8 @@ export function CardPlate({
   mode: ThemeMode;
   /** The card's own bytes: shown alone when there is no doc, crossfaded in when there is. */
   png?: { light: string; dark: string; alt: string };
+  /** `png` only sizes the empty slot and is never seen. */
+  placeholder?: boolean;
   /** A resolve is in flight: the card on screen steps back and the sweep runs over it. */
   busy?: boolean;
   /** The card is arriving: its parts animate in on the style's own stagger. */
@@ -68,6 +72,15 @@ export function CardPlate({
   const [revealDone, setRevealDone] = useState(!reveal);
   const [cursorClosed, setCursorClosed] = useState(false);
   const [heightSettled, setHeightSettled] = useState(true);
+  // Set only when the real bytes are a different height from the HTML, which means the
+  // card route answered with an error card. The frame then follows the bytes.
+  const [pngUnits, setPngUnits] = useState<number | null>(null);
+  const [loadedImage, setLoadedImage] = useState<string | undefined>(undefined);
+  // A first failure's error card is still fetching: the slot is blank, so keep the sweep.
+  const waiting = !doc && !placeholder && loadedImage !== pngLight;
+  const loading = busy || waiting;
+  const [sweeping, setSweeping] = useState(loading);
+  if (loading && !sweeping) setSweeping(true);
 
   // A different card — a new resolve, or the same stack in another style — starts the
   // sequence over. Adjusted during render rather than in an effect, so the page never
@@ -79,6 +92,7 @@ export function CardPlate({
     setRevealDone(!reveal);
     setCursorClosed(false);
     setHeightSettled(false);
+    setPngUnits(null);
   }
 
   /**
@@ -97,10 +111,15 @@ export function CardPlate({
         image.src = src;
         // A failed decode must not strand the page on "Drawing card": the HTML is a real
         // card, so the worst case is that it stays the one on screen.
-        return image.decode().catch(() => undefined);
+        return image.decode().then(
+          () => (image.naturalHeight / image.naturalWidth) * PREVIEW_WIDTH,
+          () => null,
+        );
       };
-      void Promise.all([warm(pngLight), warm(pngDark)]).then(() => {
-        if (live) setPngReady(true);
+      void Promise.all([warm(pngLight), warm(pngDark)]).then(([units]) => {
+        if (!live) return;
+        setPngUnits(units ?? null);
+        setPngReady(true);
       });
     }, PNG_SETTLE_MS);
 
@@ -108,7 +127,7 @@ export function CardPlate({
       live = false;
       clearTimeout(timer);
     };
-  }, [wantsPng, pngLight, pngDark]);
+  }, [wantsPng, pngLight, pngDark, doc]); // doc: resolving the same repo closes this gate, with the same URLs
 
   /** The other gate: a fade that starts mid-reveal dissolves a half-drawn card. */
   useEffect(() => {
@@ -142,9 +161,12 @@ export function CardPlate({
   }, [closing]);
 
   const settled = ready && !closing;
+  // Only while a card is arriving: the slot is also "settled" during a resolve, and
+  // reporting that would end the loading state on the spot.
+  const hasDoc = Boolean(doc);
   useEffect(() => {
-    if (settled) onSettled?.();
-  }, [settled, onSettled]);
+    if (settled && hasDoc && reveal) onSettled?.();
+  }, [settled, hasDoc, reveal, onSettled]);
 
   useMeasure(() => {
     const frameEl = frameRef.current;
@@ -181,15 +203,28 @@ export function CardPlate({
   }, [doc, style, mode]);
 
   const Card = PREVIEW_CARDS[style];
+  const bytesDiffer = layer === "png" && pngUnits !== null && Math.abs(pngUnits - frame.units) > 2;
+  const units = bytesDiffer ? pngUnits : frame.units;
+
   const system = mode === "system";
   // The cursor is the loading indicator: it blinks while the PNG is still coming and
   // fades as it arrives, so the settled card has none. ADR-0032.
   const cursor = !wantsPng || layer === "png" ? undefined : layer === "closing" ? "out" : "on";
 
+  /** A card shown only as bytes has no tree to measure, so its image gives the height. */
+  const onImage = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    setLoadedImage(pngLight);
+    const { naturalHeight, naturalWidth } = event.currentTarget;
+    if (!(naturalWidth > 0)) return;
+    const measured = (naturalHeight / naturalWidth) * PREVIEW_WIDTH;
+    setFrame((previous) => ({ ...previous, units: measured, eased: previous.units > 0 }));
+  };
+
   return (
     <div
-      className="rounded-plate border-[1.5px] border-rule p-6"
+      className="overflow-hidden rounded-plate border"
       style={{
+        borderColor: system ? "var(--preview-rule)" : PREVIEW.rule[mode satisfies Theme],
         // A forced theme is one value and says so; System is the page's own media query.
         backgroundColor: system ? "var(--preview-page)" : PREVIEW.page[mode satisfies Theme],
         // The sweep belongs to the card being previewed, not to the page, so a forced
@@ -197,10 +232,23 @@ export function CardPlate({
         ["--sweep-accent" as string]: system ? "var(--accent)" : COLORS[mode satisfies Theme].accent,
       }}
     >
+      {/* The GitHub page around the card, so this reads as the README it will live in. */}
+      <div
+        className="site-status flex h-10 items-center gap-2 border-b px-4"
+        style={{
+          borderColor: system ? "var(--preview-rule)" : PREVIEW.rule[mode satisfies Theme],
+          color: system ? "var(--preview-ink-muted)" : PREVIEW.inkMuted[mode satisfies Theme],
+        }}
+      >
+        <BookIcon />
+        README.md
+      </div>
+
+      <div className="p-4 sm:p-5">
       <div
         ref={frameRef}
-        className={`relative w-full overflow-hidden ${frame.eased ? "plate-height" : ""}`}
-        style={doc ? { height: plateHeight(frame.units, frame.scale) } : undefined}
+        className={`relative w-full overflow-hidden ${frame.eased || bytesDiffer ? "plate-height" : ""}`}
+        style={units > 0 ? { height: plateHeight(units, frame.scale) } : undefined}
       >
         <div className={busy ? "card-dim" : "card-lit"}>
           {doc ? (
@@ -234,29 +282,49 @@ export function CardPlate({
             // Our own PNG, at a height that depends on the stack and can change to the
             // error card's. next/image wants dimensions we do not have and would re-encode
             // bytes whose exactness is the product.
-            <picture>
+            // Keyed, or the browser keeps painting the old file until the new one has loaded.
+            <picture key={pngLight} className={placeholder ? "invisible" : undefined}>
               {system ? <source media="(prefers-color-scheme: dark)" srcSet={png.dark} /> : null}
-              <img src={mode === "dark" ? png.dark : png.light} alt={png.alt} className="block w-full" />
+              <img
+                src={mode === "dark" ? png.dark : png.light}
+                alt={png.alt}
+                className="block w-full"
+                onLoad={onImage}
+                onError={() => setLoadedImage(pngLight)}
+              />
             </picture>
           ) : null}
-        </div>
 
         {/* The real bytes, over the HTML that stood in for them. It is only ever shown
             once decoded and once the reveal has finished, so this dissolves between two
             cards that already agree — and any disagreement is visible, which is the whole
             reason the preview is built twice. ADR-0032. */}
         {wantsPng && png ? (
-          <div className="png-layer" style={{ opacity: layer === "png" ? 1 : 0 }} aria-hidden={layer !== "png"}>
+          <div
+            className="png-layer"
+            // Fades in only. Fading out would dissolve the previous card's slot over the
+            // new card's reveal, with the new file already in its src.
+            style={{ opacity: layer === "png" ? 1 : 0, transition: layer === "png" ? undefined : "none" }}
+            aria-hidden={layer !== "png"}
+          >
             <picture>
               {system ? <source media="(prefers-color-scheme: dark)" srcSet={png.dark} /> : null}
               <img src={mode === "dark" ? png.dark : png.light} alt={png.alt} className="block w-full" />
             </picture>
           </div>
         ) : null}
+        </div>
 
-        {/* Over the card, inside the plate's own rounding, so the line is clipped by the
-            frame rather than crossing the page. */}
-        {busy ? <div className="sweep" aria-hidden /> : null}
+        {/* Clipped by the frame. It leaves the moment loading ends, wherever it is, because
+            a line still travelling over a finished card reads as still loading. */}
+        {sweeping ? (
+          <div
+            className={`sweep ${loading ? "" : "sweep-out"}`}
+            aria-hidden
+            onTransitionEnd={() => !loading && setSweeping(false)}
+          />
+        ) : null}
+      </div>
       </div>
     </div>
   );

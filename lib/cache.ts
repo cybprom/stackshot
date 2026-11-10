@@ -30,6 +30,10 @@ export const PNG_TTL_S = 7 * 24 * 3600;
 // Well inside the 4s resolve deadline: a slow cache must never cost more than the work
 // it was there to skip.
 export const CACHE_TIMEOUT_MS = 500;
+// A laptop is 330-500ms from Upstash, so the deployed limit reads as random misses there.
+export const LOCAL_CACHE_TIMEOUT_MS = 2000;
+
+const cacheTimeoutMs = () => (deployEnv() === "local" ? LOCAL_CACHE_TIMEOUT_MS : CACHE_TIMEOUT_MS);
 
 // One lookup answers both "have we resolved this?" and "did it fail?", so a 404 repo
 // costs the same as a hit.
@@ -130,7 +134,7 @@ export function upstashCache(redis: Redis): Cache {
     try {
       return await Promise.race([
         run(),
-        new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), CACHE_TIMEOUT_MS)),
+        new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), cacheTimeoutMs())),
       ]);
     } catch (error) {
       countBug("cache", error, { op });
@@ -151,7 +155,14 @@ export function upstashCache(redis: Redis): Cache {
 
     async setPointer(owner, repo, pointer) {
       const ex = pointerTtlSeconds(pointer);
-      await guard("setPointer", () => redis.set(pointerKey(owner, repo), pointer, { ex }));
+      const key = pointerKey(owner, repo);
+      // A failure only fills an empty slot: one slow request must not erase a good
+      // resolve for everyone else. GOTCHAS 069.
+      await guard("setPointer", () =>
+        pointer.kind === "failed"
+          ? redis.set<Pointer>(key, pointer, { ex, nx: true })
+          : redis.set<Pointer>(key, pointer, { ex }),
+      );
     },
 
     getDoc: (stackHash) => read(docKey(stackHash), StackDocSchema),

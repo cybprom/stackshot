@@ -9,12 +9,16 @@ import {
   parseCardFile,
   type ServedStyle,
 } from "@/lib/card-style";
-import { cardUrl, pictureSnippet, SITE_ORIGIN } from "@/lib/site";
+import { cardPath, cardUrl, pictureSnippet, SITE_ORIGIN } from "@/lib/site";
 
 describe("card URLs and the README snippet", () => {
   it("builds both themes on one origin", () => {
     expect(cardUrl("vercel", "next.js", "tiles", "light")).toBe(`${SITE_ORIGIN}/vercel/next.js/tiles-light.png`);
     expect(cardUrl("vercel", "next.js", "tiles", "dark")).toBe(`${SITE_ORIGIN}/vercel/next.js/tiles-dark.png`);
+  });
+
+  it("keeps the page's own links path-only, because `download` needs same-origin", () => {
+    expect(cardPath("vercel", "next.js", "tiles", "dark")).toBe("/vercel/next.js/tiles-dark.png");
   });
 
   /**

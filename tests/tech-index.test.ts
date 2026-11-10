@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { STACK_MAP } from "@/lib/stack-map";
-import { INDEX_CAP, TECH_COUNT, TECH_INDEX, countByCategory, indexTileDelay, score } from "@/lib/tech-index";
+import { INDEX_CAP, TECH_COUNT, TECH_INDEX, closestEntry, countByCategory, indexTileDelay, score } from "@/lib/tech-index";
 
 /**
  * The index is the only part of the technology section with any logic in it, and it is a
@@ -112,20 +112,35 @@ describe("searching", () => {
 describe("the arrival stagger", () => {
   it("steps 18ms a tile", () => {
     expect(indexTileDelay(0)).toBe(0);
-    expect(indexTileDelay(1)).toBe(18);
-    expect(indexTileDelay(5)).toBe(90);
+    expect(indexTileDelay(1)).toBe(45);
+    expect(indexTileDelay(5)).toBe(225);
   });
 
   it("caps at 360ms, however many match", () => {
-    expect(indexTileDelay(20)).toBe(360);
-    expect(indexTileDelay(224)).toBe(360);
+    expect(indexTileDelay(20)).toBe(495);
+    expect(indexTileDelay(224)).toBe(495);
     // The whole map at once still finishes inside the cap plus one tile's duration.
-    expect(indexTileDelay(TECH_COUNT)).toBe(360);
+    expect(indexTileDelay(TECH_COUNT)).toBe(495);
   });
 
   // The 20th tile is where the cap bites; before it the stagger is real.
   it("staggers the capped grid rather than landing it flat", () => {
-    expect(indexTileDelay(INDEX_CAP - 1)).toBe(360);
-    expect(indexTileDelay(10)).toBeLessThan(indexTileDelay(19));
+    expect(indexTileDelay(INDEX_CAP - 1)).toBe(495);
+    expect(indexTileDelay(5)).toBeLessThan(indexTileDelay(10));
+  });
+});
+
+describe("the closest match for a search that found nothing", () => {
+  it("catches a typo", () => {
+    expect(closestEntry(TECH_INDEX, "prismo")?.display).toBe("Prisma");
+    expect(closestEntry(TECH_INDEX, "postgre sq")?.display).toBeDefined();
+  });
+
+  it("does not suggest something unrelated", () => {
+    expect(closestEntry(TECH_INDEX, "qqqqqqqqqqq")).toBeUndefined();
+  });
+
+  it("leaves a query too short to mean anything alone", () => {
+    expect(closestEntry(TECH_INDEX, "pr")).toBeUndefined();
   });
 });

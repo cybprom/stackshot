@@ -14,9 +14,12 @@ import type { Category } from "@/lib/stack-map/types";
 export const DOMAIN = "stackshot.ilerioluwa.com";
 
 /** So every style, and the preview, round a star count the same way. */
+export function starsCount(n: number): string {
+  return n >= 1000 ? `${Math.round(n / 1000)}k` : `${n}`;
+}
+
 export function starsLabel(n: number): string {
-  if (n >= 1000) return `${Math.round(n / 1000)}k stars`;
-  return `${n} stars`;
+  return `${starsCount(n)} stars`;
 }
 
 /**

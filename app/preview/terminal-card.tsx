@@ -1,5 +1,5 @@
 import { DOMAIN, starsLabel } from "@/lib/card-text";
-import { family, PREVIEW_WIDTH, rowDelay, type PreviewDoc } from "@/lib/preview";
+import { BASELINE_NUDGE, family, PREVIEW_WIDTH, rowDelay, type PreviewDoc } from "@/lib/preview";
 import { COLORS, LAYER_COLORS, TERMINAL, TYPE, lineBox, type Theme } from "@/lib/tokens";
 import type { StackItem, StackLayer } from "@/lib/stack-map/types";
 
@@ -45,6 +45,8 @@ function Row({
         fontSize: TYPE.tree.size,
         fontWeight: TYPE.tree.weight,
         lineHeight: TYPE.tree.lineHeight,
+        position: "relative",
+        top: BASELINE_NUDGE.tree,
       }}
     >
       <div style={{ display: "flex", width: TERMINAL.labelWidth, flexShrink: 0, whiteSpace: "nowrap" }}>
@@ -231,6 +233,8 @@ export function TerminalPreviewCard({
             fontWeight: TYPE.meta.weight,
             lineHeight: TYPE.meta.lineHeight,
             letterSpacing: TYPE.meta.tracking * TYPE.meta.size,
+            position: "relative",
+            top: BASELINE_NUDGE.terminalMeta,
             color: c.inkMuted,
           }}
         >

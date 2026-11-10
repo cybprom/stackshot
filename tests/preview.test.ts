@@ -69,7 +69,7 @@ describe("the styles the site offers", () => {
 
 describe("the preview theme toggle", () => {
   it("offers exactly light, dark and system", () => {
-    expect(THEME_MODES).toEqual(["light", "dark", "system"]);
+    expect(THEME_MODES).toEqual(["system", "light", "dark"]);
   });
 });
 
