@@ -11,6 +11,7 @@ import {
   type PreviewDoc,
   type ThemeMode,
 } from "@/lib/preview";
+import { track } from "@/app/site/generator/track";
 import { cardPath, COPY, EXAMPLE_REPO, introCardUrl, pictureSnippet } from "@/lib/site";
 import type { StackDoc } from "@/lib/stack-map/types";
 
@@ -274,6 +275,7 @@ export function GeneratorProvider({ children }: { children: React.ReactNode }) {
     try {
       await navigator.clipboard.writeText(snippet);
       setCopied("done");
+      track("copy");
       // A second click restarts the hold rather than racing the first timer.
       if (copyTimer.current !== null) clearTimeout(copyTimer.current);
       copyTimer.current = setTimeout(() => setCopied("idle"), COPIED_HOLD_MS);

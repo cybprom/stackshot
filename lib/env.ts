@@ -17,6 +17,11 @@ export function upstashConfig(): UpstashConfig | undefined {
   return url && token ? { url, token } : undefined;
 }
 
+/** Unset means `/api/stats` answers 404, which is the safe way for it to be missing. */
+export function statsSecret(): string | undefined {
+  return process.env.STATS_SECRET || undefined;
+}
+
 export function isProduction(): boolean {
   return process.env.NODE_ENV === "production";
 }

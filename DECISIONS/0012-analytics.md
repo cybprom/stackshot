@@ -93,6 +93,18 @@ READMEs first, which is why it waits until a couple of weeks after launch. See G
 It remains an input to this ADR, not a new decision — if the pattern turns out to be
 illegible, the idea is dropped and noted in GOTCHAS, exactly as before.
 
+## As built, 2026-11-11
+
+An amendment line, not a new decision. Counters log at once and queue an increment, and
+each route flushes the queue with `after()` so counting never delays a response. Totals
+and a per-ISO-week hash per environment, a HyperLogLog for distinct repos, and the top
+1,000 unmapped ids. **Bugs are counted apart from failures** (`bug`, `bug_<kind>`), as
+step 1 promised, because a defect inside normal failure noise is one nobody looks at. Our
+own refusals are `refused_per_ip` and `refused_budget`, apart from GitHub's
+`failure_rate_limited`. Copy and download arrive by beacon at `POST /api/event`, which
+anyone can post to, so they are a floor on intent rather than an audit. `/api/stats`
+takes the secret as `?key=` so it opens in a browser.
+
 ## What would make us revisit
 
 - Embed count grows past a few hundred repos, at which point knowing _which_ repos (and

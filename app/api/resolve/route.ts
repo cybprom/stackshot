@@ -1,5 +1,7 @@
+import { after } from "next/server";
 import { z } from "zod";
 import { createCache } from "@/lib/cache";
+import { flushCounters } from "@/lib/counters";
 import { githubToken } from "@/lib/env";
 import type { FailureReason } from "@/lib/failure";
 import { createSiteClient } from "@/lib/github/client";
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
   if (!ref) return json({ error: "bad_url" }, 400);
 
   const token = githubToken();
+  after(flushCounters);
   const limiter = createRateLimiter();
   const ip = clientIp(request);
   let retryAfter = 0;

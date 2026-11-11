@@ -1,4 +1,6 @@
+import { after } from "next/server";
 import { createCache } from "@/lib/cache";
+import { flushCounters } from "@/lib/counters";
 import { parseCardFile } from "@/lib/card-style";
 import { githubToken } from "@/lib/env";
 import { createCardClient } from "@/lib/github/client";
@@ -41,6 +43,7 @@ export async function GET(
   if (RESERVED_OWNERS.has(owner.toLowerCase())) return new Response("Not found", { status: 404 });
 
   const token = githubToken();
+  after(flushCounters);
   const { bytes, reason, cacheControl } = await serveCard(
     { cache: createCache(), createClient: token ? () => createCardClient(token) : undefined },
     owner,

@@ -134,6 +134,8 @@ app/
                                  places them.
   globals.css                    site tokens; the card's live in lib/tokens.ts
   api/resolve/route.ts           POST { url } -> StackDoc
+  api/event/route.ts             POST { event } from the page: copy, download
+  api/stats/route.ts             GET, behind STATS_SECRET; 404 without it
   [owner]/[repo]/[file]/route.ts {style}-{theme}.png, plus legacy card-{theme}.png
 lib/
   github/
@@ -172,7 +174,9 @@ lib/
   repo-ref.ts                    owner/repo name gate, ahead of any API call
   hash.ts                        stable stringify + sha256
   cache.ts                       Upstash wrapper, typed; no-op when unconfigured
-  counters.ts                    failure-by-reason and the separate bug counter
+  counters.ts                    ADR-0012's counters: log now, flush to Redis with after()
+  stats.ts                       reads the counters back for /api/stats
+  budget.ts                      GitHub's remaining allowance and the guard's floor
   env.ts                         lazy reads, never throws — see scripts/check-env.ts
   render/
     card.tsx                     the Datasheet's Satori element tree

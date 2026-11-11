@@ -731,7 +731,9 @@ instructions. The page passes the quality floor in `DESIGN.md`. There is exactly
    done; the guard on 2026-11-11, ADR-0040.**
 2. Analytics per ADR-0012: Redis counters (resolve, copy, download, failure-by-reason),
    unmapped-package frequency, the weekly embed-count script, Vercel Web Analytics, and
-   `GET /api/stats` behind a secret. Budget: 1 hour. No dashboard.
+   `GET /api/stats` behind a secret. Budget: 1 hour. No dashboard. **Done 2026-11-11
+   except the embed count**, whose storage is the author's call. Needs `STATS_SECRET` in
+   Vercel and Web Analytics switched on in the Vercel project.
 3. **The pre-launch repo sweep**, asked for by the author on 2026-11-11. Generate cards
    for a broad set of real repos against production, big and small, across every
    ecosystem the detectors cover, plus monorepos, repos with no manifests, archived and

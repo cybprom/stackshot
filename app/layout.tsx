@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { SITE_ORIGIN } from "@/lib/site";
@@ -38,7 +39,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${archivo.variable} ${commitMono.variable} antialiased`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Page views only, cookie-free. Inert until Web Analytics is enabled in Vercel. ADR-0012. */}
+        <Analytics />
+      </body>
     </html>
   );
 }

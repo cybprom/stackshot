@@ -2,6 +2,7 @@
 
 import { DownloadIcon, ChevronIcon } from "@/app/site/marks";
 import { useGenerator } from "@/app/site/generator/context";
+import { track } from "@/app/site/generator/track";
 import { SnippetCode } from "@/app/site/snippet-code";
 import { COPY } from "@/lib/site";
 
@@ -44,6 +45,7 @@ export function GeneratorActions() {
             key={copy.label}
             href={href}
             download={`${shown.repo}-${style}-${theme}.png`}
+            onClick={() => track(theme === "light" ? "download_light" : "download_dark")}
             aria-label={copy.label}
             className="site-control press inline-flex h-11 items-center gap-2 rounded-control border border-rule bg-field px-3 text-ink hover:border-ink sm:px-3.5"
           >
