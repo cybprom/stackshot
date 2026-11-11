@@ -13,6 +13,8 @@ export type Stats = {
   weeks: { week: string; counts: Record<string, number> }[];
   distinctRepos: number;
   topUnmapped: { id: string; count: number }[];
+  /** READMEs GitHub search finds embedding a card, by week. Undercounts by design. */
+  embeds: { week: string; readmes: number }[];
 };
 
 /** The last `n` ISO weeks, newest first. */
@@ -30,12 +32,14 @@ export function pairs(flat: unknown[]): { id: string; count: number }[] {
 export async function readStats(redis: Redis, env: string, now: Date): Promise<Stats> {
   const keys = statsKeys(env);
   const weeks = recentWeeks(now, 8);
-  const [total, repos, unmapped, ...weekly] = await Promise.all([
+  const [total, repos, unmapped, embeds, ...weekly] = await Promise.all([
     redis.hgetall(keys.total),
     redis.pfcount(keys.repos),
     redis.zrange(keys.unmapped, 0, 49, { rev: true, withScores: true }),
+    redis.hgetall(keys.embeds),
     ...weeks.map((week) => redis.hgetall(keys.week(week))),
   ]);
+  const embedCounts = CountsSchema.parse(embeds) ?? {};
   return {
     env,
     generatedAt: now.toISOString(),
@@ -45,7 +49,22 @@ export async function readStats(redis: Redis, env: string, now: Date): Promise<S
     weeks: weeks.map((week, i) => ({ week, counts: CountsSchema.parse(weekly[i] ?? null) ?? {} })),
     distinctRepos: Number(repos),
     topUnmapped: pairs(Array.isArray(unmapped) ? unmapped : []),
+    embeds: Object.entries(embedCounts)
+      .map(([week, readmes]) => ({ week, readmes }))
+      .sort((a, b) => b.week.localeCompare(a.week)),
   };
+}
+
+const SearchSchema = z.object({ total_count: z.number() });
+
+/** The code search ADR-0012 named: README files that mention the card's domain. */
+export function embedQuery(host: string): string {
+  return `"${host}" in:file filename:README.md`;
+}
+
+export function embedCountFrom(body: unknown): number | undefined {
+  const parsed = SearchSchema.safeParse(body);
+  return parsed.success ? parsed.data.total_count : undefined;
 }
 
 /**

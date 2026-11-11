@@ -1,0 +1,36 @@
+# Counts READMEs embedding a Stackshot card, weekly, into the stats store. ADR-0012.
+#
+# Writes to Redis rather than committing a file, so there is no weekly bot commit to main
+# and no weekly production deploy. The history is one hash field per week.
+name: Embed count
+
+on:
+  schedule:
+    # Mondays, 07:00 UTC: the start of an ISO week, so each count names the week it opens.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  count:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Count and store
+        env:
+          # A classic PAT with no scopes. The job's own token can only search this repo.
+          SEARCH_TOKEN: ${{ secrets.SEARCH_TOKEN }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+        run: pnpm tsx scripts/embed-count.ts

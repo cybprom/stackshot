@@ -101,6 +101,8 @@ export const statsKeys = (env: string) => ({
   week: (week: string) => `${env}:stats:week:${week}`,
   repos: `${env}:stats:repos`,
   unmapped: `${env}:stats:unmapped`,
+  // Week -> README count, written by scripts/embed-count.ts. One field a week.
+  embeds: `${env}:stats:embeds`,
 });
 
 export type CounterOp =

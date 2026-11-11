@@ -11,7 +11,7 @@ import {
   resetCounters,
   UNMAPPED_KEEP,
 } from "@/lib/counters";
-import { authorised, pairs, recentWeeks } from "@/lib/stats";
+import { authorised, embedCountFrom, embedQuery, pairs, recentWeeks } from "@/lib/stats";
 
 beforeEach(() => {
   resetCounters();
@@ -110,6 +110,12 @@ describe("reading the stats", () => {
     ["no key", "https://x.test/api/stats", {}, false],
   ])("authorises %s correctly", (_, url, headers, expected) => {
     expect(authorised(new Request(url, { headers }), "s3cret")).toBe(expected);
+  });
+
+  it("searches README files for the card's domain, and reads the total", () => {
+    expect(embedQuery("stackshot.ilerioluwa.com")).toBe('"stackshot.ilerioluwa.com" in:file filename:README.md');
+    expect(embedCountFrom({ total_count: 12, items: [] })).toBe(12);
+    expect(embedCountFrom({ message: "Bad credentials" })).toBeUndefined();
   });
 
   it("refuses everyone when no secret is configured", () => {

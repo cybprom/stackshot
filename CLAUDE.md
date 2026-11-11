@@ -195,6 +195,7 @@ scripts/
   check-home.ts                  also pre-build; schema fails, age only warns (ADR-0035)
   prepare-home.ts                resolves the homepage's 16 repos -> lib/home-data.json
   render-intro.ts                the intro card's PNGs into public/, at build time
+  embed-count.ts                 weekly README count into the stats store, from a workflow
   record-github.ts               records GitHub responses into tests/fixtures/github/
   symbols.ts                     proposes the Tiles two-letter symbols; --write applies
   symbol-sheet.ts                every map entry as a tile, for reading them as a stranger
