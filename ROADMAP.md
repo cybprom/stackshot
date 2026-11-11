@@ -735,7 +735,8 @@ instructions. The page passes the quality floor in `DESIGN.md`. There is exactly
    The embed count is stored in Redis by `.github/workflows/embed-count.yml`, Mondays,
    which needs `SEARCH_TOKEN`, `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` as
    repo secrets.
-3. **The pre-launch repo sweep**, asked for by the author on 2026-11-11. Generate cards
+3. **The pre-launch repo sweep. DONE 2026-11-11, GOTCHAS 071**: 65 repos, no timeouts, one
+   map gap fixed, and two page bugs the author found while testing (GOTCHAS 070). Generate cards
    for a broad set of real repos against production, big and small, across every
    ecosystem the detectors cover, plus monorepos, repos with no manifests, archived and
    renamed repos, and very long names. For each: the card is right, the error card is the

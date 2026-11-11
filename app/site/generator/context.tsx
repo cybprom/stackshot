@@ -149,6 +149,10 @@ export function GeneratorProvider({ children }: { children: React.ReactNode }) {
   const [expanded, setExpanded] = useState(false);
   const [reading, setReading] = useState("");
   const [drawnMs, setDrawnMs] = useState<number | undefined>(undefined);
+  // Set per answer, so the preview never reuses bytes the browser or the CDN kept from an
+  // earlier attempt: an error card is cached for 60s, and a retry inside that minute
+  // showed it over a card that now resolves. ADR-0041.
+  const [answer, setAnswer] = useState(0);
   // Two submissions in flight would otherwise let the slower one win.
   const latest = useRef(0);
   const startedAt = useRef<number | null>(null);
@@ -166,9 +170,9 @@ export function GeneratorProvider({ children }: { children: React.ReactNode }) {
   const placeholder = !resolvedDoc && !failed;
   const pngUrl = (theme: "light" | "dark") =>
     resolvedDoc
-      ? cardPath(resolvedDoc.owner, resolvedDoc.repo, style, theme)
+      ? `${cardPath(resolvedDoc.owner, resolvedDoc.repo, style, theme)}?v=${answer}`
       : failed
-        ? cardPath(failed.owner, failed.repo, style, theme)
+        ? `${cardPath(failed.owner, failed.repo, style, theme)}?v=${answer}`
         : introCardUrl(style, theme);
   const png = {
     light: pngUrl("light"),
@@ -213,6 +217,7 @@ export function GeneratorProvider({ children }: { children: React.ReactNode }) {
   function fail(next: Failure) {
     setPhase("idle");
     setFailure(next);
+    setAnswer(Date.now());
     if (next.repo) {
       setResolvedDoc(undefined);
       setDrawnMs(undefined);
@@ -250,6 +255,7 @@ export function GeneratorProvider({ children }: { children: React.ReactNode }) {
       const ok = OkSchema.safeParse(body);
       if (response.ok && ok.success) {
         setResolvedDoc(ok.data.doc);
+        setAnswer(Date.now());
         setPhase("drawing");
         return;
       }

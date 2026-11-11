@@ -733,7 +733,9 @@ export const BACKEND: MapEntry[] = [
     category: "backend",
     weight: 95,
     description: "Full-stack Ruby web framework.",
-    aliases: ["gem:rails"],
+    // Apps like Discourse list Rails' parts instead of the umbrella gem. railties is the one
+    // only a Rails app has; activerecord alone also runs outside Rails, so it is not here.
+    aliases: ["gem:rails", "gem:railties"],
   },
   {
     id: "sinatra",

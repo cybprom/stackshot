@@ -37,10 +37,8 @@ export function cardUrl(owner: string, repo: string, style: ServedStyle, theme: 
  * doc (ADR-0035). The homepage shows these rather than `cardUrl(INTRO_REPO, …)`, because
  * the card route hits GitHub on a cold cache and the homepage must never wait on it.
  *
- * **The cost, stated because it is a real one:** M3's pre-warm — preview URL and snippet
- * URL byte-identical, so loading the preview warms the CDN entry the snippet hands out —
- * does not hold for this one card. The snippet still names the route URL. Every card a
- * visitor actually generates is unaffected.
+ * The snippet still names the route URL. Since ADR-0041 no previewed card shares its CDN
+ * entry with the snippet anyway: the preview carries `?v=`, and what it warms is Redis.
  */
 export function introCardFile(style: ServedStyle, theme: Theme): string {
   return `intro-${cardFileName(style, theme)}`;

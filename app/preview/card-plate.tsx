@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { PREVIEW_CARDS } from "@/app/preview/cards";
 import { BookIcon } from "@/app/site/marks";
 import {
@@ -20,6 +20,17 @@ import { COLORS, PREVIEW, type Theme } from "@/lib/tokens";
 
 // A client component still renders once on the server, where there is no layout to read.
 const useMeasure = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+// Only to size the frame once the bytes are up. Which card is drawn stays CSS's call,
+// because script cannot answer before the first paint. GOTCHAS 056.
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+function subscribeScheme(onChange: () => void) {
+  const query = window.matchMedia(DARK_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+const usePrefersDark = () =>
+  useSyncExternalStore(subscribeScheme, () => window.matchMedia(DARK_QUERY).matches, () => false);
 
 /**
  * The card's plate: GitHub's page colour behind a card drawn at its own 1200-unit canvas
@@ -74,7 +85,9 @@ export function CardPlate({
   const [heightSettled, setHeightSettled] = useState(true);
   // Set only when the real bytes are a different height from the HTML, which means the
   // card route answered with an error card. The frame then follows the bytes.
-  const [pngUnits, setPngUnits] = useState<number | null>(null);
+  // Per theme: in System, either one may be the one on screen, and only one may be an error.
+  const [pngUnits, setPngUnits] = useState<Record<Theme, number | null> | null>(null);
+  const prefersDark = usePrefersDark();
   const [loadedImage, setLoadedImage] = useState<string | undefined>(undefined);
   // A first failure's error card is still fetching: the slot is blank, so keep the sweep.
   const waiting = !doc && !placeholder && loadedImage !== pngLight;
@@ -98,8 +111,9 @@ export function CardPlate({
   /**
    * The PNG is requested only once the choice has settled, so flipping through the
    * switcher costs nothing and settling on one costs a render and no GitHub budget
-   * (ADR-0029). Both themes are warmed, which is also M3's pre-warm: the CDN entry the
-   * snippet hands out is the one this fetches.
+   * (ADR-0029). Both themes are warmed, which also leaves both PNGs in Redis for the
+   * snippet's first fetch. The URLs carry `?v=`, so the CDN entry is no longer shared.
+   * ADR-0041.
    */
   useEffect(() => {
     if (!wantsPng || !pngLight || !pngDark) return;
@@ -116,9 +130,9 @@ export function CardPlate({
           () => null,
         );
       };
-      void Promise.all([warm(pngLight), warm(pngDark)]).then(([units]) => {
+      void Promise.all([warm(pngLight), warm(pngDark)]).then(([light, dark]) => {
         if (!live) return;
-        setPngUnits(units ?? null);
+        setPngUnits({ light, dark });
         setPngReady(true);
       });
     }, PNG_SETTLE_MS);
@@ -203,8 +217,10 @@ export function CardPlate({
   }, [doc, style, mode]);
 
   const Card = PREVIEW_CARDS[style];
-  const bytesDiffer = layer === "png" && pngUnits !== null && Math.abs(pngUnits - frame.units) > 2;
-  const units = bytesDiffer ? pngUnits : frame.units;
+  const shownTheme: Theme = mode === "system" ? (prefersDark ? "dark" : "light") : mode;
+  const shownPngUnits = pngUnits?.[shownTheme] ?? null;
+  const bytesDiffer = layer === "png" && shownPngUnits !== null && Math.abs(shownPngUnits - frame.units) > 2;
+  const units = bytesDiffer ? shownPngUnits : frame.units;
 
   const system = mode === "system";
   // The cursor is the loading indicator: it blinks while the PNG is still coming and

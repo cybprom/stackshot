@@ -2154,6 +2154,33 @@ client's limit is 6.25s, so the failing resolve could only be the card route's. 
 also wrote a `failed` pointer over the good one for 60s. Local processes now allow 2s for a
 cache call, and a `failed` pointer is written `NX`, so it only ever fills an empty slot.
 
+## 070 — A working repo ended on its own error card, in the wrong frame
+**Date:** 2026-11-11 · **Cost:** ~0.5h · **Status:** fixed
+
+Found by the author retrying vercel/next.js. Two bugs stacked. The first try's error card
+was cached for 60 seconds on purpose (ADR-0027), and the preview fetched the same URL again
+on the retry, so a resolve that now worked crossfaded to the old error card. And the frame
+sized itself from the light PNG while System was showing the dark one, so when only one
+theme was the cached error, the frame kept the full card's height around a short error.
+The preview now carries `?v=` per answer (ADR-0041), and the frame measures the theme on
+screen.
+
+## 071 — The pre-launch sweep: 65 repos, one map gap
+**Date:** 2026-11-11 · **Cost:** ~0.5h · **Status:** done
+
+65 repos through the production card route, cold, under its 4-second resolve limit: Python,
+Go, Rust, Ruby, PHP and every big JS monorepo, plus renamed, archived, missing and
+manifest-less repos. **No timeouts, no wrong error card, no layout fault on any card.** The
+slowest whole responses were microsoft/TypeScript at 6.3s and vercel/next.js at 6.2s,
+against an 8-second working estimate for Camo, so the margin is real but not wide.
+
+The one real miss: **discourse had no Rails tile**, because large Rails apps list Rails'
+parts (`railties`, `activerecord`, …) instead of the `rails` gem. `gem:railties` is now an
+alias. Expected, not bugs: a library's own card cannot name itself (GOTCHAS 059), so vuejs/core
+has no Vue and django no Django, and a repo with only workflows, like github/gitignore,
+gets a one-tile GitHub Actions card. GitHub's canonical names show through: facebook/react
+draws as `react/react` and calcom/cal.com as `cal.diy`.
+
 ---
 
 *New entries go above this line as they happen.*

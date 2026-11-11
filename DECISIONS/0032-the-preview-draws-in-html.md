@@ -1,6 +1,7 @@
 # ADR-0032: The preview draws in HTML, and the site gets to move
 
-**Status:** Accepted
+**Status:** Accepted. **Superseded in part by ADR-0041**: the preview no longer fetches the
+snippet's exact URL.
 **Date:** 2026-10-01
 **Supersedes in part:** DESIGN.md MOTION (the closed list of three animations, and the ban
 on animating layout or height), DESIGN.md SURFACE ("Radius: 2. One value, everywhere, card
