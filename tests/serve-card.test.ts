@@ -11,6 +11,7 @@ import {
   type Cache,
   type Pointer,
 } from "@/lib/cache";
+import type { Budget } from "@/lib/budget";
 import { BudgetExceededError, createGitHubClient, type GitHubClient } from "@/lib/github/client";
 import {
   CACHE_ERROR_DETERMINISTIC,
@@ -49,6 +50,12 @@ function memoryCache(): Cache & { calls: string[] } {
     },
     async setPng(style, hash, theme, bytes) {
       store.set(`png:${style}:${hash}:${theme}`, bytes);
+    },
+    async getBudget() {
+      return (store.get("budget") as Budget | undefined) ?? {};
+    },
+    async setBudget(budget) {
+      store.set("budget", { ...((store.get("budget") as Budget | undefined) ?? {}), ...budget });
     },
   };
 }
@@ -170,10 +177,22 @@ describe("every failure returns an image, never a throw (I5)", () => {
       setDoc: async () => {},
       getPng: async () => undefined,
       setPng: async () => {},
+      getBudget: async () => {
+        throw new Error("upstash down");
+      },
+      setBudget: async () => {},
     };
     const result = await serve({ cache: broken, client: fixtureClient("Grandbusta__spyde") }, "Grandbusta", "spyde");
     expect(result.reason).toBe("unavailable");
     expect(result.bytes.subarray(0, 4)).toEqual(PNG_MAGIC);
+  });
+
+  it("records what GitHub said is left after a resolve", async () => {
+    const cache = memoryCache();
+    await serve({ cache, client: fixtureClient("pmndrs__zustand") }, "pmndrs", "zustand");
+    const budget = await cache.getBudget();
+    expect(budget.graphql?.remaining).toBeGreaterThan(0);
+    expect(budget.core?.remaining).toBeGreaterThan(0);
   });
 
   it("serves a cached failure without resolving again", async () => {
@@ -220,6 +239,24 @@ describe("the upstash wrapper", () => {
     expect(await cache.getPng("sheet", "abc", "light")).toBeUndefined();
   });
 
+  it("keeps a budget reading until GitHub's window resets, and no longer", async () => {
+    const writes: { key: string; value: unknown; ex: number }[] = [];
+    const redis = {
+      get: async (k: string) => writes.find((w) => w.key === k)?.value ?? null,
+      set: async (k: string, v: unknown, options: { ex: number }) => {
+        writes.push({ key: k, value: v, ex: options.ex });
+        return "OK";
+      },
+    };
+    const cache = upstashCache(redis as never);
+    const now = 1_000_000;
+    const reading = { remaining: 4200, limit: 5000, resetAt: now + 900_000 };
+    await cache.setBudget({ graphql: reading }, now);
+    expect(writes).toHaveLength(1);
+    expect(writes[0]?.ex).toBe(900);
+    expect(await cache.getBudget()).toEqual({ graphql: reading });
+  });
+
   it("never lets a failure replace a good pointer, and lets a success replace a failure", async () => {
     const store = new Map<string, unknown>();
     const redis = {
@@ -240,6 +277,39 @@ describe("the upstash wrapper", () => {
     await cache.setPointer("o", "new", { kind: "failed", reason: "unavailable" });
     await cache.setPointer("o", "new", good);
     expect(await cache.getPointer("o", "new")).toEqual(good);
+  });
+});
+
+describe("the global budget guard (ADR-0040)", () => {
+  const low: Budget = { core: { remaining: 100, limit: 5000, resetAt: Date.now() + 600_000 } };
+  const forbidden = new Proxy({} as GitHubClient, {
+    get() {
+      throw new Error("resolved while the budget was low");
+    },
+  });
+
+  it("refuses a repo it has never seen, with a short-lived rate-limited card", async () => {
+    const cache = memoryCache();
+    await cache.setBudget(low, Date.now());
+    const result = await serve({ cache, client: forbidden }, "pmndrs", "zustand");
+    expect(result.reason).toBe("rate_limited");
+    expect(result.cacheControl).toBe(CACHE_ERROR_TRANSIENT);
+    expect(result.bytes.subarray(0, 4)).toEqual(PNG_MAGIC);
+  });
+
+  it("keeps serving a repo already cached", async () => {
+    const cache = memoryCache();
+    await serve({ cache, client: fixtureClient("pmndrs__zustand") }, "pmndrs", "zustand");
+    await cache.setBudget(low, Date.now());
+    const result = await serve({ cache, client: forbidden }, "pmndrs", "zustand");
+    expect(result.reason).toBeUndefined();
+  });
+
+  it("resolves again once the window that was low has reset", async () => {
+    const cache = memoryCache();
+    await cache.setBudget({ core: { remaining: 0, limit: 5000, resetAt: Date.now() - 1000 } }, Date.now());
+    const result = await serve({ cache, client: fixtureClient("pmndrs__zustand") }, "pmndrs", "zustand");
+    expect(result.reason).toBeUndefined();
   });
 });
 

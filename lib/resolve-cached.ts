@@ -20,17 +20,18 @@ export type ResolveDeps = {
   createClient: (() => GitHubClient) | undefined;
   /**
    * Called immediately before a resolve that will cost GitHub budget, and not at all on a
-   * cache hit. Refusing yields `rate_limited`. The card route passes nothing.
+   * cache hit. Answers why it refuses, or nothing to allow it. A refusal is `rate_limited`.
+   * The site passes the per-IP limiter, the card route the global budget guard.
    */
-  gate?: () => Promise<boolean>;
+  gate?: () => Promise<FailureCause | undefined>;
 };
 
 /**
  * Why, where the reason alone leaves the site unable to say the right sentence.
- * `rate_limited` covers both our per-IP gate and GitHub's own limit, and those want
- * different words: one is about the visitor, the other is about us.
+ * `rate_limited` covers our per-IP gate, our global budget guard and GitHub's own limit,
+ * and only the first is about the visitor.
  */
-export type FailureCause = "per_ip";
+export type FailureCause = "per_ip" | "budget";
 
 export type CachedResolve =
   | { ok: true; doc: StackDoc; stackHash: string; cached: boolean; reads: Phase[] }
@@ -67,10 +68,11 @@ export async function resolveCached(deps: ResolveDeps, owner: string, repo: stri
     return { ok: false, reason: "unavailable", reads };
   }
 
-  // The only place budget is spent, so the only place the limiter applies.
-  if (gate && !(await gate())) {
-    countFailure("rate_limited", { owner, repo, cause: "per_ip" });
-    return { ok: false, reason: "rate_limited", cause: "per_ip", reads };
+  // The only place budget is spent, so the only place a gate applies.
+  const refused = gate ? await gate() : undefined;
+  if (refused) {
+    countFailure("rate_limited", { owner, repo, cause: refused });
+    return { ok: false, reason: "rate_limited", cause: refused, reads };
   }
 
   // Constructed here and nowhere earlier: this call starts the resolve deadline.
@@ -78,6 +80,9 @@ export async function resolveCached(deps: ResolveDeps, owner: string, repo: stri
   const phases: Phase[] = [];
   const result = await resolve(client, owner, repo, phases);
   countResolve(owner, repo, client.calls(), phases, result.ok ? "ok" : result.error.kind);
+  // Both routes record what GitHub said is left, so the card route's guard sees the site's
+  // spending too.
+  await cache.setBudget(client.budget(), Date.now());
 
   if (!result.ok) {
     const reason = failureReason(result.error);

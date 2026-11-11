@@ -727,7 +727,8 @@ instructions. The page passes the quality floor in `DESIGN.md`. There is exactly
 
 ### Steps
 
-1. Per-IP rate limiting on the JSON route, global budget guard on the PNG route.
+1. Per-IP rate limiting on the JSON route, global budget guard on the PNG route. **Both
+   done; the guard on 2026-11-11, ADR-0040.**
 2. Analytics per ADR-0012: Redis counters (resolve, copy, download, failure-by-reason),
    unmapped-package frequency, the weekly embed-count script, Vercel Web Analytics, and
    `GET /api/stats` behind a secret. Budget: 1 hour. No dashboard.

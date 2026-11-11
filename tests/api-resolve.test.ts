@@ -137,6 +137,8 @@ describe("the limiter counts resolves, not requests", () => {
       setDoc: async (h, d) => void store.set(`stack:${h}`, d),
       getPng: async (h, t) => store.get(`png:${h}:${t}`) as Buffer | undefined,
       setPng: async (h, t, b) => void store.set(`png:${h}:${t}`, b),
+      getBudget: async () => ({}),
+      setBudget: async () => {},
     };
   }
   const client = (fixture: string): GitHubClient =>
@@ -150,7 +152,7 @@ describe("the limiter counts resolves, not requests", () => {
       createClient: () => client("pmndrs__zustand"),
       gate: async () => {
         spent++;
-        return true;
+        return undefined;
       },
     };
     const first = await resolveCached(deps, "pmndrs", "zustand");
@@ -172,18 +174,21 @@ describe("the limiter counts resolves, not requests", () => {
       },
     });
     const result = await resolveCached(
-      { cache: noopCache(), createClient: () => forbidden, gate: async () => false },
+      { cache: noopCache(), createClient: () => forbidden, gate: async () => "per_ip" },
       "pmndrs",
       "zustand",
     );
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toBe("rate_limited");
+    if (!result.ok) {
+      expect(result.reason).toBe("rate_limited");
+      expect(result.cause).toBe("per_ip");
+    }
   });
 
   it("never spends on a name the gate would not have protected anyway", async () => {
     let spent = 0;
     const result = await resolveCached(
-      { cache: noopCache(), createClient: undefined, gate: async () => (spent++, true) },
+      { cache: noopCache(), createClient: undefined, gate: async () => (spent++, undefined) },
       "þorn",
       "repo",
     );

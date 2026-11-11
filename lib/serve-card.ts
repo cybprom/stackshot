@@ -6,7 +6,8 @@ import type { ServedStyle } from "@/lib/card-style";
 import { styleDef } from "@/lib/render/styles";
 import { renderErrorCard } from "@/lib/render/error-card";
 import { renderToPng } from "@/lib/render/render";
-import { resolveCached } from "@/lib/resolve-cached";
+import { budgetLow } from "@/lib/budget";
+import { resolveCached, type FailureCause } from "@/lib/resolve-cached";
 import type { StackDoc } from "@/lib/stack-map/types";
 import type { Theme } from "@/lib/tokens";
 
@@ -59,6 +60,15 @@ export async function serveCard(
   }
 }
 
+/**
+ * The last 10% of either bucket is kept for the site, where a person is waiting. Only a
+ * repo the cache cannot answer is refused, so every card already drawn keeps serving.
+ * ADR-0040.
+ */
+async function budgetGate(cache: Cache): Promise<FailureCause | undefined> {
+  return budgetLow(await cache.getBudget(), Date.now()) ? "budget" : undefined;
+}
+
 async function run(
   deps: CardDeps,
   owner: string,
@@ -66,7 +76,7 @@ async function run(
   style: ServedStyle,
   theme: Theme,
 ): Promise<CardResult> {
-  const result = await resolveCached(deps, owner, repo);
+  const result = await resolveCached({ ...deps, gate: () => budgetGate(deps.cache) }, owner, repo);
   if (!result.ok) return errorCard(result.reason, owner, repo, style, theme);
 
   const { doc, stackHash, cached, reads } = result;

@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       gate: async () => {
         const verdict = await limiter.spend(ip);
         retryAfter = verdict.retryAfter;
-        return verdict.allowed;
+        return verdict.allowed ? undefined : "per_ip";
       },
     },
     ref.owner,

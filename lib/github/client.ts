@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { readingFrom, type Bucket, type Budget } from "@/lib/budget";
 import type { Result } from "@/lib/result";
 
 const API = "https://api.github.com";
@@ -49,6 +50,8 @@ export type GitHubClient = {
   calls(): number;
   raiseBudgetForBlobFallback(): void;
   deadlineExpired(): boolean;
+  /** The allowance left in each bucket, from the latest response that reported it. */
+  budget(): Budget;
 };
 
 export type ClientOptions = {
@@ -96,6 +99,7 @@ export function createGitHubClient(options: ClientOptions): GitHubClient {
   const now = options.now ?? Date.now;
   let budget = API_BUDGET;
   let calls = 0;
+  let seen: Budget = {};
 
   const apiHeaders = {
     Authorization: `Bearer ${options.token}`,
@@ -108,11 +112,15 @@ export function createGitHubClient(options: ClientOptions): GitHubClient {
     url: string,
     init: RequestInit,
     read: (res: Response) => Promise<Result<T, GitHubError>>,
+    bucket?: Bucket,
   ): Promise<Result<T, GitHubError>> {
     if (deadline.aborted) return { ok: false, error: { kind: "timeout" } };
     const signal = AbortSignal.any([AbortSignal.timeout(perFetchMs), deadline]);
     try {
       const res = await fetchImpl(url, { ...init, signal });
+      // Read on failures too: a 403 with nothing remaining is the reading that matters most.
+      const reading = bucket ? readingFrom(res.headers) : undefined;
+      if (bucket && reading) seen = { ...seen, [bucket]: reading };
       if (!res.ok) return { ok: false, error: errorFromResponse(res, now()) };
       return await read(res);
     } catch (e) {
@@ -146,16 +154,22 @@ export function createGitHubClient(options: ClientOptions): GitHubClient {
           const data = schema.safeParse(envelope.data.data);
           return data.success ? { ok: true, value: data.data } : badResponse(data.error);
         },
+        "graphql",
       );
     },
 
     async rest(path, schema) {
       if (deadline.aborted) return { ok: false, error: { kind: "timeout" } };
       spend();
-      return send(`${API}${path}`, { headers: apiHeaders }, async (res) => {
-        const data = schema.safeParse(await res.json());
-        return data.success ? { ok: true, value: data.data } : badResponse(data.error);
-      });
+      return send(
+        `${API}${path}`,
+        { headers: apiHeaders },
+        async (res) => {
+          const data = schema.safeParse(await res.json());
+          return data.success ? { ok: true, value: data.data } : badResponse(data.error);
+        },
+        "core",
+      );
     },
 
     // Authenticated raw fetches don't touch the core bucket (GOTCHAS 010). The host is
@@ -176,6 +190,8 @@ export function createGitHubClient(options: ClientOptions): GitHubClient {
     },
 
     deadlineExpired: () => deadline.aborted,
+
+    budget: () => seen,
   };
 }
 

@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
 import { z } from "zod";
+import { BUCKETS, BucketReadingSchema, type Bucket, type Budget } from "@/lib/budget";
 import { countBug } from "@/lib/counters";
 import { deployEnv, isProduction, upstashConfig } from "@/lib/env";
 import { FAILURE_REASONS, isTransient } from "@/lib/failure";
@@ -65,6 +66,8 @@ export type Cache = {
   setDoc(stackHash: string, doc: StackDoc): Promise<void>;
   getPng(style: CardStyle, stackHash: string, theme: Theme): Promise<Buffer | undefined>;
   setPng(style: CardStyle, stackHash: string, theme: Theme, png: Buffer): Promise<void>;
+  getBudget(): Promise<Budget>;
+  setBudget(budget: Budget, now: number): Promise<void>;
 };
 
 /**
@@ -97,6 +100,10 @@ export function pngKey(style: CardStyle, stackHash: string, theme: Theme): strin
   return scoped(`png:v${RENDER_VERSION}:${style}:${stackHash}:${theme}`);
 }
 
+export function budgetKey(bucket: Bucket): string {
+  return scoped(`budget:${bucket}`);
+}
+
 /** A cache that stores nothing. Every read misses and every write is dropped. */
 export function noopCache(): Cache {
   return {
@@ -106,6 +113,8 @@ export function noopCache(): Cache {
     setDoc: async () => {},
     getPng: async () => undefined,
     setPng: async () => {},
+    getBudget: async () => ({}),
+    setBudget: async () => {},
   };
 }
 
@@ -181,6 +190,23 @@ export function upstashCache(redis: Redis): Cache {
       // ARCHITECTURE's note on storage.
       await guard("setPng", () =>
         redis.set(pngKey(style, stackHash, theme), png.toString("base64"), { ex: PNG_TTL_S }),
+      );
+    },
+
+    async getBudget() {
+      const [core, graphql] = await Promise.all(BUCKETS.map((bucket) => read(budgetKey(bucket), BucketReadingSchema)));
+      return { ...(core ? { core } : {}), ...(graphql ? { graphql } : {}) };
+    },
+
+    async setBudget(budget, now) {
+      await Promise.all(
+        BUCKETS.map(async (bucket) => {
+          const reading = budget[bucket];
+          if (!reading) return;
+          // Expires with GitHub's window, so a low reading never outlives the reset.
+          const ex = Math.min(3600, Math.max(1, Math.ceil((reading.resetAt - now) / 1000)));
+          await guard(`setBudget ${bucket}`, () => redis.set(budgetKey(bucket), reading, { ex }));
+        }),
       );
     },
   };

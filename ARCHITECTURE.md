@@ -474,6 +474,10 @@ as an open proxy until proven otherwise.
 - The PNG route is not IP-limited in the normal case (Camo is a small set of IPs and
   limiting it would break the product) but it **hard-refuses to resolve a repo it has never
   seen if the global budget is below 10%**, serving a "try again shortly" card instead.
+  Built in M4 (ADR-0040): every resolve on either route records each bucket's
+  `x-ratelimit-*` reading in Redis until that bucket resets, and the card route reads it
+  before a cold resolve. The site is exempt, so the last 10% is a reserve for people. The
+  guard fails open when there is no reading.
 - Unmapped package names are logged with a counter. This log is both the abuse signal and
   the product backlog.
 
