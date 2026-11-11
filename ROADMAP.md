@@ -18,7 +18,7 @@ P5 PLAN:    ** READ THE "Phase 5" SECTION BELOW, DIRECTLY UNDER THIS
             WHAT THE PAGE CONTAINS; the Phase 5 section owns ORDER AND
             MECHANISM and does not repeat it. Those two together are
             enough to resume with no other context.
-            CURRENT STEP: 8, the DESIGN.md rewrite. Steps 1-7 DONE.
+            ALL EIGHT STEPS DONE. PHASE 5 IS COMPLETE. NOW ON MILESTONE 4.
 PHASES:     0 de-risk DONE · 1 plumbing DONE · 2 Tiles DONE · 3 Terminal
             DONE · 4 site generator DONE · 5 docs and the page. Nothing
             cut.
@@ -224,11 +224,16 @@ SITE_ORIGIN: lib/site.ts is the single source for the origin in the card
             `download` always saves (GOTCHAS 068). Only the snippet is
             absolute, and in production it resolves to the same URL, so the
             CDN entry is still shared.
-Last done:  PHASE 5 STEPS 6-7, ON 2026-11-09, reviewed by the author and committed.
-            AFTER THE REVIEW: the panel opens as one 520ms movement, the
-            first read shows a blank plate rather than the example card, and
-            a failure naming a repo replaces the previous card. GOTCHAS 067-069.
-            NOT YET RUN in Safari, Firefox or on a real phone.
+Last done:  PHASE 5 STEP 8, THE DESIGN.md REWRITE, ON 2026-11-11. Docs only:
+            DESIGN.md now describes what ships, all three styles and the site,
+            with the card/owner and card/meta table corrected to 26 and 18 and
+            no RENDER_VERSION bump. site-display and site-title are defined
+            but unused: delete or use them.
+            Before it: PHASE 5 STEPS 6-7, ON 2026-11-09, PUSHED AND LIVE. The
+            author checked production on a phone and in Safari and it looked
+            right. The panel opens as one 520ms movement, the first read shows
+            a blank plate, and a failure naming a repo replaces the previous
+            card. GOTCHAS 067-069.
             LAYOUT C WON AND A IS DELETED; `/` IS STATIC AGAIN. C was then
             redesigned by the author (ADR-0039), which SUPERSEDES the AFTER P4
             notes above about C auto-generating at 0.9s, the wall's mixed
@@ -320,13 +325,11 @@ Last done:  PHASE 5 STEPS 6-7, ON 2026-11-09, reviewed by the author and committ
             Before it: PHASE 3 — TERMINAL. lib/render/terminal.tsx at
             height "content", ADR-0031 on what styles share, and
             GOTCHAS 051 (the box glyphs are taller than their line box).
-Next:       PHASE 5 STEP 8, THE DESIGN.md REWRITE. card/owner and card/meta: the
-            table says 1.20 but the card has always rendered 26 and 18, so
-            correct the TABLE; no RENDER_VERSION bump is needed.
-            THEN MILESTONE 4: the global budget guard, the analytics that are
-            still only log lines (Redis storage, copy and download counters,
-            /api/stats, the embed-count script, Vercel Web Analytics), and
-            the README's real embed. main IS AHEAD OF origin: pushing deploys.
+Next:       MILESTONE 4, in its own section's order: the global budget guard,
+            the analytics that are still only log lines (Redis storage, copy
+            and download counters, /api/stats, the embed-count script, Vercel
+            Web Analytics), THE PRE-LAUNCH REPO SWEEP the author asked for,
+            then the README's real embed. Pushing main deploys.
 M4 CARRIES: the badge in your own README (the domain is live now, so this
             can come forward), the global budget guard, ADR-0012's amendment
             line for the separate bug counter, and monitoring KV bytes —
@@ -461,7 +464,7 @@ Author-decided. Do not re-open them; they were asked and answered.
    headlines were already fixed there. This is a detail pass against the two `-phone`
    prototypes, not a build.
 7. **Choose one layout and DELETE THE OTHER — DONE.** C. ADR-0039.
-8. **The DESIGN.md rewrite. ← CURRENT STEP.** It still describes only the Datasheet. ADR-0032 is the
+8. **The DESIGN.md rewrite. DONE 2026-11-11.** It still describes only the Datasheet. ADR-0032 is the
    site's motion and radius authority until this lands. `card/owner` and `card/meta` already
    render at 26 and 18, so the table is what gets corrected, with no `RENDER_VERSION` bump.
 
@@ -728,15 +731,21 @@ instructions. The page passes the quality floor in `DESIGN.md`. There is exactly
 2. Analytics per ADR-0012: Redis counters (resolve, copy, download, failure-by-reason),
    unmapped-package frequency, the weekly embed-count script, Vercel Web Analytics, and
    `GET /api/stats` behind a secret. Budget: 1 hour. No dashboard.
-3. `README.md` finalised with real screenshots and real numbers.
-4. Deploy to `stackshot.ilerioluwa.com`, badge in own README. **This absorbs the
+3. **The pre-launch repo sweep**, asked for by the author on 2026-11-11. Generate cards
+   for a broad set of real repos against production, big and small, across every
+   ecosystem the detectors cover, plus monorepos, repos with no manifests, archived and
+   renamed repos, and very long names. For each: the card is right, the error card is the
+   right one, and nothing times out. Record what fails in `GOTCHAS.md`, and fix it or put
+   it in front of the author before launch.
+4. `README.md` finalised with real screenshots and real numbers.
+5. Deploy to `stackshot.ilerioluwa.com`, badge in own README. **This absorbs the
    identical item that used to sit in Milestone 2's definition of done** — the duplicate
    is resolved here, and the badge waits for the domain the card's footer names.
-5. `GOTCHAS.md` reviewed for writeup material.
+6. `GOTCHAS.md` reviewed for writeup material.
 
 ### Definition of done
 
-Live, rate-limited, counting, and the author's own repos carry the badge.
+Live, rate-limited, counting, swept against real repos, and the author's own repos carry the badge.
 
 ---
 

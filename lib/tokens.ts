@@ -165,10 +165,8 @@ export const PREVIEW = {
  * units is 29 in the PNG and 28.8 in the HTML; worse, a text node with no `lineHeight` at
  * all takes the *font's* default in each engine, which is 26 in Satori and 22.4 in Chrome.
  * The px values below are the ones Satori already produces, so stating them moved no
- * rendered bytes — `card/owner` and `card/meta` therefore render at 26 and 18 rather than
- * at DESIGN's 1.2, which is what they have always done. Correcting the card to the table
- * is a deliberate change with a `RENDER_VERSION` bump behind it, and it belongs to Phase
- * 5's DESIGN rewrite rather than to the generator. GOTCHAS 052, ADR-0032.
+ * rendered bytes. `card/owner` and `card/meta` render at 26 and 18, which is what they
+ * have always done, and DESIGN's table now says so. GOTCHAS 052, ADR-0032.
  */
 export const TYPE = {
   display: { size: 64, family: "Archivo", weight: 600, lineHeight: 1.0, tracking: -0.02 },

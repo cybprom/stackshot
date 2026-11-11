@@ -3,98 +3,87 @@
 The generated card is the product. The site is a delivery mechanism. Where the two compete
 for attention or effort, the card wins.
 
+This file describes what ships. It was rewritten at the end of Phase 5 (2026-11-11) to fold
+in ADR-0029 to ADR-0039, which had been amending it piecemeal. The reasoning behind each
+rule lives in `DECISIONS/` and the self-critique at the end. Where this file and the code
+disagree, one of them is a bug: fix the code, or change this file and say why in the same
+commit.
+
 ---
 
 ## GENRE
 
-A component datasheet for a codebase — the density and authority of a reference document,
+A component datasheet for a codebase: the density and authority of a reference document,
 designed to be read at thumbnail size inside someone else's README by a developer who is
 scrolling, not studying.
+
+Three card styles say the same facts in that genre. **Tiles** is the default and reads as a
+periodic table of the stack. **Terminal** reads as the output of a command. The
+**Datasheet** is the original spec-sheet card. It is still served at `sheet-*.png` and is
+not offered on the site.
 
 ---
 
 ## REFERENCES
 
-Eight, all real, all specific about what to take.
+Eight, all real, all specific about what to take. They shaped the Datasheet, and the type,
+colour and copy rules every style inherits.
 
-1. **Teenage Engineering product panels** (OP-1, TX-6) — every zone is labelled like a
-   control surface, and the micro-type becomes a texture rather than a caption. Take: the
-   confidence to label structure explicitly instead of hiding it.
-2. **Texas Instruments / Analog Devices datasheet pin-out pages** — take the tolerance for
-   density and, critically, the idea that *vertical position carries meaning*. Nothing on
-   those pages is where it is by accident.
-3. **FDA nutrition facts panel** — hierarchy produced entirely by **rule weight**, with no
-   color at all. This is the single most important reference in the list and the direct
-   source of our layer-separation system.
-4. **Architectural drawing title blocks** — the small metadata block in the corner
-   (revision, date, scale) as an authority signal. Take: the footer treatment.
-5. **Panic** (Playdate packaging, Nova release notes) — flat confident color and precision
+1. **Teenage Engineering product panels** (OP-1, TX-6). Every zone is labelled like a
+   control surface. Take: the confidence to label structure explicitly.
+2. **Texas Instruments / Analog Devices datasheet pin-out pages.** Take the tolerance for
+   density, and the idea that position carries meaning.
+3. **FDA nutrition facts panel.** Hierarchy from rule weight alone. The source of the
+   Datasheet's layer separators.
+4. **Architectural drawing title blocks.** The small metadata block as an authority
+   signal. Take: the footer treatment.
+5. **Panic** (Playdate packaging, Nova release notes). Flat confident colour and precision
    without stiffness. Take: proof that technical can be warm.
-6. **Shields.io badges** — study why a 20px-tall image became universal, and study the
-   failure mode: fifteen of them stacked reads as noise. Take: the reason we are one card
-   and not a row of chips.
-7. **Klim Type Foundry specimen pages** — presenting a name plus its metadata across
-   wildly different sizes. Take: the repo-name treatment.
-8. **Fly.io and Railway docs diagrams** — layered infrastructure drawings where the y-axis
-   is semantic. Take: confirmation that layer-as-vertical-position reads correctly to
-   developers without a legend.
+6. **Shields.io badges.** Why a 20px image became universal, and the failure mode of
+   fifteen stacked. Take: the reason we are one card and not a row of chips.
+7. **Klim Type Foundry specimen pages.** A name plus its metadata across very different
+   sizes. Take: the repo-name treatment.
+8. **Fly.io and Railway docs diagrams.** Layered drawings where the y-axis is semantic.
 
-If you want to build the board yourself, the places to look are Mobbin, Godly, Land-book,
-SaaS Interface, Typewolf and Fonts In Use.
+Tiles adds one: **the periodic table**, a grid of chips where a two-letter symbol stands for
+a thing and colour names its group (ADR-0029, ADR-0030).
 
 ---
 
 ## TYPE
 
-Two faces. Both open-licensed, both available as TTF/OTF — **Satori cannot load WOFF2**,
-which rules out a large share of modern webfont distributions.
+Two faces, both SIL OFL 1.1, both shipped as TTF from `public/fonts/` and read at module
+scope (invariant I7). **Satori cannot load WOFF2**, and the Commit Mono OTFs carry an `ltag`
+table Satori cannot parse (GOTCHAS 015).
 
-### Primary — Commit Mono
+### Commit Mono
 
-Everything structural: layer labels, package names, versions, metadata block, and all data
-on the site.
+Everything structural: owner, versions, the domain, Terminal's whole card, the error card's
+text, and data on the site.
 
-- Designer: Eigil Nikolajsen. Distributed at commitmono.com and on GitHub.
-- Licence: SIL Open Font License 1.1. **Verify the `LICENSE` file in the downloaded
-  release before shipping and commit a copy to `public/fonts/`.** Do not rely on this doc.
-- **Ships 400 and 700 only, and the scale is built on that.** The release carries no 500 or
-  600; those weights exist only as source files in the upstream repo. An earlier draft of
-  the table asked for 400/500/600 and that was wrong for a second reason anyway — adjacent
-  mono weights are invisible at the display ratio, the same failure as the rule ladder.
-  Do not "restore" them. See GOTCHAS 014.
-- **Take the TTFs, not the OTFs.** The release OTFs carry an `ltag` table that Satori
-  cannot parse. See GOTCHAS 015.
-- Why: a monospace at small sizes reads as *machine-generated on purpose*, which is the
-  genre. It also solves a real problem — version strings and package names align into
-  columns for free, which is what makes the card scannable at 600px.
-- Fallback stack (site only): `"Commit Mono", ui-monospace, "SF Mono", "Cascadia Mono",
-  Menlo, monospace`.
+- **Ships 400 and 700 only, and every scale is built on that.** There is no 500 or 600. Do
+  not "restore" them (GOTCHAS 014, 045).
+- Why: a monospace reads as machine-generated on purpose, which is the genre, and versions
+  and names align into columns for free.
+- Site fallback: `"Commit Mono", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace`.
 
-### Secondary — Archivo
+### Archivo
 
-The repo name, and nothing else. One use, at one size.
+The repo name on every style, and on Tiles the symbol and tile name too (ADR-0030). On the
+site, headings, prose and controls.
 
-- Designer: Omnibus-Type. Licence: SIL Open Font License 1.1.
-- Why: an industrial grotesque with genuinely tight default proportions, so it holds
-  negative tracking at display size without collapsing. It is not Inter, not Geist, not
-  Helvetica, and not a trend marker.
-- Fallback stack (site only): `Archivo, "Helvetica Neue", Arial, sans-serif`.
-- Ship only the static weights used (400, 600). Do not ship the variable file — it bloats
-  the bundle and Satori handles static faces more predictably.
+- Card weights: 400, 600, 700. The site adds 800 for section headings and the panel title.
+  No card step asks for 800, and `lib/render/fonts.ts` does not load it.
+- Static files only, never the variable font.
+- Site fallback: `Archivo, "Helvetica Neue", Arial, sans-serif`.
 
-**Alternate primary** if Archivo reads too neutral once you see it rendered: Instrument
-Sans (OFL). **Explicitly rejected:** Inter (banned by brief), Space Grotesk and Bricolage
-Grotesque (both are 2023-trend markers and now read as dated rather than distinctive),
-JetBrains Mono (the default developer-tool mono; picking it would be a reflex).
+**Rejected:** Inter, Space Grotesk, Bricolage Grotesque, JetBrains Mono. Instrument Sans is
+the fallback if Archivo ever reads too neutral. No third face.
 
-No third face. A mono is already present, so the data case is covered.
+### Display ratios
 
-### Card scale
-
-All sizes are in the card's 1200-unit coordinate space. The card renders at 2×. **Measured
-display ratios, not estimated** — an earlier mnemonic here ("roughly one quarter of the
-number") was wrong by 2× and this project has been bitten by display-ratio arithmetic three
-times:
+Every card size is in the card's 1200-unit space. The card renders at 2×. **Measured, not
+estimated**:
 
 | Surface | Card width | px per unit |
 |---|---|---|
@@ -102,344 +91,494 @@ times:
 | GitHub mobile web | ~380px | 0.32 |
 | GitHub iOS / Android app | ~350px | 0.29 |
 
-So a 30-unit item name is 27.5px on desktop and 8.75px in the apps. **The app column is the
-one that governs** — anything that must be read has to survive 0.29. See GOTCHAS 022.
+**The app column governs.** Anything that must be read has to survive 0.29, which puts the
+practical floor at `card/item`'s 30 units, 8.75px in the apps (GOTCHAS 022).
 
-| Step | Use | Size | Weight | Line height | Tracking |
+### Card scale
+
+`TYPE` in `lib/tokens.ts` is the source. **A line height the HTML preview has to match is
+written in px**, because Satori rounds every line box to a whole unit and a browser does
+not (GOTCHAS 052).
+
+Shared by every style:
+
+| Step | Use | Size | Face | Line height | Tracking |
 |---|---|---|---|---|---|
-| `card/display` | Repo name | 64 | Archivo 600 | 1.00 | -0.02em |
-| `card/owner` | Owner, above repo name | 24 | Mono 400 | 1.20 | 0.00em |
+| `card/display` | Repo name | 64, laddered | Archivo 600 | 1.00 | -0.02em |
+| `card/owner` | Owner, above the name | 24 | Mono 400 | 26px | 0 |
+| `card/meta` | The domain line | 16 | Mono 400 | 18px | 0.04em |
+| `card/error-detail` | The error card's second line | 22 | Mono 400 | 28px | 0 |
+
+`card/owner` and `card/meta` are 26 and 18. This table used to say 1.20, but the card has
+always rendered these values. The table was wrong, so no `RENDER_VERSION` bump was needed.
+
+Tiles:
+
+| Step | Use | Size | Face | Line height | Tracking |
+|---|---|---|---|---|---|
+| `card/symbol` | Two-letter symbol | 64 | Archivo 700 | 1.00 | -0.03em |
+| `card/tile-name` | Name under the symbol | 23 | Archivo 400 | 26px | 0 |
+| `card/version` | Version, top right of a tile | 22 | Mono 400 | 1.10 | 0 |
+| `card/legend` | Layer names in the bottom row | 24 | Archivo 400 | 29px | 0 |
+
+`card/tile-name` is 6.7px in the apps, below the floor, on purpose. The symbol carries the
+card at thumbnail size, and the name is for up close (ADR-0029). The symbol is 700 because
+600 reads visibly light at 64 (GOTCHAS 047).
+
+Terminal:
+
+| Step | Use | Size | Face | Line height |
+|---|---|---|---|---|
+| `card/prompt` | `$ stackshot owner/repo` | 24 | Mono 400 | 29px |
+| `card/terminal-name` | Repo name | 36 | Mono 700 | 43px |
+| `card/tree` | Layer rows and items | 30 | Mono 400 | 42px |
+
+`card/tree` is `card/item`'s size because Terminal has no symbols: its item names are the
+whole card, so the floor applies to them (GOTCHAS 048).
+
+Datasheet:
+
+| Step | Use | Size | Face | Line height | Tracking |
+|---|---|---|---|---|---|
 | `card/item` | Package name | 30 | Mono 400 | 1.10 | -0.01em |
-| `card/version` | Version, after name | 22 | Mono 400 | 1.10 | 0.00em |
-| `card/overflow` | "+7 more" | 22 | Mono 400 | 1.10 | 0.02em |
+| `card/version` | Version, after the name | 22 | Mono 400 | 1.10 | 0 |
+| `card/overflow` | `+7 more` | 22 | Mono 400 | 1.10 | 0.02em |
 | `card/gutter` | Rotated layer label | 18 | Mono 700 | 1.00 | 0.18em |
-| `card/meta` | Footer | 16 | Mono 400 | 1.20 | 0.04em |
-| `card/error-detail` | The error card's second line | 22 | Mono 400 | 28px | 0.00em |
 
-`card/error-detail` is `card/version`'s size with its own line box, and it is the one place
-on any card where a line of **mono prose wraps**. At `card/version`'s 1.10 the two lines set
-solid. It is a separate step rather than a looser `card/version`, because that step is an
-inline string after a name and never wraps. ADR-0033.
+`card/gutter` also sets the reason label on every error card (ADR-0033). Tracking tightens
+as size grows, and that relationship is the rule.
 
-Tracking tightens monotonically as size increases: 0.18 → 0.04 → 0.02 → 0.00 → -0.01 →
--0.02. That relationship is the rule; individual values are negotiable, the relationship
-is not.
+**Name and version are the same weight** on every style, so the distinction rests on `ink`
+against `ink-muted`. Contrast survives downscaling where stroke does not.
 
-**Long repo names step down, then wrap.** `card/display` is 64 up to ~22 characters, **48
-past ~22**, **40 past ~30**, **36 past ~48**. The boundaries are character counts against a
-proportional face, so check them against rendered width rather than the number.
+### Long repo names
 
-The step alone is not the rule, because GitHub allows 100 characters and no legible size
-fits 100 of them on one line. Three further constraints, all of them load-bearing:
+GitHub allows 100 characters. Every style bounds the name (ADR-0031), each in its own way:
 
-- **The name wraps, and the header has to let it.** Repo names contain no spaces, so a
-  name with no hyphens or dots has no break opportunity at all: without `wordBreak`, it
-  leaves the canvas entirely rather than wrapping. This is not a rare shape.
-- **Two lines is the limit, and it is a measure, not a count.** The 140-unit header band
-  holds the owner line plus two name lines at every step (28.8 + 72 = 100.8 at 36). A
-  third line overruns the 8-unit rule below it and paints into the first layer band, which
-  looks like a rendering bug rather than a long name.
-- **Past two lines the name truncates with an ellipsis.** This is a real exception to the
-  rule that held here before — "never truncate, a clipped name is worse than a small one"
-  — and the argument for the exception is that at ~100 characters the name is not legible
-  at thumbnail size at any size that fits, so the thing the old rule protected is already
-  gone. Truncation is unreachable for an ordinary lowercase-and-hyphen name of 100
-  characters; what reaches it is a name crafted to be wide. The site shows the full name
-  in HTML beside the card, so nothing is lost that a reader can act on.
-
-All four surfaces still apply: 36 units is 10.4px in the GitHub apps, above `card/item`'s
-8.75px, so the name never becomes the least legible thing on the card. See GOTCHAS 039.
-
-**`card/item` and `card/version` are the same weight**, so name-versus-version rests
-entirely on `ink` against `ink-muted`. That is contrast rather than stroke, and contrast is
-what survives downscaling. **Verified at step 7 on all five surfaces** — versions read as
-subordinate at 6.4px without reading as damaged. The `card/item` → 700 fallback is not
-needed and should not be reached for casually.
+- **Tiles and the Datasheet** step `card/display` down to 48 past ~22 characters, 40 past
+  ~30 and 36 past ~48. The counts are a proxy for width, so check rendered output. The
+  name may wrap to two lines and needs `wordBreak`, because a name with no hyphens has no
+  break opportunity. Past two lines it truncates with an ellipsis. Only a name crafted to
+  be wide reaches that, and the site shows the full name beside the card (GOTCHAS 039).
+- **Terminal** never resizes, because a terminal does not resize its own output. The name
+  sits at a fixed 36, clamped to two lines, under a prompt clamped to one. The ellipsis
+  reads as a shell truncating a path rather than as damage.
 
 ### Site scale
 
-| Step | Use | Size | Weight | Line height | Tracking |
-|---|---|---|---|---|---|
-| `site/display` | The one headline | 56 | Archivo 600 | 1.00 | -0.03em |
-| `site/title` | Section title | 28 | Archivo 600 | 1.15 | -0.02em |
-| `site/body` | Prose | 17 | Archivo 400 | 1.55 | -0.005em |
-| `site/data` | Package rows, versions | 15 | Mono 400 | 1.45 | 0.00em |
-| `site/code` | Markdown snippet | 14 | Mono 400 | 1.50 | 0.00em |
-| `site/label` | Form label | 14 | Mono 400 | 1.20 | 0.02em |
+Utilities in `app/globals.css`, all in px:
 
-Body line length capped at 68 characters.
+| Utility | Use | Size | Face | Line height |
+|---|---|---|---|---|
+| `site-panel-title` | The hero headline | 40, 58 from 640px | Archivo 800 | 1.02, then 1.00 |
+| `site-section` | Section headings | 38 | Archivo 800 | 1.05 |
+| `site-body` | Prose | 17 | Archivo 400 | 1.55 |
+| `site-small` | Secondary prose, notes, footer | 15 | Archivo 400 | 1.45 |
+| `site-name` | A technology's name in a list | 16 | Archivo 600 | 1.35 |
+| `site-control` | Buttons, labels, segments | 14 | Archivo 600 | 1.20 |
+| `site-data` | The repo field, the search field | 15 | Mono 400 | 1.45 |
+| `site-status` | Repo names, counts, the status line | 13 | Mono 400 | 1.30 |
+| `site-chip` | Try chips | 13 | Mono 400 | 1.40 |
+| `site-code` | The snippet | 14 | Mono 400 | 1.50 |
+| `site-label` | Generate, which scrambles | 14 | Mono 400 | 1.20 |
 
-`site/label` was Mono 500 until Milestone 3. Commit Mono ships 400 and 700 only — the same
-fact that set the card's scale — so 500 would have synthesized or fallen out of the stack.
-The 0.02em tracking carries the distinction instead. GOTCHAS 045.
+**Generate is the one mono control.** Its label resolves character by character, and a
+proportional face jitters on every frame (ADR-0038).
+
+`site-display` and `site-title` are defined but unused since the Phase 5 page. Delete them,
+or use them, rather than letting a third heading step creep in. Prose is capped at 68
+characters per line.
 
 ---
 
 ## COLOR
 
-Five named tokens per theme. Neutrals carry a cool green-blue cast throughout — none of
-these are Tailwind's gray, slate, or zinc, and none are a pure desaturated neutral.
+### The palette
+
+Five tokens per theme, a cool green-blue cast throughout. None are Tailwind's gray, slate
+or zinc.
 
 | Token | Light | Dark | Role |
 |---|---|---|---|
-| `surface` | `#EDEEEA` | `#0E1113` | Card and page background |
-| `ink` | `#101615` | `#DDE2DD` | All primary text, all meaningful rules |
-| `ink-muted` | `#5A625E` | `#8B9490` | Versions, owner, footer metadata |
-| `rule` | `#C8CCC4` | `#242A2B` | Decorative hairlines only — see the warning below |
-| `accent` | `#C8461E` | `#FF6B3D` | One 4-unit bar at the card's top edge, and Terminal's `$` (ADR-0031). Nothing else. |
+| `surface` | `#EDEEEA` | `#0E1113` | The site's page. The Datasheet's card. |
+| `ink` | `#101615` | `#DDE2DD` | Primary text. Every line that carries meaning. |
+| `ink-muted` | `#5A625E` | `#8B9490` | Versions, owner, metadata. |
+| `rule` | `#C8CCC4` | `#242A2B` | Decorative hairlines only. See the warning below. |
+| `accent` | `#C8461E` | `#FF6B3D` | One hue, two values. Uses below. |
 
-**The accent is a single hue expressed twice.** One hex cannot clear AA on both
-backgrounds, so light and dark carry different values of the same colour. This is a
-deliberate exception to "one accent", not two accents.
+**The accent is one hue expressed twice**, because no single hex clears AA on both
+backgrounds.
 
-> **Superseded in part by ADR-0029.** Five tokens per theme became thirteen: every card
-> style shares a colour and a tint per layer, in `LAYER_COLORS`. `accent` is unchanged and
-> still means exactly one thing — the bar at the card's top edge, and the site's focus
-> ring. What no longer holds is the stronger claim that the card carries no colour but
-> that one. The five below are still the palette every style is built on.
+**Where accent appears, and nowhere else:**
+- On a card: the Datasheet's 4-unit top bar, and Terminal's `$` (ADR-0031). Tiles has none.
+- On the site: the focus ring, a focused field's border, the status square above the
+  previewed card, and the loading sweep, which uses the previewed card's own accent
+  (ADR-0039). Never a button fill.
 
-**Warning that must survive into code:** `rule` does not meet 3:1 against `surface`. It is
-therefore **decorative only** — item separators within a layer band. Every line that
-*encodes information* (layer separators, the card border, the gutter divider) uses `ink`,
-at varying weight and **never below 3 units**. Below 3 the line is subpixel at display size
-and the weight distinction it exists to carry disappears. If you find yourself using `rule`
-to separate two layers, you have broken the accessibility floor.
+**`rule` fails 3:1 against `surface`, so it is decorative only.** Every line that encodes
+information uses `ink` at 3 units or more. The Tiles and Terminal frames use 2 units of
+`rule` because they encode nothing: the tiles and the tree are the structure, and the
+border is only an edge (ADR-0030).
 
-### Semantic colors
+### Layer colours
 
-Listed separately because they are not part of the palette and appear only on the site.
+One colour and one tint per layer per theme, shared by every style, in `LAYER_COLORS`. They
+reversed the original "colour carries no meaning" rule once the layout stopped being four
+stacked bands: Tiles has no y-axis, so colour is the only thing encoding the layer
+(ADR-0029).
+
+| Layer | Light colour / tint | Dark colour / tint |
+|---|---|---|
+| Frontend | `#2458C4` / `#E4ECFA` | `#7FAEFF` / `#14223A` |
+| Backend | `#1B7F52` / `#E0F1E7` | `#5CC896` / `#10291D` |
+| Infra | `#9A5F0E` / `#F5EAD6` | `#E5AE58` / `#2A2111` |
+| Tooling | `#596068` / `#EAECED` | `#A8AEB5` / `#1C2126` |
+
+The Datasheet does not use them. It still encodes layers with rule weight and position.
+
+### Card surfaces
+
+Each style paints its own card (ADR-0030):
+
+| Style | Light | Dark | Why |
+|---|---|---|---|
+| Tiles | `#FFFFFF` | `#12171C` | The tints were drawn against white. On `surface`, the tooling tint vanishes. |
+| Terminal | `#FAFAF7` | `#0A0D10` | A terminal sits slightly off the page. |
+| Datasheet | `surface` | `surface` | |
+
+### Site-only colours
+
+Not part of the palette, never on a card, and kept out of `lib/tokens.ts` except where the
+preview needs them:
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `error` | `#9B2C10` | `#F08055` | Failed resolve message |
-| `success` | `#2F5E3F` | `#79B18D` | "Copied" confirmation |
+| `error` | `#9B2C10` | `#F08055` | The failure message |
+| `success` | `#2F5E3F` | `#79B18D` | The status square once a card is drawn |
+| `field` | `#FFFFFF` | `#14191C` | Inputs and light-filled controls |
+| `preview-page`, `-rule`, `-ink-muted` | GitHub's light README | GitHub's dark README | The plate behind a previewed card (`PREVIEW`) |
+| `code-*` | dark in both | dark in both | The snippet block, which reads as a terminal |
 
-The generated card has **no semantic colors at all**. The error card is rendered in the
-normal palette with different content. A red error card in a README would be alarming and
-wrong.
+**The card has no semantic colours at all.** The error card uses the normal palette. A red
+card in a README would be alarming and wrong.
+
+**Two bands are pinned rather than following the reader.** The hero and the nav are always
+dark (`.theme-dark`), a room for the wall. The panel is always light (`.theme-light`), so it
+stays the lit object in both schemes. Inside the panel, the previewed card still follows
+the reader or the theme toggle (ADR-0037, GOTCHAS 056). `tests/tokens.test.ts` keeps the
+repeated values from drifting.
 
 ---
 
 ## SPACING
 
-One scale, 4-unit base:
+One scale, 4-unit base: `4 · 8 · 12 · 16 · 24 · 32 · 48 · 64` (`SPACE`).
 
-`4 · 8 · 12 · 16 · 24 · 32 · 48 · 64`
+Nothing off-scale ships, including inline styles in the Satori trees. If a step is wrong,
+change the step. Card outer padding is 32 on every style.
 
-Nothing off-scale ships. This includes inline styles inside the Satori element tree, where
-it is tempting to nudge a value by 3 units to fix an optical problem. If a step is wrong,
-change the step, don't add a new one. The single exception is the accent bar's 4-unit
-height, which is on-scale anyway.
+The exceptions are dimensions, not spacing, and each is commented in `lib/tokens.ts`:
+- The Datasheet's gutter is 72, derived from the rotated label's cap height.
+- Tiles' tiles are 208 × 192. **Five across is load-bearing**: 5 × 208 + 4 × 16 = 1104
+  against 1132 units of content width (GOTCHAS 048).
+- Terminal's label column is 240, which holds `├── frontend` on one line.
 
-Card outer padding: 32. Gutter width: 72 (off-scale by necessity — it is derived from the
-rotated label's cap height, and it is the only exception; document it in code with a
-one-line comment).
+On the site, every section shares one column, `.site-grid`: `min(1220px, 100% - 40px)`,
+centred. The hero panel is the only thing wider than its own content, and it is 1220 too.
 
 ---
 
 ## SURFACE
 
-> **Amended by ADR-0030 for every style but the Datasheet.** The frame belongs to the
-> style: Tiles has a 20-unit card, 12-unit tiles and a 2-unit hairline border in `rule`,
-> with no accent bar. The rules below are the Datasheet's, and they are still the default
-> for anything that does not state otherwise.
+### On the card
 
-- **Radius: 2.** One value, everywhere, card and site. A datasheet does not have rounded
-  corners. `rounded-xl` is banned by name. **Superseded for the site by ADR-0032**: the
-  two chosen page designs use rounded controls, and the radius set is taken from them.
-  Radius 2 is the card's rule and is untouched on the card.
-- **Border: 3 units, `ink`.** The card has exactly one border, at its outer edge. Internal
-  structure is rules, not boxes. There are no nested cards, no panels, no containers.
-- **Shadows: none.** Two reasons, both sufficient. A card embedded in a README should sit
-  flat in the page rather than float above it, and Satori's shadow support is partial
-  enough that any two-layer set would render inconsistently. The site has no shadows
-  either — depth on the site would contradict the card. **One exception while layout C
-  exists** (ADR-0037): C's panel is the only element on the site genuinely in front of
-  something, a wall of cards that moves behind it, and neither reason reaches it. It dies
-  with C if A is chosen.
+| | Tiles | Terminal | Datasheet |
+|---|---|---|---|
+| Card radius | 20 | 16 | 2 |
+| Border | 2u `rule` | 2u `rule` | 3u `ink` |
+| Accent | none | the `$` | 4u top bar |
+| Height | content | content | 800 fixed |
+| Inner shapes | 12u tiles with a 6u top bar | none | rules, never boxes |
+
+**Shadows: none, on every card.** A card in a README sits flat in the page, and Satori's
+shadow support is partial. The tile's top bar is mitred at the corners, and the HTML
+preview draws it with transparent side borders to match (GOTCHAS 065).
+
+### On the site
+
+The site is rounded, and its radii are a set, not a scale (ADR-0032):
+
+| Token | Value | Use |
+|---|---|---|
+| `radius-tile` | 6 | Tiles on the page, chips |
+| `radius-segment-item` | 7 | A segment's sliding fill |
+| `radius-control` / `radius-segment` | 10 | Buttons, inputs, segmented controls |
+| `radius-plate` / `radius-snippet` | 12 | The card's plate, the snippet block |
+| `radius-panel` | 16 | The hero panel |
+
+No Tailwind default radius ships.
+
+**One shadow on the whole site:** the hero panel's, because it is the only element genuinely
+in front of something. Everything else is flat, and the sweep's glow is motion, not
+surface.
 
 ---
 
 ## MOTION
 
-> **Amended by ADR-0032 for the site's preview.** The closed list below grows by four —
-> the dim with its sweep and wake, the per-style reveal, the HTML-to-PNG crossfade, and
-> the preview plate's height — which also retires "layout, height, or position" from the
-> must-not list for that one element. Everything else here stands, including no hover on a
-> card, no scroll-triggered anything, and a real reduced-motion branch.
->
-> **Amended by ADR-0039, which replaces the entrance below.** The panel has no entrance
-> and nothing moves on load; it opens once, on the first Generate. The wall moves with
-> page scroll, the one scroll-linked element on the site, and dims when the field has
-> focus. The status line above the card resolves like the button. On the site the accent
-> also marks the status square and a focused field's border. The card's rule is unchanged.
-> The opening is one 520ms movement: width and height on the same curve, the copy
-> crossfading from its closed wrap to its open wrap so no text re-breaks in motion, and the
-> card column fading in 16px from the right. Reduced motion snaps all of it.
->
-> **Amended again by ADR-0037 and ADR-0038**, both for as long as layout C exists: C's
-> panel arrives rather than being present, and opens its width on a resolve. And the
-> generate button's label resolves character by character on hover, on focus, and when the
-> phase changes it — the one visible sign that a resolve has moved from reading to
-> drawing. All three have a real reduced-motion branch: no entrance, no width transition,
-> and a label that simply changes.
+The card is a static image and never animates. Everything here is the site's.
 
-Motion applies to the site only. The product is a static image; it does not animate.
+### Tokens
 
-**Durations**
-- `motion/state` — 120ms. Button and input state changes.
-- `motion/arrival` — 200ms. The card appearing after a resolve.
+| Token | Value | For |
+|---|---|---|
+| `motion/state` | 120ms | Colour, border and press changes |
+| `motion/arrival` | 200ms | Fades: the dim, the crossfade, Copy's label |
+| `motion/travel` | 400ms | Height that moves: the plate, the snippet disclosure |
+| `motion/open` | 520ms | The panel's one opening (`PANEL_OPEN_MS`) |
+| `ease/standard` | `cubic-bezier(0.2, 0, 0, 1)` | Everything, except the sweep's own symmetric loop |
 
-**Easings**
-- `ease/standard` — `cubic-bezier(0.2, 0, 0, 1)`. Everything uses this.
+Delays and per-item timings live in `lib/preview.ts`, `lib/hero.ts` and `lib/scramble.ts`.
+Durations that are the same for every item live in CSS.
 
-**What animates** — a short, closed list:
-1. The card's arrival after a successful resolve: opacity 0→1 plus a 2-unit rise.
-2. The copy button's confirmation state.
-3. Focus ring appearance.
+### What animates, a closed list
 
-**What must not animate** — enforce this in review:
-- Anything on initial page load. The page arrives complete.
-- Any hover state on the card or its contents.
-- Layout, height, or position of anything other than item 1 above.
-- The headline, ever.
-- Scroll-triggered anything. There is no scroll-triggered anything.
+1. **Controls.** State colours at 120ms, a 0.97 press scale, the segment fill sliding
+   between measured positions, the chevron, Copy's label swapping in place.
+2. **The panel's opening**, once, on the first Generate. Width and height move together on
+   one curve over 520ms. The copy crossfades from its closed wrap to its open wrap, so no
+   text re-breaks in motion. The card column fades in from 16px to the right. The caption
+   below the panel is counter-moved, so it never travels.
+3. **The loading sequence on the plate** (ADR-0032):
+   - Reading: the card on screen dims to 0.28 and desaturates over 200ms while the sweep
+     crosses it on a 900ms loop. The sweep fades out in 120ms the moment loading ends,
+     wherever it is.
+   - Drawing: Tiles pops in at 45ms per tile over 460ms. Terminal prints a row every
+     150ms over 320ms, with a cursor blinking at 1060ms until the PNG is ready.
+   - Settling: the real PNG crossfades in over 200ms, but only after it has decoded, the
+     reveal has finished, and the plate's height has settled. The cursor fades out first.
+     Nothing the PNG lacks may remain once it is up.
+   - The plate's height eases over 400ms on a card change, never on a resize.
+4. **The status line and Generate's label scramble** to their new text, left to right, at
+   28ms a step (ADR-0038).
+5. **The wall**, the one scroll-linked element. Each column drifts at its own rate as the
+   page scrolls, and the wall dims while the repo field has focus. The nav turns solid
+   over the first 120px of scroll. With no scroll timelines, the wall is still and the nav
+   is solid (ADR-0039).
+6. **The tech index.** Old tiles fade out together in 120ms, which is also the typing
+   debounce, and new tiles arrive on the same tile-in at a faster stagger.
+7. **The snippet disclosure**, grid rows over 400ms with the code fading in behind.
 
-**Reduced motion.** Under `prefers-reduced-motion: reduce`, item 1 becomes opacity-only
-with no rise, and items 2 and 3 become instant. This is a real branch in the CSS, not a
-global `animation: none` sledgehammer.
+### What must not animate
+
+- **Anything on page load.** The page arrives complete. The panel has no entrance.
+- **Any hover state on a card** or its contents.
+- **The headline**, except the crossfade that hides its re-wrap during the opening.
+- **Anything scroll-linked** other than the wall and the nav.
+- **Idle decoration.** Nothing loops unless it is reporting work in progress.
+
+### Reduced motion
+
+A real branch, never a global `animation: none`. The panel opens instantly, already in its
+final layout. There is no wall drift, no sweep and no cursor. The reveal is skipped. The
+dim and the crossfade become instant. Labels change without scrambling. Controls keep their
+colour change and drop the press scale.
 
 ---
 
 ## SIGNATURE
 
-**A left gutter running the full height of the card, carrying the layer names rotated 90°,
-reading bottom-to-top, in tracked-out mono: FRONTEND / BACKEND / INFRA / TOOLING.**
+Each style has one element that identifies it at 300px wide, when no package name is
+legible.
 
-It is the one element that makes a Stackshot card identifiable at 300px when not a single
-package name is legible. It reads as a section drawing rather than a dashboard, it costs
-72 units of horizontal space and nothing else, and it is structurally honest — the label
-is physically beside the thing it labels.
+**Tiles: the symbols.** Fifteen two-letter symbols in their layer's colour, on its tint,
+under a layer-coloured top bar. Symbols come from the map entry (`symbol` on `StackItem`),
+are proposed by `scripts/symbols.ts`, and are checked by reading `scripts/symbol-sheet.ts`'s
+output as a stranger would.
 
-Everything else stays quiet: no icons, no logos, no decorative marks, no background
-texture, no second color.
+**Terminal: the prompt and the tree.** `$ stackshot owner/repo` in accent and ink, then
+`├──` and `└──` branches with the layer name bold in its colour.
 
-**Verified at Milestone 0 step 3: the rotated labels render correctly.** The signature
-stands as designed and the stacked-letter fallback is not needed. Evidence:
-`docs/spike/gutter-comparison.png`, both variants side by side.
+**Datasheet: the gutter.** A left gutter running the full height of the card, carrying the
+layer names rotated 90°, reading bottom to top, in tracked-out mono. It is verified at
+Milestone 0 (`docs/spike/gutter-comparison.png`). The shape is not obvious, so it is
+pinned: an absolutely positioned wrapper fills the band and centres its child, the label
+rotates about its own centre, and it needs `whiteSpace: nowrap` and `flexShrink: 0` or it
+wraps before rotating (GOTCHAS 004). **FRONTEND is 110 units rotated**, so no band may drop
+below ~110 or the failure looks like a rotation bug.
 
-The implementation is not obvious and the shape matters, so it is pinned here: an
-absolutely positioned wrapper fills the band and centres its child; the label rotates about
-its **own centre**, which is what keeps the band height out of the problem. The label needs
-`whiteSpace: nowrap` and `flexShrink: 0` or it wraps inside the 72-unit gutter before it is
-ever rotated. See GOTCHAS 004.
-
-**Band height is constrained by the longest label, not only by content.** FRONTEND is 110.0
-units rotated — measured from satori's layout pass, correcting an earlier 102.4 — against a
-band floor of 120, so it clears by 10. Any redesign that shrinks bands below ~110 —
-including this doc's own "3 layers × 4 items" fallback — breaks the gutter, and it will
-look like a rotation bug rather than a spacing one.
+Everything else stays quiet on every style: no logos, no icons, no texture (ADR-0002).
 
 ---
 
 ## CARD ANATOMY
 
-1200 × 800 units. **Not 1200 × 630** — see the self-critique below.
+All cards are 1200 units wide. What every style shares is fixed by ADR-0031: the facts
+(owner, repo, language, stars), the domain line, the layer colours, the width, and a
+bounded name. Everything below the facts belongs to the style. At most four layers, always
+in the order frontend, backend, infra, tooling. An empty layer is omitted entirely.
+
+### Tiles (the default)
+
+```
+╭──────────────────────────────────────────────────────────────────╮  2u rule, r20
+│  vercel/                                             TypeScript  │
+│  next.js                                             138k stars  │  header
+│                                                                  │  32
+│  ┌▀▀▀▀▀▀▀▀▀┐ ┌▀▀▀▀▀▀▀▀▀┐ ┌▀▀▀▀▀▀▀▀▀┐ ┌▀▀▀▀▀▀▀▀▀┐ ┌▀▀▀▀▀▀▀▀▀┐     │
+│  │      19 │ │      15 │ │       4 │ │         │ │       3 │     │  208 × 192 tiles
+│  │ Re      │ │ Nj      │ │ Tw      │ │ Sw      │ │ Zo      │     │  5 across, gap 16
+│  │ React   │ │ Next.js │ │ Tailwind│ │ SWR     │ │ Zod     │     │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘     │
+│  … up to three rows, fifteen cells …            ┌ ─ ─ ─ ─ ┐      │  +N more: dashed
+│                                                 │  +6 more │      │
+│                                                 └ ─ ─ ─ ─ ┘      │
+│  ■ Frontend  ■ Backend  ■ Infra  ■ Tooling     stackshot.ilerio… │  legend + domain
+╰──────────────────────────────────────────────────────────────────╯
+```
+
+- **Fifteen cells, five by three, at content height.** `layoutTiles` allocates them: every
+  layer present keeps at least one item tile, then cells go to the layers with the most to
+  say, by largest remainder. A `+N more` tile costs a cell like any other.
+- **A tile** is the version top right in `ink-muted`, the symbol in the layer colour, and
+  the name at the foot, clamped to two lines by a 52-unit max height.
+- **The bottom row carries the legend and the domain** (ADR-0030). The legend is
+  load-bearing, because it is the only thing decoding the colour.
+- No accent bar and no rule under the header.
+
+### Terminal
+
+```
+╭──────────────────────────────────────────────────────────────────╮  2u rule, r16
+│  $ stackshot vercel/next.js                                      │  prompt, 1 line
+│  vercel/next.js                         TypeScript   138k stars  │  name 36, ≤2 lines
+│                                                                  │
+│  ├── frontend   React 19   Next.js 15   Tailwind 4   SWR 2       │  rows, 24 apart
+│  ├── backend    Node 22   Prisma 6                               │
+│  ├── infra      Docker   GitHub Actions   Vercel                 │
+│  └── tooling    pnpm   Turborepo   TypeScript   +4 more          │
+│                                                                  │
+│  stackshot.ilerioluwa.com                                        │
+╰──────────────────────────────────────────────────────────────────╯
+```
+
+- **Rows are 24 apart**, because the box glyphs are taller than their line box and 12 left
+  the stems reading as one broken line (GOTCHAS 051). Items wrap within their row.
+- The label column is a fixed 240, so item columns line up down the card.
+- The name is the full `owner/repo`, with language and stars in `ink-muted` on its right.
+
+### Datasheet
+
+1200 × 800 units, fixed.
 
 ```
 ┌════════════════════════════════════════════════════════════════┐  4u accent bar
-│                                                                │
 │  ┌──────┬──────────────────────────────────────────────────┐   │
 │  │      │  vercel/                              TypeScript │   │  header band
-│  │      │  next.js                             128k stars  │   │  140u
+│  │      │  next.js                             138k stars  │   │  140u
 │  │      ├══════════════════════════════════════════════════┤   │  8u ink rule
-│  │ F    │                                                  │   │
-│  │ R  ↑ │  Next.js 15    React 19    Tailwind 4            │   │  layer band
-│  │ O    │  TanStack Query 5    Zod 3                       │   │  flex, min 120u
-│  │ N    │                                                  │   │
-│  │ T    ├──────────────────────────────────────────────────┤   │  5u ink rule
-│  │      │                                                  │   │
+│  │ F  ↑ │  Next.js 15    React 19    Tailwind 4            │   │  layer band, min 120u
+│  │ R    ├──────────────────────────────────────────────────┤   │  5u ink rule
 │  │ B  ↑ │  Node 22    PostgreSQL 16    Prisma 6            │   │
-│  │ A    │                                                  │   │
-│  │ C    ├──────────────────────────────────────────────────┤   │  3u ink rule
-│  │ K    │                                                  │   │
-│  │      │  Docker    GitHub Actions    Vercel              │   │
-│  │ I  ↑ │                                                  │   │
-│  │ N    ├──────────────────────────────────────────────────┤   │  3u ink rule
-│  │ F    │                                                  │   │
-│  │ R  ↑ │  pnpm    Vitest    ESLint    +4 more             │   │
-│  │      │                                                  │   │
+│  │      ├──────────────────────────────────────────────────┤   │  3u ink rule
+│  │ I  ↑ │  Docker    GitHub Actions    Vercel              │   │
+│  │      ├──────────────────────────────────────────────────┤   │  3u ink rule
+│  │ T  ↑ │  pnpm    Vitest    ESLint    +4 more             │   │
 │  └──────┴──────────────────────────────────────────────────┘   │
 │  stackshot.ilerioluwa.com                                      │  footer 56u
 └────────────────────────────────────────────────────────────────┘  3u ink border, r2
 ```
 
-Rules:
-- **Layer separator weight decreases downward: 8 · 5 · 3 · 3.** This is the nutrition-panel
-  borrowing. Hierarchy comes from line weight, not color. 3 is the floor for any line that
-  carries meaning — see COLOR.
-- **Empty layers are omitted entirely**, and the remaining bands expand to fill. A frontend
-  library with no backend shows two bands, not two bands and two blanks.
-- **Band `minHeight` is 120, and it is load-bearing for two independent reasons.** It holds
-  two wrapped lines of `card/item` plus 24/24 padding (114, rounded up), *and* it clears the
-  longest rotated gutter label — FRONTEND needs 110 units, measured, leaving 10 to spare.
-  Shrinking bands below ~110 breaks the gutter, and the failure presents as a rotation bug
-  rather than a spacing one. Anything that reduces this number has to satisfy both
-  constraints, not the one that prompted the change. See GOTCHAS 004.
-- **Maximum 4 layers, maximum 6 items per layer.** Overflow renders as `+N more` in
-  `ink-muted`. There is no scroll, no second page, no shrink-to-fit.
-- **Items are name plus version inline**, version in `ink-muted`. Major version only:
-  `Next.js 15`, never `Next.js ^15.1.0`. See ADR-0008.
-- **No descriptions on the card.** They live on the site beneath the preview. See ADR-0009.
-- **The footer carries the domain and nothing else** *(the Datasheet's; ADR-0030 gives
-  Tiles a bottom row with the layer legend at the left and the domain at the right,
-  because a card with no gutter has nothing else naming its layers)*. It used to carry `stack as of
-  <date>`; that date said when Stackshot first saw the stack rather than when the repo
-  changed it, so it was wrong on the day a card was generated. Removed in ADR-0025. The
-  right side of the footer is empty on both cards.
+- **Separator weight decreases downward: 8 · 5 · 3 · 3.** Hierarchy from weight, not colour.
+- **Band minimum height is 120**, for two reasons at once: two wrapped lines of
+  `card/item`, and the 110-unit rotated FRONTEND. A change to it must satisfy both.
+- At most six items per layer, then `+N more`. No scroll, no shrink-to-fit.
+- The footer carries the domain and nothing else.
 
-### The error card is 1200 × 518
+### On every style
 
-> **Amended by ADR-0033.** This is the **Datasheet's** error card. Every style frames its
-> own now, because Tiles is the default and `card-*.png` is pinned to it, so this frame was
-> the one most failing embeds in the wild would have shown. The content is one object in
-> all of them — label, reason, detail — and only the frame changes. Tiles and Terminal draw
-> theirs at content height, as they draw their real cards, and carry the reason label flat
-> under the header where the Datasheet rotates it into the gutter. The block below is the
-> Datasheet's and is unchanged, bytes included.
+- **Items are the name plus a version, major only by default**: `Next.js 15`, never
+  `^15.1.0` (ADR-0008, refined by ADR-0017 to ADR-0020).
+- **No descriptions on the card.** They live on the site, under "What Stackshot found"
+  (ADR-0009).
+- **No date.** It said when Stackshot first saw the stack, not when the repo changed, so it
+  was wrong on the day it was drawn (ADR-0025).
 
-Same width, same chrome, same palette, one band instead of four. **Width is held at 1200 so
-every type size keeps the display ratios measured above**; only the height changes.
+### The error card
 
-```
-┌════════════════════════════════════════════════════════════════┐  4u accent bar
-│  ┌──────┬──────────────────────────────────────────────────┐   │
-│  │      │  octocat/                                        │   │  header band
-│  │      │  hello-world                                     │   │  140u
-│  │ N    ├══════════════════════════════════════════════════┤   │  8u ink rule
-│  │ O    │                                                  │   │
-│  │   ↑  │  Stackshot found no manifest files here.         │   │  message band
-│  │ M    │  It reads package.json, pyproject.toml, …        │   │  240u
-│  │ A    │                                                  │   │
-│  └──────┴──────────────────────────────────────────────────┘   │
-│  stackshot.ilerioluwa.com                                      │  footer 56u
-└────────────────────────────────────────────────────────────────┘  3u ink border, r2
-```
+Every style frames its own error card, because Tiles is the default and `card-*.png` is
+pinned to it (ADR-0033). The content is one object in every frame: the header naming the
+repo, a reason label in `card/gutter`, the reason sentence, and a detail line in
+`card/error-detail`. Five reasons, from `ERROR_COPY`, which the site shares:
 
-- **518 is derived, never chosen**: `2×3 border + 4 accent + 2×32 padding + 140 header +
-  8 rule + 240 band + 56 footer`. `ERROR_CARD_HEIGHT` computes it from those tokens, so a
-  change to any of them moves the height rather than leaving a gap.
-- **The 240-unit band is sized by the gutter label, not by the text.** `NOTHING MAPPED`
-  is 191 units rotated, well past the 120-unit band floor a layer band uses. The message
-  itself needs less. This is the same constraint as the layer bands and it fails the same
-  silent way, so the fit assertion covers it.
-- **The message is top-aligned in its band**, so the space below reads as a document's
-  margin rather than as a notice centred in a void.
-- **The footer matches a real card's**: the domain, nothing on the right.
-- **Consequence for the embed:** one URL now serves two aspect ratios, 1200×800 and
-  1200×518, depending on whether the repo resolves. The `<picture>` snippet the site
-  hands out must not pin `width` or `height` on the `img`, or a failing repo's card
-  renders distorted in a README that was copied while the repo still worked.
+| Reason | Label |
+|---|---|
+| `not_found` | NOT FOUND |
+| `no_manifests` | NO MANIFESTS |
+| `nothing_mapped` | NOTHING MAPPED |
+| `rate_limited` | RATE LIMITED |
+| `unavailable` | UNAVAILABLE |
+
+- **Tiles and Terminal draw theirs at content height**, the label flat under the header.
+- **The Datasheet's is 1200 × 518**, derived as `ERROR_CARD_HEIGHT`, with the label rotated
+  into a 240-unit band sized by NOTHING MAPPED's 191 rotated units.
+- **One URL serves several heights**: a resolving repo's card and its error card. The
+  snippet never pins `width` or `height` on the `img`, or a card copied while the repo
+  worked would distort once it fails.
+- The card route returns the error card as a 200 image, never a non-200 (invariant I5).
+
+---
+
+## THE SITE
+
+One page, top to bottom (ADR-0039 supersedes ADR-0037's two layouts):
+
+1. **Nav.** The wordmark at the left. At the right, a GitHub link joined to the live star
+   count. It is see-through over the wall and turns solid as the page scrolls.
+2. **The hero band.** A dark room. Behind, the **wall**: six columns of the homepage's 16
+   repos as dark Tiles and Terminal cards in HTML, each repo exactly three times, at 0.40
+   opacity and 0.18 while the field has focus. In front, the **panel**, pinned light and
+   top-anchored.
+   - **Closed** (660 wide): the headline, the intro, the repo field with a fixed
+     `github.com/` prefix, Generate, and three Try chips. Clicking anywhere in the field
+     focuses the input.
+   - **Open** (1220 wide), from the first Generate on, and never closed again: the form at
+     440 on the left with the style and theme controls under a rule. On the right, the
+     status line, the **plate**, and the actions.
+   - Below 1280px wide the columns stack and nothing travels sideways.
+   - Under the panel, once it is open, a caption names the wall: "Behind the panel: real
+     repos, drawn by Stackshot", and five of the repos.
+3. **The plate.** A GitHub README frame: a `README.md` bar over GitHub's page colour, with
+   the card drawn on it in HTML at the card's own 1200-unit scale, then the real PNG
+   crossfaded over it (ADR-0032). The status line above it reads "Reading owner/repo",
+   then "Drawing owner/repo", then "N found in owner/repo", with "drawn in Xs" at its
+   right on wider screens.
+4. **The actions**, invisible until a real card exists so the panel keeps its height:
+   Copy markdown, Light PNG and Dark PNG downloads, and a "Show snippet" disclosure that
+   opens by itself if the clipboard refuses.
+5. **The snippet pitch.** Why a `<picture>` element, the snippet, and the intro card as a
+   build-rendered light and dark pair, which never touches the card route.
+6. **What Stackshot found**, once a card exists. A definition list in the card's order,
+   one row per item: symbol, name, version, description. It is the key to the card above.
+7. **Does it know your stack?** The tech index: every map entry as a tile, searchable and
+   filterable by layer, two rows until "Show all". A miss names the closest entry and links
+   to "Suggest a technology", underlined because it sits inside prose.
+8. **Footer.** Open source, the author, the suggest link.
+
+### How the slot behaves
+
+The plate is one slot whose contents are swapped, so the page does not move when it
+answers you.
+
+- **Before the first card**, the slot is blank, sized by the hidden intro image, and sweeps
+  while the first repo is read. It never shows another repo's card while yours loads.
+- **A new card** dims the old one in place, sweeps, reveals, then settles to the PNG.
+- **A failure that names a repo** replaces the card with that repo's real error card, which
+  is what its README would show, and clears Copy, the downloads and "What Stackshot found".
+- **A typo, or the per-IP hourly limit**, names no repo. The message appears under the
+  field and the current card stays.
+- **The PNG** is requested only once a style choice has settled, and both themes are warmed
+  at once.
 
 ---
 
@@ -447,186 +586,113 @@ every type size keeps the display ratios measured above**; only the height chang
 
 Build to this without announcing it.
 
-- **Responsive to mobile.** The site works at 360px. The card's real test is GitHub's
-  mobile web view at ~390px and the GitHub iOS/Android apps — all four surfaces are part
-  of Milestone 0's acceptance, not an afterthought.
-- **Visible keyboard focus.** A 2-unit `accent` outline with a 2-unit offset on every
-  interactive element. Never `outline: none` without a replacement in the same rule.
-- **WCAG AA.** All text pairs above meet 4.5:1; verify with a checker rather than trusting
-  this table. `rule` is excluded because it carries no information (see COLOR).
-- **Empty state.** The page before a URL is entered shows a real Stackshot card for a
-  well-known repo, captioned. It demonstrates the product instead of describing it.
-- **Error states.** One per reason, each naming the repo and the reason. Never a generic
-  failure. This said "three" until ADR-0024 settled on **five** `FailureReason`s — repo not
-  found, no recognizable manifests, nothing mapped, rate limited, unavailable — and the
-  site renders all five from the same `ERROR_COPY` the card uses, so the two cannot drift.
-  A **sixth** state is the site's alone: a URL that names no GitHub repo is answered
-  client-side, before a request is spent or an hourly resolve is consumed. The site
-  composes the repo name around the shared sentences, because the card puts it in its
-  header instead.
-- **The error card.** Rendered in the full palette, stating the repo and the reason, so a
-  README that embeds a broken repo shows an explanation rather than a broken-image icon.
-- **Loading.** A resolve takes seconds, not milliseconds. The button enters a labelled
-  pending state; the page does not show a skeleton of a card it cannot predict.
+- **Mobile.** The site works at 360px. The card's real test is GitHub's mobile web view and
+  the iOS and Android apps.
+- **Visible keyboard focus.** A 2px accent outline at a 2px offset on everything focusable.
+  Fields draw focus on their own border instead. Never `outline: none` without a
+  replacement in the same rule.
+- **WCAG AA.** Every text pair meets 4.5:1. Check with a tool rather than trusting a table.
+  `rule` is excluded because it carries no information.
+- **Hit areas.** At least 40px, including Try chips that draw at 26px.
+- **Error states.** One per reason, each naming the repo and the reason, from the same
+  `ERROR_COPY` the card uses. A sixth, a URL naming no repo, is answered in the page before
+  a request is spent.
+- **The error card.** Full palette, naming the repo and the reason, so a README never shows
+  a broken image.
+- **Loading.** Labelled, never a spinner. The button says what is happening, the status
+  line names the repo, and a screen reader hears it through a live region. Scrambled text
+  is always `aria-hidden`, with the real words beside it.
+- **Two downloads are two links**, because browsers block or prompt on two downloads from
+  one click. Their URLs are path-only, so `download` always saves rather than navigates
+  (GOTCHAS 068).
 
 ---
 
 ## UI COPY RULES
 
-- **Active voice.** "Stackshot couldn't read this repo", not "This repo could not be read".
-- **Sentence case everywhere on the site.** Headings, buttons, labels, errors. The card's
-  gutter labels are the only all-caps in the project, and they are structural signage, not
-  headings.
-- **Buttons are named for what happens.** "Generate card", "Download PNG", "Copy markdown".
+- **Active voice.** "Stackshot couldn't find this repo", not "This repo could not be found".
+- **Sentence case everywhere on the site.** The card's reason and gutter labels are the
+  only all-caps in the project, and they are signage, not headings.
+- **Buttons are named for what happens.** "Generate card", "Copy markdown", "Light PNG".
   Never "Submit", "Go", "Click here", or a bare arrow.
-- **The same verb runs through a whole flow.** The button says "Copy markdown", the
-  confirmation says "Markdown copied". If one changes, both change.
-- **Errors say what broke and how to fix it.** "Couldn't read `octocat/hello` — no manifest
-  files found on the default branch. Stackshot reads package.json, go.mod, pyproject.toml,
-  Cargo.toml, Gemfile and composer.json." Never "Something went wrong."
-- **Errors do not apologize** and do not use exclamation marks.
-- **Empty states invite an action**, they don't describe emptiness.
+- **The same verb runs through a whole flow.** "Copy markdown" confirms as "Markdown
+  copied". "Reading repo" on the button is "Reading owner/repo" on the status line.
+- **Errors say what broke and how to fix it**, never "Something went wrong". They do not
+  apologise and do not use exclamation marks.
+- **Empty states invite an action.**
 - **No filler.** No "simply", "just", "powerful", "seamless", "beautiful". No em-dash
   asides in interface copy.
-- **No trailing arrows on links or buttons.** No middle-dot-joined metadata strings.
-- **The word "stack" means the detected technologies.** It never means anything else.
+- **No trailing arrows on links or buttons.**
+- **"Stack" means the detected technologies**, and nothing else.
+
+Every string the site shows lives in `lib/site.ts`, and the card's in `lib/card-text.ts`
+and `ERROR_COPY`.
 
 ---
 
 ## SELF-CRITIQUE
 
 For each decision: would I have produced this for a completely different brief? Where the
-answer was yes, it was a default and has been changed. Five revisions.
+answer was yes, it was a default and was changed. This is the record, kept because the
+writeup draws on it. Where a later decision overturned one, it says so.
 
-**1. Canvas was 1200 × 630. Changed to 1200 × 750, then to 1200 × 800.**
-1.91:1 is the OpenGraph ratio, which is what every image-generation tool reaches for. It
-is correct for a link preview and has nothing to do with a four-band layered diagram. 630
-units forced the bands to 110 each, which broke at mobile width. The new ratio is derived
-from the content.
+### The card, Milestone 0
 
-750 then failed the same way for a different reason. Raising every information-bearing line
-to the 3-unit floor added 12 units of overhead to a budget with under 5 to spare, leaving
-four bands at 115 against a 120 floor. Same derivation, more overhead above the bands:
-630 → 750 → **800**, which gives 511 across four bands and about 8 units of headroom.
-See GOTCHAS 012.
+**1. Canvas 1200 × 630, then 750, then 800.** 1.91:1 is the OpenGraph ratio every image
+tool reaches for, and it has nothing to do with a four-band diagram. 750 then failed when
+every meaningful line rose to the 3-unit floor (GOTCHAS 012). Tiles and Terminal later went
+to content height, which ends the question for them.
 
-**2. Layers were color-coded, one hue each. Changed to rule-weight encoding.**
-**Superseded by ADR-0029 for every style but the Datasheet.** Kept because the reasoning
-still holds where it was made, and because the argument that overturned it is narrow:
-vertical position stops carrying the layer once the layout stops being four stacked bands.
-Tiles is a wrapping grid and Tags a wrapping flow; neither has a y-axis to read, so colour
-became the only thing encoding the layer rather than a decoration on top of one. The
-Datasheet still reads bottom-to-top and still encodes with rule weight.
+**2. Layers were colour-coded. Changed to rule weight.** Four colours for four categories is
+what every diagram tool does. **Overturned for Tiles and Terminal by ADR-0029**, on a narrow
+argument: once the layout stops being stacked bands, position stops carrying the layer, and
+colour becomes the only encoding. The Datasheet still encodes with weight.
 
-Four colors for four categories is what every diagram tool does, and it would have
-silently broken the one-accent rule while adding zero information that vertical position
-wasn't already carrying. Rule weight is quieter, denser, and traceable to a specific
-reference (the nutrition panel) rather than to habit.
+**3. Radius 8, changed to 2.** Pure reflex. **Overturned per style by ADR-0030**: Tiles is a
+grid of chips, and hard rectangles fought the metaphor. The Datasheet keeps 2.
 
-**3. Radius was 8. Changed to 2.**
-Pure reflex. `rounded-lg` is the value I would have produced for any brief in any year.
-A specimen card has corners.
+**4. A third face for the repo name, cut to two.** A face bought for one string is
+decoration, not a system. Still holds.
 
-**4. Typography was going to include a third face for the repo name. Cut to two.**
-The impulse was "display needs its own voice", which is a generic instinct rather than a
-response to this brief. The card has one large text element; a face bought for one string
-is not a system, it is decoration.
+**5. The page was going to open with a centred input in a viewport-height void.** Changed to
+lead with a real card. **Since overturned in form, kept in spirit**: the Phase 5 hero is a
+wall of real cards behind the input, so the first second still shows the product rather
+than describing it.
 
-**5. The site was going to open with the input field centered in a viewport-height hero.
-Changed to a centered column whose contents align to the card's left edge, with a real
-example card above the fold.**
-Centered-input-in-a-void is the default for every paste-a-URL tool, and leading with a real
-generated card makes the page argue for itself in the first second. That is the honest
-hierarchy: the card matters, the input doesn't.
+### The site, Milestone 3
 
-To be precise, because "left-aligned" is easy to misread as a whole-page mandate: **the
-column is centered in the viewport at roughly the card's natural width (~1100px). Inside
-it, everything is left-aligned to the card's left edge.** The page does not hug the
-viewport edge.
+**1. The primary button was going to be `accent`.** Changed to `ink`, because a coloured
+call to action is the most automatic decision on any page. Still holds. Accent has since
+gained three quiet site uses (ADR-0039), none of them a fill.
 
-> **Amended by ADR-0037 for the hero.** Both Phase 5 layouts put the form and the card
-> side by side, so the hero has two spines rather than one and the card's left edge is no
-> longer where the headline starts. The rule holds inside each column and below the hero,
-> where the page is still one column. Step 8's rewrite reconciles this rather than
-> patching it further.
+**2. Loading was going to be a spinner.** Changed to a labelled state and a live region.
+Still holds, and grew a status line and a sweep.
 
-**The card's left edge is the page's alignment spine.** Headline, input, snippet block,
-description list and footer all start there; nothing on the page begins anywhere else. On a
-sparse page that single shared edge is what stops the content reading as scattered — it
-does the compositional work a full grid would do on a denser page. Centering individual
-elements within the column is the thing being ruled out, not centering the column.
+**3. The failure was going to be a toast.** Changed to text under the field, which persists.
+Still holds. The example card no longer stays behind it: a failing repo shows its own
+error card (ADR-0039).
 
-### Milestone 3: the same pass, run over the site
+**4. The empty state was going to be a separate section.** Changed to the same slot the
+result uses. Still holds.
 
-Same question, decision by decision: would I have produced this for a completely different
-brief? Five where the answer was yes, and what changed.
+**5. The description list was going to be a grid of cards.** Changed to a definition list in
+the card's order. Still holds.
 
-**1. The primary button was going to be `accent`. Changed to `ink`.**
-An accent-colored call to action is the single most automatic decision in this entire
-page, and it would have been the only large block of colour on a site whose card uses
-`accent` for one 4-unit bar. The palette says accent appears once and means one thing;
-a button painted with it makes the page argue with the product it is showing. On the site
-`accent` now appears **only in the focus ring**. The button is `ink` on `surface`, at
-15.7:1.
+**The headline** was the element most at risk. "Show your stack where people already look"
+was marketing rather than naming. It was replaced in Phase 5 by "What's it built with?",
+which is the question the product answers.
 
-**2. Loading was going to be a spinner. Changed to a labelled button and a live region.**
-A spinner is what you reach for without thinking, and it says nothing during the four-plus
-seconds a real resolve takes. "Generating card" says what is happening, keeps the flow's
-verb, and is the thing a screen reader announces. The quality floor already asked for
-this; the spinner was the reflex that had to be caught.
+### Two defaults kept on purpose
 
-**3. The failure message was going to be a toast. Changed to text under the input.**
-Toasts are the default because they need no layout decision. This one needed one: the
-error belongs where the eye already is, directly below the field that caused it, and it
-should persist rather than time out. The example card stays visible behind it, because it
-is still true and still the demonstration.
+**All-caps labels** and **a mono face for small data** are usually tells of generated work.
 
-**4. The empty state was going to be a separate "example" section. Changed to the same
-slot the result uses.**
-Two elements meant the example vanished and the result appeared somewhere else, which is a
-layout jump on the one interaction the page has. One slot, one `<picture>`, contents
-swapped. The page does not move when it answers you.
+- The card's all-caps labels are signage beside the thing they name, not eyebrows above a
+  heading. **On the site there are no all-caps labels at all.**
+- Mono carries the whole Datasheet and Terminal, and the sans is the accent, which inverts
+  the usual tell. The brief pins the genre to a spec sheet, and the brief wins.
 
-**5. The description list was going to be a three-column grid of cards. Changed to a
-definition list in the card's own order.**
-A grid of little boxes is what every "features" section looks like, and it would have
-contradicted SURFACE's "no nested cards, no panels, no containers" on the same page as a
-card that obeys it. The list is now readable as a key to the diagram above it — same
-layers, same order, same overflow count — which is the job ADR-0009 actually gave it.
+### Still at risk
 
-**Still at risk, stated rather than hidden:** the headline. "Show your stack where people
-already look" is the one line on the page I could imagine writing for a different product,
-and it is doing marketing work rather than naming the thing. It survives this pass only
-because nothing better arrived; it is the first element to replace if the page reads
-generic.
-
-### Two knowingly-retained defaults, and the argument for keeping them
-
-Design guidance I hold generally treats **all-caps labels** and **a monospace face for
-small data labels** as tells of generated work. Both are present here, deliberately.
-
-- **Amended by ADR-0033:** the gutter labels are no longer the only all-caps on a card.
-  Tiles and Terminal have no gutter, so their error cards carry the same reason label flat
-  in the body, at the same `card/gutter` step. It is the same signage in a frame that has
-  nowhere to rotate it, not a new element. **The ban the claim was protecting — no all-caps
-  anywhere on the site — is untouched.**
-- The gutter labels are all-caps because they are *signage on a technical drawing*, not
-  eyebrow labels above headings. The distinguishing test: an eyebrow label sits above
-  content and describes it redundantly; these sit beside content and are the only thing
-  naming the axis. There is no headline for them to be an eyebrow to. **On the site, there
-  are no all-caps labels at all** — that ban holds.
-- Mono is the primary face rather than an accent for data, which inverts the usual tell.
-  The generic version is a sans-serif design with mono sprinkled on the metrics. Here mono
-  carries the whole card, and the sans appears once. The brief pins the genre to a spec
-  sheet, and the brief wins over the general rule.
-
-If Milestone 0's screenshots show the card reading as generic anyway, the escape hatch is
-to set package names in Archivo and keep mono only for versions — try that before
-abandoning the direction.
-
-### One thing this design is still at risk of
-
-The card is dense, and density fails in exactly one place: GitHub's mobile app. If the
-rendered result at 390px is unreadable, the fix is structural (3 layers × 4 items, larger
-nominal type), not cosmetic. That verdict belongs to Milestone 0, and the spike's
-screenshots should be committed to the repo as evidence for the writeup.
+**Density on GitHub's mobile apps.** Tiles answers it with symbols that survive 0.29, and
+Terminal with names held at the 30-unit floor. If a real phone shows either failing, the fix
+is structural (fewer cells, larger type), not cosmetic.
