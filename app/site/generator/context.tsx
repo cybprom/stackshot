@@ -275,7 +275,7 @@ export function GeneratorProvider({ children }: { children: React.ReactNode }) {
     try {
       await navigator.clipboard.writeText(snippet);
       setCopied("done");
-      track("copy");
+      track("copy", style);
       // A second click restarts the hold rather than racing the first timer.
       if (copyTimer.current !== null) clearTimeout(copyTimer.current);
       copyTimer.current = setTimeout(() => setCopied("idle"), COPIED_HOLD_MS);

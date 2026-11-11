@@ -1,6 +1,7 @@
 import { Redis } from "@upstash/redis";
 import { deployEnv, upstashConfig } from "@/lib/env";
 import type { FailureReason } from "@/lib/failure";
+import type { LaunchStyle } from "@/lib/preview";
 
 /**
  * The counters ADR-0012 asked for. Each call logs at once and queues an increment; the
@@ -17,11 +18,27 @@ const REFUSALS = new Set(["per_ip", "budget"]);
 
 // The unmapped log is the backlog, not an archive. Past this the rarest ids are dropped.
 export const UNMAPPED_KEEP = 1000;
+// The same bound for generated repos. A new repo at count 1 can fall straight off a full
+// list, which is the price of a fixed size: the ones that matter keep coming back.
+export const GENERATED_KEEP = 1000;
+export const RECENT_KEEP = 50;
 const WEEK_TTL_S = 400 * 24 * 3600;
 
-type Batch = { fields: Map<string, number>; repos: Set<string>; unmapped: Map<string, number> };
+type Batch = {
+  fields: Map<string, number>;
+  repos: Set<string>;
+  unmapped: Map<string, number>;
+  generated: Map<string, number>;
+  recent: { repo: string; at: string }[];
+};
 
-const emptyBatch = (): Batch => ({ fields: new Map(), repos: new Set(), unmapped: new Map() });
+const emptyBatch = (): Batch => ({
+  fields: new Map(),
+  repos: new Set(),
+  unmapped: new Map(),
+  generated: new Map(),
+  recent: [],
+});
 let pending = emptyBatch();
 
 function bump(field: string, by = 1) {
@@ -82,8 +99,21 @@ export function countUnmapped(ids: string[]): void {
   for (const id of ids) pending.unmapped.set(id, (pending.unmapped.get(id) ?? 0) + 1);
 }
 
-export function countEvent(event: SiteEvent): void {
+/** With the style on screen, so the counts can say whether Tiles is the right default. */
+export function countEvent(event: SiteEvent, style?: LaunchStyle): void {
   bump(event);
+  if (style) bump(`${event}_${style}`);
+}
+
+/**
+ * A card generated on the site, cached or not. Only the site counts here: README views
+ * never reach us (ADR-0003), and a cold resolve mostly measures when the cache expired.
+ * Public repo names only, never who asked.
+ */
+export function countGenerated(owner: string, repo: string, at: Date = new Date()): void {
+  const name = `${owner}/${repo}`;
+  pending.generated.set(name, (pending.generated.get(name) ?? 0) + 1);
+  pending.recent.push({ repo: name, at: at.toISOString() });
 }
 
 /** `2026-W46`. ISO weeks start on Monday, and the week belongs to the year of its Thursday. */
@@ -103,6 +133,8 @@ export const statsKeys = (env: string) => ({
   unmapped: `${env}:stats:unmapped`,
   // Week -> README count, written by scripts/embed-count.ts. One field a week.
   embeds: `${env}:stats:embeds`,
+  generated: `${env}:stats:generated`,
+  recent: `${env}:stats:recent`,
 });
 
 export type CounterOp =
@@ -110,7 +142,9 @@ export type CounterOp =
   | { op: "expire"; key: string; seconds: number }
   | { op: "pfadd"; key: string; members: string[] }
   | { op: "zincrby"; key: string; member: string; by: number }
-  | { op: "ztrim"; key: string; keep: number };
+  | { op: "ztrim"; key: string; keep: number }
+  | { op: "lpush"; key: string; items: { repo: string; at: string }[] }
+  | { op: "ltrim"; key: string; keep: number };
 
 /** The writes one batch turns into. Pure, so what reaches Redis is testable. */
 export function counterOps(batch: Batch, now: Date, env: string): CounterOp[] {
@@ -125,6 +159,12 @@ export function counterOps(batch: Batch, now: Date, env: string): CounterOp[] {
   if (batch.repos.size > 0) ops.push({ op: "pfadd", key: keys.repos, members: [...batch.repos] });
   for (const [member, by] of batch.unmapped) ops.push({ op: "zincrby", key: keys.unmapped, member, by });
   if (batch.unmapped.size > 0) ops.push({ op: "ztrim", key: keys.unmapped, keep: UNMAPPED_KEEP });
+  for (const [member, by] of batch.generated) ops.push({ op: "zincrby", key: keys.generated, member, by });
+  if (batch.generated.size > 0) ops.push({ op: "ztrim", key: keys.generated, keep: GENERATED_KEEP });
+  // Oldest first, because each push lands at the head: the newest ends up first.
+  if (batch.recent.length > 0) {
+    ops.push({ op: "lpush", key: keys.recent, items: batch.recent }, { op: "ltrim", key: keys.recent, keep: RECENT_KEEP });
+  }
   return ops;
 }
 
@@ -151,7 +191,9 @@ export async function flushCounters(): Promise<void> {
       else if (op.op === "expire") pipe.expire(op.key, op.seconds);
       else if (op.op === "pfadd") pipe.pfadd(op.key, ...op.members);
       else if (op.op === "zincrby") pipe.zincrby(op.key, op.by, op.member);
-      else pipe.zremrangebyrank(op.key, 0, -(op.keep + 1));
+      else if (op.op === "ztrim") pipe.zremrangebyrank(op.key, 0, -(op.keep + 1));
+      else if (op.op === "lpush") pipe.lpush(op.key, ...op.items);
+      else pipe.ltrim(op.key, 0, op.keep - 1);
     }
     await pipe.exec();
   } catch (error) {

@@ -3,7 +3,10 @@ import {
   countBug,
   countEvent,
   countFailure,
+  countGenerated,
   counterOps,
+  GENERATED_KEEP,
+  RECENT_KEEP,
   countResolve,
   countUnmapped,
   isoWeek,
@@ -46,6 +49,30 @@ describe("what each counter queues", () => {
   it("counts a bug in total and by kind", () => {
     countBug("cache", new Error("down"));
     expect(fields()).toEqual({ bug: 1, bug_cache: 1 });
+  });
+
+  it("counts an event in total and by the style on screen", () => {
+    countEvent("copy", "tiles");
+    countEvent("copy", "terminal");
+    countEvent("download_dark", "tiles");
+    expect(fields()).toEqual({ copy: 2, copy_tiles: 1, copy_terminal: 1, download_dark: 1, download_dark_tiles: 1 });
+  });
+
+  it("keeps generated repos as a ranked set and the latest as a short list, newest first", () => {
+    countGenerated("vercel", "next.js", new Date("2026-11-11T10:00:00Z"));
+    countGenerated("vercel", "next.js", new Date("2026-11-11T10:01:00Z"));
+    countGenerated("pmndrs", "zustand", new Date("2026-11-11T10:02:00Z"));
+    const ops = counterOps(pendingBatch(), new Date("2026-11-11T12:00:00Z"), "production");
+    expect(ops).toContainEqual({ op: "zincrby", key: "production:stats:generated", member: "vercel/next.js", by: 2 });
+    expect(ops).toContainEqual({ op: "ztrim", key: "production:stats:generated", keep: GENERATED_KEEP });
+    const push = ops.find((op) => op.op === "lpush");
+    // LPUSH puts each item at the head, so oldest first leaves the newest at the top.
+    expect(push && push.op === "lpush" && push.items.map((i) => i.repo)).toEqual([
+      "vercel/next.js",
+      "vercel/next.js",
+      "pmndrs/zustand",
+    ]);
+    expect(ops).toContainEqual({ op: "ltrim", key: "production:stats:recent", keep: RECENT_KEEP });
   });
 
   it("counts the page's events and the unmapped ids", () => {

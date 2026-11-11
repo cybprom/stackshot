@@ -15,7 +15,11 @@ export type Stats = {
   topUnmapped: { id: string; count: number }[];
   /** READMEs GitHub search finds embedding a card, by week. Undercounts by design. */
   embeds: { week: string; readmes: number }[];
+  /** Cards generated on the site, cached or not: the most generated, and the latest. */
+  generated: { top: { repo: string; count: number }[]; recent: { repo: string; at: string }[] };
 };
+
+const RecentSchema = z.array(z.object({ repo: z.string(), at: z.string() })).catch([]);
 
 /** The last `n` ISO weeks, newest first. */
 export function recentWeeks(now: Date, n: number): string[] {
@@ -32,11 +36,13 @@ export function pairs(flat: unknown[]): { id: string; count: number }[] {
 export async function readStats(redis: Redis, env: string, now: Date): Promise<Stats> {
   const keys = statsKeys(env);
   const weeks = recentWeeks(now, 8);
-  const [total, repos, unmapped, embeds, ...weekly] = await Promise.all([
+  const [total, repos, unmapped, embeds, top, recent, ...weekly] = await Promise.all([
     redis.hgetall(keys.total),
     redis.pfcount(keys.repos),
     redis.zrange(keys.unmapped, 0, 49, { rev: true, withScores: true }),
     redis.hgetall(keys.embeds),
+    redis.zrange(keys.generated, 0, 49, { rev: true, withScores: true }),
+    redis.lrange(keys.recent, 0, -1),
     ...weeks.map((week) => redis.hgetall(keys.week(week))),
   ]);
   const embedCounts = CountsSchema.parse(embeds) ?? {};
@@ -52,6 +58,10 @@ export async function readStats(redis: Redis, env: string, now: Date): Promise<S
     embeds: Object.entries(embedCounts)
       .map(([week, readmes]) => ({ week, readmes }))
       .sort((a, b) => b.week.localeCompare(a.week)),
+    generated: {
+      top: pairs(Array.isArray(top) ? top : []).map(({ id, count }) => ({ repo: id, count })),
+      recent: RecentSchema.parse(recent),
+    },
   };
 }
 

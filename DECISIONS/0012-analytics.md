@@ -105,6 +105,19 @@ own refusals are `refused_per_ip` and `refused_budget`, apart from GitHub's
 anyone can post to, so they are a floor on intent rather than an audit. `/api/stats`
 takes the secret as `?key=` so it opens in a browser.
 
+**Expanded by the author, the same day**, against CLAUDE.md's "do not expand them", on the
+argument that a count not collected cannot be recovered later. Both additions are bounded
+and each answers a named question:
+
+- **Which repos people generate on the site**: a ranked set of the top 1,000 and the last
+  50 with timestamps. Site generates only, cached or not, because README views never reach
+  us and a cold resolve mostly measures cache expiry. Public repo names, never who asked.
+- **The style on screen at copy and download** (`copy_tiles`, `copy_terminal`, …), to say
+  whether Tiles is the right default.
+
+The weekly embed count is stored in Redis by `.github/workflows/embed-count.yml` rather
+than committed, so there is no weekly commit and no weekly deploy.
+
 ## What would make us revisit
 
 - Embed count grows past a few hundred repos, at which point knowing _which_ repos (and
