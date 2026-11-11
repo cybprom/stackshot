@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-10T04:52:43.902Z",
+  "generatedAt": "2026-11-11T12:37:27.045Z",
   "stars": 2,
   "docs": {
     "cybprom/stackshot": {
@@ -124,7 +124,7 @@
       "owner": "vercel",
       "repo": "next.js",
       "language": "JavaScript",
-      "stars": 143099,
+      "stars": 143470,
       "layers": [
         {
           "category": "frontend",
@@ -179,7 +179,8 @@
               "id": "node",
               "display": "Node",
               "symbol": "No",
-              "description": "JavaScript runtime."
+              "description": "JavaScript runtime.",
+              "version": "24"
             },
             {
               "id": "tokio",
@@ -253,6 +254,13 @@
               "description": "pnpm monorepo with multiple packages."
             },
             {
+              "id": "vitest",
+              "display": "Vitest",
+              "symbol": "Vt",
+              "description": "Test runner.",
+              "version": "3"
+            },
+            {
               "id": "jest",
               "display": "Jest",
               "symbol": "Je",
@@ -272,23 +280,19 @@
               "symbol": "Wp",
               "description": "Module bundler.",
               "version": "5"
-            },
-            {
-              "id": "typescript",
-              "display": "TypeScript",
-              "symbol": "Ts",
-              "description": "Typed JavaScript.",
-              "version": "6"
             }
           ],
-          "overflow": 4
+          "overflow": 6
         }
       ],
       "unmapped": [
-        "action:vercel/gh-sts-action",
+        "action:mmastrac/mmm-matrix",
+        "action:slackapi/slack-github-action",
+        "action:vercel/setup-turborepo-remote-cache-action",
         "cargo:allocator-api2",
         "cargo:allsorts",
         "cargo:anyhow",
+        "cargo:arrayvec",
         "cargo:async-trait",
         "cargo:base64",
         "cargo:bincode",
@@ -321,9 +325,11 @@
         "cargo:futures-util",
         "cargo:hashbrown",
         "cargo:image",
+        "cargo:imagesize",
         "cargo:indexmap",
         "cargo:indoc",
         "cargo:itertools",
+        "cargo:libc",
         "cargo:lightningcss",
         "cargo:lz4_flex",
         "cargo:markdown",
@@ -357,9 +363,9 @@
         "cargo:remove_console",
         "cargo:reqwest",
         "cargo:ringmap",
-        "cargo:roaring",
         "cargo:rstest",
         "cargo:rustc-hash",
+        "cargo:same-file",
         "cargo:scattered-collect",
         "cargo:serde_json",
         "cargo:serde_path_to_error",
@@ -367,6 +373,7 @@
         "cargo:serde_with",
         "cargo:sha2",
         "cargo:shrink-to-fit",
+        "cargo:simd-utf16-len",
         "cargo:smallvec",
         "cargo:strsim",
         "cargo:styled_components",
@@ -484,6 +491,7 @@
         "npm:postcss-trolling",
         "npm:pretty-bytes",
         "npm:pretty-ms",
+        "npm:proper-lockfile",
         "npm:random-seed",
         "npm:react-builtin",
         "npm:react-dom-builtin",
@@ -527,7 +535,7 @@
       "owner": "pmndrs",
       "repo": "zustand",
       "language": "TypeScript",
-      "stars": 58803,
+      "stars": 58918,
       "layers": [
         {
           "category": "frontend",
@@ -574,7 +582,7 @@
               "display": "Vitest",
               "symbol": "Vt",
               "description": "Test runner.",
-              "version": "4"
+              "version": "5"
             },
             {
               "id": "pnpm",
@@ -612,7 +620,7 @@
               "version": "9"
             }
           ],
-          "overflow": 3
+          "overflow": 2
         }
       ],
       "unmapped": [
@@ -639,7 +647,7 @@
       "owner": "excalidraw",
       "repo": "excalidraw",
       "language": "TypeScript",
-      "stars": 133571,
+      "stars": 135497,
       "layers": [
         {
           "category": "frontend",
@@ -748,6 +756,13 @@
               "version": "3"
             },
             {
+              "id": "playwright",
+              "display": "Playwright",
+              "symbol": "Pl",
+              "description": "Browser automation and end-to-end tests.",
+              "version": "1"
+            },
+            {
               "id": "yarn",
               "display": "Yarn",
               "symbol": "Ya",
@@ -806,7 +821,7 @@
       "owner": "immich-app",
       "repo": "immich",
       "language": "TypeScript",
-      "stars": 115883,
+      "stars": 118820,
       "layers": [
         {
           "category": "frontend",
@@ -911,7 +926,7 @@
               "display": "Vitest",
               "symbol": "Vt",
               "description": "Test runner.",
-              "version": "4"
+              "version": "5"
             },
             {
               "id": "pytest",
@@ -944,18 +959,28 @@
       "unmapped": [
         "cargo:cbindgen",
         "cargo:jni",
+        "cargo:jxl",
         "cargo:libc",
+        "cargo:moxcms",
+        "cargo:mp4parse",
+        "cargo:pic-scale",
+        "cargo:quick_cache",
+        "cargo:rav1d",
+        "cargo:rayon",
+        "cargo:yuv",
         "npm:@eslint/js",
         "npm:@extism/extism",
+        "npm:@futo-org/backups-orchestrator-api",
+        "npm:@ianvs/prettier-plugin-sort-imports",
         "npm:@immich/sql-tools",
         "npm:@mdi/js",
         "npm:@mdi/react",
         "npm:@mdx-js/react",
-        "npm:@react-email/components",
-        "npm:@react-email/render",
+        "npm:@simplewebauthn/server",
         "npm:@socket.io/redis-adapter",
         "npm:@typescript/native",
         "npm:@vitest/coverage-v8",
+        "npm:aaguids",
         "npm:archiver",
         "npm:async-lock",
         "npm:bcrypt",
@@ -984,17 +1009,16 @@
         "npm:lunr",
         "npm:luxon",
         "npm:mnemonist",
-        "npm:mock-fs",
         "npm:multer",
         "npm:nest-commander",
         "npm:nestjs-cls",
         "npm:nestjs-kysely",
         "npm:nestjs-otel",
-        "npm:nestjs-zod",
         "npm:nodemailer",
         "npm:openid-client",
         "npm:picomatch",
         "npm:pngjs",
+        "npm:prettier-eslint",
         "npm:prism-react-renderer",
         "npm:raw-loader",
         "npm:react-email",
@@ -1034,13 +1058,13 @@
         "pypi:openvino",
         "pypi:orjson",
         "pypi:pillow",
+        "pypi:pillow-jxl-plugin",
         "pypi:pytest-asyncio",
         "pypi:pytest-cov",
         "pypi:pytest-mock",
         "pypi:python-multipart",
         "pypi:rapidocr",
         "pypi:rich",
-        "pypi:rknn-toolkit-lite2",
         "pypi:setuptools",
         "pypi:tokenizers",
         "pypi:types-pyyaml",
@@ -1055,7 +1079,7 @@
       "owner": "apache",
       "repo": "airflow",
       "language": "Python",
-      "stars": 47133,
+      "stars": 47446,
       "layers": [
         {
           "category": "backend",
@@ -1146,6 +1170,7 @@
       "unmapped": [
         "docker:__future__",
         "docker:email.parser",
+        "docker:ghcr.io/apache/airflow/base/python",
         "docker:packaging.specifiers",
         "docker:packaging.utils",
         "docker:pathlib",
@@ -1217,6 +1242,7 @@
         "pypi:apache-airflow-providers-grpc",
         "pypi:apache-airflow-providers-hashicorp",
         "pypi:apache-airflow-providers-http",
+        "pypi:apache-airflow-providers-huggingface",
         "pypi:apache-airflow-providers-ibm-db2",
         "pypi:apache-airflow-providers-ibm-mq",
         "pypi:apache-airflow-providers-imap",
@@ -1306,6 +1332,7 @@
         "pypi:graphviz",
         "pypi:greenback",
         "pypi:greenlet",
+        "pypi:httpx2",
         "pypi:importlib-metadata",
         "pypi:isoduration",
         "pypi:itsdangerous",
@@ -1350,14 +1377,15 @@
         "pypi:thrift-sasl",
         "pypi:typing-extensions",
         "pypi:universal-pathlib",
-        "pypi:uuid6"
+        "pypi:uuid6",
+        "pypi:uvicorn-worker"
       ]
     },
     "fastapi/fastapi": {
       "owner": "fastapi",
       "repo": "fastapi",
       "language": "Python",
-      "stars": 102958,
+      "stars": 104696,
       "layers": [
         {
           "category": "backend",
@@ -1440,7 +1468,8 @@
               "id": "pytest",
               "display": "pytest",
               "symbol": "Pe",
-              "description": "Python test framework."
+              "description": "Python test framework.",
+              "version": "9"
             },
             {
               "id": "ruff",
@@ -1488,7 +1517,7 @@
         "pypi:mkdocstrings",
         "pypi:pillow",
         "pypi:pwdlib",
-        "pypi:pydantic-ai",
+        "pypi:pydantic-ai-slim",
         "pypi:pydantic-extra-types",
         "pypi:pygithub",
         "pypi:pyjwt",
@@ -1511,7 +1540,7 @@
       "owner": "pandas-dev",
       "repo": "pandas",
       "language": "Python",
-      "stars": 49985,
+      "stars": 50581,
       "layers": [
         {
           "category": "backend",
@@ -1533,6 +1562,12 @@
               "display": "SQLAlchemy",
               "symbol": "Sc",
               "description": "Python SQL toolkit and ORM."
+            },
+            {
+              "id": "pandas",
+              "display": "pandas",
+              "symbol": "Pa",
+              "description": "Dataframes for data analysis."
             },
             {
               "id": "numpy",
@@ -1615,7 +1650,7 @@
       "owner": "pocketbase",
       "repo": "pocketbase",
       "language": "Go",
-      "stars": 61338,
+      "stars": 61598,
       "layers": [
         {
           "category": "frontend",
@@ -1727,7 +1762,7 @@
       "owner": "grafana",
       "repo": "grafana",
       "language": "TypeScript",
-      "stars": 77212,
+      "stars": 77830,
       "layers": [
         {
           "category": "frontend",
@@ -1803,7 +1838,7 @@
               "display": "Node",
               "symbol": "No",
               "description": "JavaScript runtime.",
-              "version": "24"
+              "version": "26"
             },
             {
               "id": "grpc",
@@ -1872,14 +1907,13 @@
               "display": "Nx",
               "symbol": "Nx",
               "description": "Monorepo build system.",
-              "version": "22"
+              "version": "24"
             },
             {
-              "id": "lerna",
-              "display": "Lerna",
-              "symbol": "Le",
-              "description": "Monorepo versioning and publishing.",
-              "version": "9"
+              "id": "pnpm-workspaces",
+              "display": "pnpm workspaces",
+              "symbol": "Pn",
+              "description": "pnpm monorepo with multiple packages."
             },
             {
               "id": "vitest",
@@ -1910,7 +1944,7 @@
               "version": "5"
             }
           ],
-          "overflow": 9
+          "overflow": 8
         }
       ],
       "unmapped": [
@@ -1970,7 +2004,6 @@
         "go:github.com/go-openapi/runtime",
         "go:github.com/go-openapi/strfmt",
         "go:github.com/go-sourcemap/sourcemap",
-        "go:github.com/go-stack/stack",
         "go:github.com/gobwas/glob",
         "go:github.com/gogo/protobuf",
         "go:github.com/golang-jwt/jwt/v4",
@@ -1983,7 +2016,6 @@
         "go:github.com/google/wire",
         "go:github.com/googleapis/gax-go/v2",
         "go:github.com/gorilla/mux",
-        "go:github.com/gorilla/websocket",
         "go:github.com/grafana/alerting",
         "go:github.com/grafana/alerting/apps/historian",
         "go:github.com/grafana/authlib",
@@ -1997,14 +2029,12 @@
         "go:github.com/grafana/grafana-api-golang-client",
         "go:github.com/grafana/grafana-app-sdk",
         "go:github.com/grafana/grafana-app-sdk/logging",
-        "go:github.com/grafana/grafana-app-sdk/plugin",
         "go:github.com/grafana/grafana-aws-sdk",
         "go:github.com/grafana/grafana-azure-sdk-go/v2",
         "go:github.com/grafana/grafana-cloud-migration-snapshot",
         "go:github.com/grafana/grafana-google-sdk-go",
         "go:github.com/grafana/grafana-openapi-client-go",
         "go:github.com/grafana/grafana-plugin-sdk-go",
-        "go:github.com/grafana/grafana-prometheus-datasource/pkg/promlib",
         "go:github.com/grafana/grafana/apps/advisor",
         "go:github.com/grafana/grafana/apps/alerting/alertenrichment",
         "go:github.com/grafana/grafana/apps/alerting/alertrulequality",
@@ -2031,8 +2061,13 @@
         "go:github.com/grafana/grafana/pkg/apimachinery",
         "go:github.com/grafana/grafana/pkg/apiserver",
         "go:github.com/grafana/grafana/pkg/infra/features",
+        "go:github.com/grafana/grafana/pkg/infra/log",
         "go:github.com/grafana/grafana/pkg/infra/metrics",
+        "go:github.com/grafana/grafana/pkg/infra/slugify",
+        "go:github.com/grafana/grafana/pkg/infra/tracing",
+        "go:github.com/grafana/grafana/pkg/legacyapi",
         "go:github.com/grafana/grafana/pkg/plugins",
+        "go:github.com/grafana/grafana/pkg/storage/dbproxy",
         "go:github.com/grafana/grafana/pkg/storage/unified/apistore",
         "go:github.com/grafana/grafana/pkg/storage/unified/resource/kv",
         "go:github.com/grafana/grafana/pkg/storage/unified/resourceclient",
@@ -2040,10 +2075,8 @@
         "go:github.com/grafana/grafana/pkg/util/sqlite",
         "go:github.com/grafana/loki/pkg/push",
         "go:github.com/grafana/nanogit/gittest",
-        "go:github.com/grafana/otel-profiling-go",
         "go:github.com/grafana/pyroscope-go/godeltaprof",
         "go:github.com/grafana/saml",
-        "go:github.com/grafana/schemads",
         "go:github.com/grafana/tempo",
         "go:github.com/grpc-ecosystem/go-grpc-middleware",
         "go:github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus",
@@ -2055,7 +2088,6 @@
         "go:github.com/hashicorp/go-version",
         "go:github.com/hashicorp/golang-lru/v2",
         "go:github.com/hashicorp/hcl/v2",
-        "go:github.com/influxdata/line-protocol",
         "go:github.com/jmespath-community/go-jmespath",
         "go:github.com/jmoiron/sqlx",
         "go:github.com/jonboulle/clockwork",
@@ -2064,7 +2096,6 @@
         "go:github.com/m3db/prometheus_remote_client_golang",
         "go:github.com/madflojo/testcerts",
         "go:github.com/mattermost/xml-roundtrip-validator",
-        "go:github.com/mattn/go-isatty",
         "go:github.com/matttproud/golang_protobuf_extensions",
         "go:github.com/migueleliasweb/go-github-mock",
         "go:github.com/mitchellh/mapstructure",
@@ -2095,13 +2126,13 @@
         "go:github.com/rs/cors",
         "go:github.com/russellhaering/gosaml2",
         "go:github.com/russellhaering/goxmldsig",
+        "go:github.com/russross/blackfriday/v2",
         "go:github.com/shopspring/decimal",
         "go:github.com/sony/gobreaker/v2",
         "go:github.com/spf13/pflag",
         "go:github.com/spyzhov/ajson",
         "go:github.com/testcontainers/testcontainers-go",
         "go:github.com/thomaspoignant/go-feature-flag",
-        "go:github.com/tjhop/slog-gokit",
         "go:github.com/ua-parser/uap-go",
         "go:github.com/urfave/cli/v2",
         "go:github.com/wk8/go-ordered-map",
@@ -2114,9 +2145,6 @@
         "go:go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc",
         "go:go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace",
         "go:go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp",
-        "go:go.opentelemetry.io/contrib/propagators/jaeger",
-        "go:go.opentelemetry.io/contrib/samplers/jaegerremote",
-        "go:go.opentelemetry.io/proto/otlp",
         "go:go.uber.org/atomic",
         "go:go.uber.org/goleak",
         "go:go.uber.org/mock",
@@ -2134,6 +2162,7 @@
         "go:google.golang.org/genproto/googleapis/api",
         "go:google.golang.org/genproto/googleapis/rpc",
         "go:google.golang.org/protobuf",
+        "go:gopkg.in/evanphx/json-patch.v4",
         "go:gopkg.in/ini.v1",
         "go:gopkg.in/mail.v2",
         "go:gopkg.in/yaml.v2",
@@ -2156,6 +2185,7 @@
         "npm:@axe-core/playwright",
         "npm:@bsull/augurs",
         "npm:@codemirror/autocomplete",
+        "npm:@codemirror/commands",
         "npm:@codemirror/lang-json",
         "npm:@codemirror/lang-markdown",
         "npm:@codemirror/lang-sql",
@@ -2185,6 +2215,7 @@
         "npm:@kusto/monaco-kusto",
         "npm:@leeoniya/ufuzzy",
         "npm:@lezer/common",
+        "npm:@lezer/highlight",
         "npm:@lezer/lr",
         "npm:@lezer/markdown",
         "npm:@locker/near-membrane-dom",
@@ -2192,7 +2223,6 @@
         "npm:@manypkg/get-packages",
         "npm:@msagl/core",
         "npm:@msagl/parser",
-        "npm:@npmcli/package-json",
         "npm:@openfeature/react-sdk",
         "npm:@openfeature/web-sdk",
         "npm:@popperjs/core",
@@ -2205,12 +2235,10 @@
         "npm:@react-types/shared",
         "npm:@rollup/plugin-node-resolve",
         "npm:@rsdoctor/rspack-plugin",
-        "npm:@rsdoctor/webpack-plugin",
         "npm:@rspack/cli",
         "npm:@rspack/core",
         "npm:@rspack/dev-server",
         "npm:@rspack/plugin-react-refresh",
-        "npm:@stylistic/eslint-plugin-ts",
         "npm:@swc/helpers",
         "npm:@tanstack/react-virtual",
         "npm:@typescript/native",
@@ -2220,11 +2248,9 @@
         "npm:@visx/shape",
         "npm:@visx/tooltip",
         "npm:@welldone-software/why-did-you-render",
-        "npm:@yarnpkg/types",
         "npm:ansicolor",
         "npm:axe-core",
         "npm:blob-polyfill",
-        "npm:browserslist",
         "npm:centrifuge",
         "npm:chance",
         "npm:clsx",
@@ -2237,7 +2263,6 @@
         "npm:crashme",
         "npm:croner",
         "npm:css-loader",
-        "npm:css-minimizer-webpack-plugin",
         "npm:d3-force",
         "npm:d3-scale",
         "npm:d3-scale-chromatic",
@@ -2247,17 +2272,13 @@
         "npm:dompurify",
         "npm:downsample",
         "npm:enquirer",
-        "npm:esbuild-loader",
-        "npm:esbuild-plugin-browserslist",
         "npm:eslint-rspack-plugin",
-        "npm:eslint-webpack-plugin",
         "npm:expose-loader",
         "npm:fake-indexeddb",
         "npm:fast-deep-equal",
         "npm:fast-json-patch",
         "npm:file-saver",
         "npm:fishery",
-        "npm:fork-ts-checker-webpack-plugin",
         "npm:github-codeowners",
         "npm:grunt",
         "npm:grunt-assemble",
@@ -2268,7 +2289,6 @@
         "npm:handlebars",
         "npm:history",
         "npm:html-to-image",
-        "npm:http-server",
         "npm:i18next-cli",
         "npm:idb",
         "npm:immer",
@@ -2286,9 +2306,9 @@
         "npm:jest-watch-typeahead",
         "npm:jimp",
         "npm:js-yaml",
+        "npm:json-schema-library",
         "npm:json-schema-to-typescript",
         "npm:json-source-map",
-        "npm:jsurl",
         "npm:kbar",
         "npm:knip",
         "npm:load-grunt-config",
@@ -2301,7 +2321,6 @@
         "npm:memoize-one",
         "npm:mermaid",
         "npm:micro-memoize",
-        "npm:mini-css-extract-plugin",
         "npm:mjml",
         "npm:ml-regression-polynomial",
         "npm:ml-regression-simple-linear",
@@ -2311,7 +2330,6 @@
         "npm:mutationobserver-shim",
         "npm:nanoid",
         "npm:node-forge",
-        "npm:node-notifier",
         "npm:ol",
         "npm:ol-ext",
         "npm:ol-mapbox-style",
@@ -2320,6 +2338,7 @@
         "npm:papaparse",
         "npm:pdf-parse",
         "npm:pluralize",
+        "npm:pmtiles",
         "npm:prismjs",
         "npm:publint",
         "npm:re-resizable",
@@ -2344,7 +2363,6 @@
         "npm:reduce-reducers",
         "npm:redux-mock-store",
         "npm:redux-thunk",
-        "npm:regenerator-runtime",
         "npm:reselect",
         "npm:rollup-plugin-esbuild",
         "npm:rollup-plugin-node-externals",
@@ -2355,8 +2373,8 @@
         "npm:slate",
         "npm:slate-plain-serializer",
         "npm:slate-react",
+        "npm:supports-color",
         "npm:swagger-ui-react",
-        "npm:symbol-observable",
         "npm:systemjs",
         "npm:testing-library-selector",
         "npm:tinycolor2",
@@ -2369,13 +2387,8 @@
         "npm:vis-data",
         "npm:vis-network",
         "npm:wait-on",
-        "npm:webpack-assets-manifest",
-        "npm:webpack-bundle-analyzer",
         "npm:webpack-cli",
-        "npm:webpack-livereload-plugin",
-        "npm:webpack-manifest-plugin",
         "npm:webpack-merge",
-        "npm:webpack-subresource-integrity",
         "npm:webpackbar",
         "npm:whatwg-fetch",
         "npm:yargs"
@@ -2385,7 +2398,7 @@
       "owner": "gohugoio",
       "repo": "hugo",
       "language": "Go",
-      "stars": 90073,
+      "stars": 90445,
       "layers": [
         {
           "category": "frontend",
@@ -2475,7 +2488,6 @@
         "go:github.com/bep/gitmap",
         "go:github.com/bep/goat",
         "go:github.com/bep/godartsass/v2",
-        "go:github.com/bep/golibsass",
         "go:github.com/bep/golocales",
         "go:github.com/bep/goportabletext",
         "go:github.com/bep/helpers",
@@ -2552,7 +2564,7 @@
       "owner": "astral-sh",
       "repo": "uv",
       "language": "Rust",
-      "stars": 90558,
+      "stars": 91951,
       "layers": [
         {
           "category": "frontend",
@@ -2663,7 +2675,7 @@
         }
       ],
       "unmapped": [
-        "action:codspeedhq/action",
+        "action:astral-sh/github-actions",
         "cargo:ambient-id",
         "cargo:anstream",
         "cargo:anyhow",
@@ -2672,6 +2684,8 @@
         "cargo:assert_cmd",
         "cargo:assert_fs",
         "cargo:astral-html",
+        "cargo:astral-ini",
+        "cargo:astral-mail-headers",
         "cargo:astral-pubgrub",
         "cargo:astral-reqwest-middleware",
         "cargo:astral-reqwest-retry",
@@ -2694,12 +2708,10 @@
         "cargo:bytes",
         "cargo:cargo-util",
         "cargo:clap_complete_command",
-        "cargo:configparser",
         "cargo:console",
         "cargo:crc32fast",
         "cargo:csv",
         "cargo:ctrlc",
-        "cargo:cyclonedx-bom",
         "cargo:data-encoding",
         "cargo:diskus",
         "cargo:dotenvy",
@@ -2732,12 +2744,12 @@
         "cargo:indexmap",
         "cargo:indicatif",
         "cargo:indoc",
+        "cargo:iri-string",
         "cargo:itertools",
         "cargo:jiff",
         "cargo:junction",
         "cargo:libc",
         "cargo:linux-raw-sys",
-        "cargo:mailparse",
         "cargo:md-5",
         "cargo:memchr",
         "cargo:nix",
@@ -2775,7 +2787,6 @@
         "cargo:secret-service",
         "cargo:security-framework",
         "cargo:self-replace",
-        "cargo:serde-untagged",
         "cargo:serde_json",
         "cargo:sha2",
         "cargo:shellexpand",
@@ -2807,6 +2818,7 @@
         "cargo:unicode-width",
         "cargo:unscanny",
         "cargo:url",
+        "cargo:uuid",
         "cargo:uv-audit",
         "cargo:uv-cache",
         "cargo:uv-client",
@@ -2840,6 +2852,7 @@
         "pypi:astral-dev-toolchain-cargo-nextest",
         "pypi:astral-dev-toolchain-cargo-shear",
         "pypi:astral-dev-toolchain-cargo-xwin",
+        "pypi:astral-dev-toolchain-jaq",
         "pypi:cargo-zigbuild",
         "pypi:mdformat",
         "pypi:mdformat-admon",
@@ -2856,7 +2869,7 @@
       "owner": "denoland",
       "repo": "deno",
       "language": "Rust",
-      "stars": 108722,
+      "stars": 108958,
       "layers": [
         {
           "category": "backend",
@@ -3255,7 +3268,7 @@
       "owner": "mastodon",
       "repo": "mastodon",
       "language": "Ruby",
-      "stars": 50368,
+      "stars": 50547,
       "layers": [
         {
           "category": "frontend",
@@ -3534,13 +3547,14 @@
         "gem:test-prof",
         "gem:thor",
         "gem:tty-prompt",
-        "gem:twitter-text",
         "gem:tzinfo-data",
+        "gem:uts58",
         "gem:webauthn",
         "gem:webmock",
         "gem:webpush",
         "gem:websocket-driver",
         "gem:xorcist",
+        "npm:@agulbra/uts58",
         "npm:@csstools/stylelint-formatter-github",
         "npm:@dnd-kit/core",
         "npm:@dnd-kit/modifiers",
@@ -3598,7 +3612,6 @@
         "npm:jsdom",
         "npm:lande",
         "npm:lodash",
-        "npm:marky",
         "npm:msw-storybook-addon",
         "npm:path-complete-extname",
         "npm:pg-connection-string",
@@ -3617,7 +3630,6 @@
         "npm:react-sparklines",
         "npm:react-textarea-autosize",
         "npm:redux-immutable",
-        "npm:regenerator-runtime",
         "npm:requestidlecallback",
         "npm:rollup-plugin-gzip",
         "npm:rollup-plugin-visualizer",
@@ -3629,10 +3641,8 @@
         "npm:terser",
         "npm:tesseract.js",
         "npm:tiny-queue",
-        "npm:twitter-text",
         "npm:type-fest",
         "npm:use-debounce",
-        "npm:uuid",
         "npm:vite-plugin-manifest-sri",
         "npm:vite-plugin-svgr",
         "npm:wicg-inert",
@@ -3643,7 +3653,7 @@
       "owner": "laravel",
       "repo": "laravel",
       "language": "Blade",
-      "stars": 85060,
+      "stars": 85448,
       "layers": [
         {
           "category": "frontend",
@@ -3731,7 +3741,7 @@
       "owner": "supabase",
       "repo": "supabase",
       "language": "TypeScript",
-      "stars": 111287,
+      "stars": 114826,
       "layers": [
         {
           "category": "frontend",
@@ -3740,8 +3750,7 @@
               "id": "next",
               "display": "Next.js",
               "symbol": "Nj",
-              "description": "React framework with file-based routing and server rendering.",
-              "version": "15"
+              "description": "React framework with file-based routing and server rendering."
             },
             {
               "id": "astro",
@@ -3875,6 +3884,7 @@
       ],
       "unmapped": [
         "npm:@astrojs/markdown-remark",
+        "npm:@astrojs/markdown-satteri",
         "npm:@astrojs/mdx",
         "npm:@astrojs/react",
         "npm:@astrojs/sitemap",
@@ -3892,10 +3902,8 @@
         "npm:@octokit/auth-app",
         "npm:@octokit/core",
         "npm:@octokit/graphql",
-        "npm:@octokit/plugin-paginate-graphql",
         "npm:@octokit/plugin-retry",
         "npm:@redocly/cli",
-        "npm:@shikijs/compat",
         "npm:@tanstack/react-table",
         "npm:@typescript/native",
         "npm:acorn",
@@ -3903,7 +3911,6 @@
         "npm:amaro",
         "npm:beautiful-mermaid",
         "npm:cheerio",
-        "npm:chokidar",
         "npm:class-variance-authority",
         "npm:cn",
         "npm:common-tags",
@@ -3916,6 +3923,7 @@
         "npm:graphiql",
         "npm:graphql-validation-complexity",
         "npm:gray-matter",
+        "npm:hast-util-from-html",
         "npm:hast-util-has-property",
         "npm:hast-util-to-html",
         "npm:isbot",
