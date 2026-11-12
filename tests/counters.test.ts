@@ -46,6 +46,20 @@ describe("what each counter queues", () => {
     });
   });
 
+  it("lists which repo failed and why, and cuts a name a request made up", () => {
+    countFailure("unavailable", { owner: "vercel", repo: "next.js", error: "timeout" });
+    countFailure("rate_limited", { owner: "a", repo: "b", cause: "budget" });
+    countFailure("not_found", { owner: "x".repeat(300), repo: "y", gate: "repo-ref" });
+    countFailure("unavailable", { cause: "no_token" });
+    const failures = pendingBatch().failures;
+    expect(failures).toHaveLength(3);
+    expect(failures[0]).toMatchObject({ repo: "vercel/next.js", reason: "unavailable", error: "timeout" });
+    expect(failures[1]).toMatchObject({ repo: "a/b", reason: "rate_limited", cause: "budget" });
+    expect(failures[2]?.repo).toHaveLength(120);
+    const ops = counterOps(pendingBatch(), new Date(), "production");
+    expect(ops).toContainEqual({ op: "ltrim", key: "production:stats:failures", keep: RECENT_KEEP });
+  });
+
   it("counts a bug in total and by kind", () => {
     countBug("cache", new Error("down"));
     expect(fields()).toEqual({ bug: 1, bug_cache: 1 });

@@ -24,12 +24,18 @@ export const GENERATED_KEEP = 1000;
 export const RECENT_KEEP = 50;
 const WEEK_TTL_S = 400 * 24 * 3600;
 
+// A failing name can come straight from a request path, so it is cut before it is stored.
+const NAME_MAX = 120;
+
+type Entry = Record<string, string>;
+
 type Batch = {
   fields: Map<string, number>;
   repos: Set<string>;
   unmapped: Map<string, number>;
   generated: Map<string, number>;
-  recent: { repo: string; at: string }[];
+  recent: Entry[];
+  failures: Entry[];
 };
 
 const emptyBatch = (): Batch => ({
@@ -38,6 +44,7 @@ const emptyBatch = (): Batch => ({
   unmapped: new Map(),
   generated: new Map(),
   recent: [],
+  failures: [],
 });
 let pending = emptyBatch();
 
@@ -50,6 +57,14 @@ export function countFailure(reason: FailureReason, context: Record<string, unkn
   console.warn(`stackshot.failure ${reason}`, context);
   const cause = context.cause;
   bump(typeof cause === "string" && REFUSALS.has(cause) ? `refused_${cause}` : `failure_${reason}`);
+
+  // Which repo, and why: the counts say how many, this says which one to look at.
+  const { owner, repo, error } = context;
+  if (typeof owner !== "string" || typeof repo !== "string") return;
+  const entry: Entry = { repo: `${owner}/${repo}`.slice(0, NAME_MAX), reason, at: new Date().toISOString() };
+  if (typeof cause === "string") entry.cause = cause;
+  if (typeof error === "string") entry.error = error;
+  pending.failures.push(entry);
 }
 
 /**
@@ -135,6 +150,7 @@ export const statsKeys = (env: string) => ({
   embeds: `${env}:stats:embeds`,
   generated: `${env}:stats:generated`,
   recent: `${env}:stats:recent`,
+  failures: `${env}:stats:failures`,
 });
 
 export type CounterOp =
@@ -143,7 +159,7 @@ export type CounterOp =
   | { op: "pfadd"; key: string; members: string[] }
   | { op: "zincrby"; key: string; member: string; by: number }
   | { op: "ztrim"; key: string; keep: number }
-  | { op: "lpush"; key: string; items: { repo: string; at: string }[] }
+  | { op: "lpush"; key: string; items: Entry[] }
   | { op: "ltrim"; key: string; keep: number };
 
 /** The writes one batch turns into. Pure, so what reaches Redis is testable. */
@@ -164,6 +180,12 @@ export function counterOps(batch: Batch, now: Date, env: string): CounterOp[] {
   // Oldest first, because each push lands at the head: the newest ends up first.
   if (batch.recent.length > 0) {
     ops.push({ op: "lpush", key: keys.recent, items: batch.recent }, { op: "ltrim", key: keys.recent, keep: RECENT_KEEP });
+  }
+  if (batch.failures.length > 0) {
+    ops.push(
+      { op: "lpush", key: keys.failures, items: batch.failures },
+      { op: "ltrim", key: keys.failures, keep: RECENT_KEEP },
+    );
   }
   return ops;
 }

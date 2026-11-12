@@ -17,7 +17,11 @@ export type Stats = {
   embeds: { week: string; readmes: number }[];
   /** Cards generated on the site, cached or not: the most generated, and the latest. */
   generated: { top: { repo: string; count: number }[]; recent: { repo: string; at: string }[] };
+  /** The last 50 fresh failures, newest first. A failure replayed from the cache is not one. */
+  failures: Record<string, string>[];
 };
+
+const FailuresSchema = z.array(z.record(z.string(), z.string())).catch([]);
 
 const RecentSchema = z.array(z.object({ repo: z.string(), at: z.string() })).catch([]);
 
@@ -36,13 +40,14 @@ export function pairs(flat: unknown[]): { id: string; count: number }[] {
 export async function readStats(redis: Redis, env: string, now: Date): Promise<Stats> {
   const keys = statsKeys(env);
   const weeks = recentWeeks(now, 8);
-  const [total, repos, unmapped, embeds, top, recent, ...weekly] = await Promise.all([
+  const [total, repos, unmapped, embeds, top, recent, failures, ...weekly] = await Promise.all([
     redis.hgetall(keys.total),
     redis.pfcount(keys.repos),
     redis.zrange(keys.unmapped, 0, 49, { rev: true, withScores: true }),
     redis.hgetall(keys.embeds),
     redis.zrange(keys.generated, 0, 49, { rev: true, withScores: true }),
     redis.lrange(keys.recent, 0, -1),
+    redis.lrange(keys.failures, 0, -1),
     ...weeks.map((week) => redis.hgetall(keys.week(week))),
   ]);
   const embedCounts = CountsSchema.parse(embeds) ?? {};
@@ -62,6 +67,7 @@ export async function readStats(redis: Redis, env: string, now: Date): Promise<S
       top: pairs(Array.isArray(top) ? top : []).map(({ id, count }) => ({ repo: id, count })),
       recent: RecentSchema.parse(recent),
     },
+    failures: FailuresSchema.parse(failures),
   };
 }
 

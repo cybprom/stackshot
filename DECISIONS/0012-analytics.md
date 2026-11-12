@@ -114,6 +114,10 @@ and each answers a named question:
   us and a cold resolve mostly measures cache expiry. Public repo names, never who asked.
 - **The style on screen at copy and download** (`copy_tiles`, `copy_terminal`, …), to say
   whether Tiles is the right default.
+- **The last 50 fresh failures**, each with repo, reason, cause or error, and time, added
+  2026-11-12. A count of `failure_unavailable` says how many; this says whether it is the
+  same big repo timing out every time. Names are cut at 120 characters, because a failing
+  name can come straight from a request path.
 
 The weekly embed count is stored in Redis by `.github/workflows/embed-count.yml` rather
 than committed, so there is no weekly commit and no weekly deploy.
