@@ -229,9 +229,7 @@ Last done:  MILESTONE 4, 2026-11-11 TO 12, on branch milestone-4: the budget
             embed count, which repos people generate and the style they copy
             (ADR-0012 as built and expanded), the 65-repo production sweep
             (GOTCHAS 071), fresh preview bytes per answer (ADR-0041), the
-            README with the live card, and docs/writeup/shortlist.md.
-            NO LICENSE FILE EXISTS, though the site says "Open source".
-            The author decides which licence before launch.
+            README with the live card, and the MIT licence.
             Before it: PHASE 5 STEP 8, THE DESIGN.md REWRITE, ON 2026-11-11. Docs only:
             DESIGN.md now describes what ships, all three styles and the site,
             with the card/owner and card/meta table corrected to 26 and 18 and
@@ -336,7 +334,7 @@ Last done:  MILESTONE 4, 2026-11-11 TO 12, on branch milestone-4: the budget
 Next:       LAUNCH. Merge milestone-4 into main and push. Add the repo
             secrets SEARCH_TOKEN, UPSTASH_REDIS_REST_URL and
             UPSTASH_REDIS_REST_TOKEN, then run "Embed count" once by hand.
-            Pick a licence. After launch: watch /api/stats for refused_budget
+            After launch: watch /api/stats for refused_budget
             and failure_unavailable, and run the Camo liveness test in about
             two weeks.
 M4 CARRIES: the badge in your own README (the domain is live now, so this
@@ -756,8 +754,7 @@ instructions. The page passes the quality floor in `DESIGN.md`. There is exactly
 5. Deploy to `stackshot.ilerioluwa.com`, badge in own README. **This absorbs the
    identical item that used to sit in Milestone 2's definition of done** — the duplicate
    is resolved here, and the badge waits for the domain the card's footer names.
-6. `GOTCHAS.md` reviewed for writeup material. **Done 2026-11-12**:
-   `docs/writeup/shortlist.md`.
+6. `GOTCHAS.md` reviewed for writeup material. **Done 2026-11-12.**
 
 ### Definition of done
 
