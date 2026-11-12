@@ -6,10 +6,10 @@
 it is the only thing that survives one.*
 
 ```
-Milestone:  3 COMPLETE and committed. Now on the CARD STYLES direction
-            (ADR-0029): the card becomes a choice of styles. Phases 0
-            (de-risk), 1 (plumbing), 2 (TILES), 3 (TERMINAL) and 4 ARE
-            ALL DONE. PHASE 5 IS ACTIVE AND IS THE LAST PHASE.
+Milestone:  4, SHIP. EVERY STEP IS BUILT AS OF 2026-11-12. Card styles
+            (ADR-0029, phases 0-5) are complete. What remains is the
+            author's: push, add the repo secrets, and launch. Then, about
+            two weeks after launch, the Camo liveness test (ADR-0012).
 P5 PLAN:    ** READ THE "Phase 5" SECTION BELOW, DIRECTLY UNDER THIS
             BLOCK. ** It is the authority on how Phase 5 is built: all
             eight steps in order, the five decisions the author has
@@ -224,7 +224,15 @@ SITE_ORIGIN: lib/site.ts is the single source for the origin in the card
             `download` always saves (GOTCHAS 068). Only the snippet is
             absolute, and in production it resolves to the same URL, so the
             CDN entry is still shared.
-Last done:  PHASE 5 STEP 8, THE DESIGN.md REWRITE, ON 2026-11-11. Docs only:
+Last done:  MILESTONE 4, 2026-11-11 TO 12, on branch milestone-4: the budget
+            guard (ADR-0040), stored analytics and /api/stats, the weekly
+            embed count, which repos people generate and the style they copy
+            (ADR-0012 as built and expanded), the 65-repo production sweep
+            (GOTCHAS 071), fresh preview bytes per answer (ADR-0041), the
+            README with the live card, and docs/writeup/shortlist.md.
+            NO LICENSE FILE EXISTS, though the site says "Open source".
+            The author decides which licence before launch.
+            Before it: PHASE 5 STEP 8, THE DESIGN.md REWRITE, ON 2026-11-11. Docs only:
             DESIGN.md now describes what ships, all three styles and the site,
             with the card/owner and card/meta table corrected to 26 and 18 and
             no RENDER_VERSION bump. site-display and site-title are defined
@@ -325,11 +333,12 @@ Last done:  PHASE 5 STEP 8, THE DESIGN.md REWRITE, ON 2026-11-11. Docs only:
             Before it: PHASE 3 — TERMINAL. lib/render/terminal.tsx at
             height "content", ADR-0031 on what styles share, and
             GOTCHAS 051 (the box glyphs are taller than their line box).
-Next:       MILESTONE 4, in its own section's order: the global budget guard,
-            the analytics that are still only log lines (Redis storage, copy
-            and download counters, /api/stats, the embed-count script, Vercel
-            Web Analytics), THE PRE-LAUNCH REPO SWEEP the author asked for,
-            then the README's real embed. Pushing main deploys.
+Next:       LAUNCH. Merge milestone-4 into main and push. Add the repo
+            secrets SEARCH_TOKEN, UPSTASH_REDIS_REST_URL and
+            UPSTASH_REDIS_REST_TOKEN, then run "Embed count" once by hand.
+            Pick a licence. After launch: watch /api/stats for refused_budget
+            and failure_unavailable, and run the Camo liveness test in about
+            two weeks.
 M4 CARRIES: the badge in your own README (the domain is live now, so this
             can come forward), the global budget guard, ADR-0012's amendment
             line for the separate bug counter, and monitoring KV bytes —
@@ -742,11 +751,13 @@ instructions. The page passes the quality floor in `DESIGN.md`. There is exactly
    renamed repos, and very long names. For each: the card is right, the error card is the
    right one, and nothing times out. Record what fails in `GOTCHAS.md`, and fix it or put
    it in front of the author before launch.
-4. `README.md` finalised with real screenshots and real numbers.
+4. `README.md` finalised with real screenshots and real numbers. **Done 2026-11-12**: the
+   live cards are the screenshots, and the numbers are the sweep's.
 5. Deploy to `stackshot.ilerioluwa.com`, badge in own README. **This absorbs the
    identical item that used to sit in Milestone 2's definition of done** — the duplicate
    is resolved here, and the badge waits for the domain the card's footer names.
-6. `GOTCHAS.md` reviewed for writeup material.
+6. `GOTCHAS.md` reviewed for writeup material. **Done 2026-11-12**:
+   `docs/writeup/shortlist.md`.
 
 ### Definition of done
 
